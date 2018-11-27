@@ -5,7 +5,7 @@ This guide describes the necessary steps to deploy Wazuh on Kubernetes.
 ## Pre-requisites
 
 - Kubernetes cluster already deployed.
-- Kubernetes can run on a wide range of Cloud providers and bare-metal environments, this repository is focus on [AWS](https://aws.amazon.com/). It was tested using [Amazon EKS](https://docs.aws.amazon.com/eks). You should be able to:
+- Kubernetes can run on a wide range of Cloud providers and bare-metal environments, this repository focuses on [AWS](https://aws.amazon.com/). It was tested using [Amazon EKS](https://docs.aws.amazon.com/eks). You should be able to:
     - Create Persistent Volumes on top of AWS EBS when using a volumeClaimTemplates
     - Create a record set in AWS Route 53 from a Kubernetes LoadBalancer.
 - Having at least two Kubernetes nodes in order to meet the *podAntiAffinity* policy.
@@ -15,9 +15,9 @@ This guide describes the necessary steps to deploy Wazuh on Kubernetes.
 
 ### StateFulSet and Deployments Controllers
 
-Like a Deployment, a StatefulSet manages Pods that are based on an identical container specification, but StatefulSet maintains an identity attached to each of its pods. These pods are created from the same specification, but they are not interchangeable: each one has a persistent identifier that it maintains across any rescheduling.
+Like a Deployment, a StatefulSet manages Pods that are based on an identical container specification, but it maintains an identity attached to each of its pods. These pods are created from the same specification, but they are not interchangeable: each one has a persistent identifier maintained across any rescheduling.
 
-It is useful for stateful applications like databases that save the data to a persistent storage. The states of each Wazuh manager as well as Elasticsearch are desirable to maintain, so we declare them using StatefulSet to ensure that they maintain their states at every startup.
+It is useful for stateful applications like databases that save the data to a persistent storage. The states of each Wazuh manager as well as Elasticsearch are desirable to maintain, so we declare them using StatefulSet to ensure that they maintain their states in every startup.
 
 Deployments are intended for stateless use and are quite lightweight and seem to be appropriate for Logstash, Kibana and Nginx, where it is not necessary to maintain the states.
 
@@ -43,7 +43,7 @@ Details:
 
 #### Elasticsearch
 
-This pod handles Elasticsearch, receiving and storing alerts received from Logstash.
+Elasticsearch pod. It receives and stores alerts received from Logstash. No Elasticsearch cluster is supported yet.
 
 Details:
 - Image: docker.elastic.co/elasticsearch/elasticsearch:6.5.0
@@ -52,7 +52,7 @@ Details:
 
 #### Logstash
 
-In this pod we maintain Logstash, which receives the alerts from each Filebeat located in each Wazuh manager. Then, the alerts are sent to Elasticsearch.
+Logstash pod. It receives the alerts from each Filebeat located in every Wazuh manager. Then, the alerts are sent to Elasticsearch.
 
 Details:
 - image: Docker Hub 'wazuh/logstash:3.7.0_6.5.0'
@@ -61,7 +61,7 @@ Details:
 
 #### Kibana
 
-This pod in in charge of Kibana, it lets you visualize your Elasticsearch data, along with other features as the Wazuh app.
+Kibana pod. It lets you visualize your Elasticsearch data, along with other features as the Wazuh app.
 
 Details:
 - image: Docker Hub 'wazuh/kibana:3.7.0_6.5.0'
@@ -69,7 +69,7 @@ Details:
 
 #### Nginx
 
-In this pod manages Nginx to act as an reverse proxy for safer use and access to Kibana.
+The nginx pod acts as a reverse proxy for a safer access to Kibana.
 
 Details:
 - image: Docker Hub 'wazuh/nginx:3.7.0_6.5.0'
@@ -107,9 +107,9 @@ Details:
 
 ### Step 1: Deploy Kubernetes
 
-Deploy the Kubernetes cluster is out of the scope of this guide.
+Deploying the Kubernetes cluster is out of the scope of this guide.
 
-This repository is focus on [AWS](https://aws.amazon.com/) but it should be easy to adapt it to another Cloud provider. In case you are using AWS, we recommend [EKS](https://docs.aws.amazon.com/en_us/eks/latest/userguide/getting-started.html).
+This repository focuses on [AWS](https://aws.amazon.com/) but it should be easy to adapt it to another Cloud provider. In case you are using AWS, we recommend [EKS](https://docs.aws.amazon.com/en_us/eks/latest/userguide/getting-started.html).
 
 
 ### Step 2: Create domains to access the services
@@ -133,7 +133,7 @@ $ cd wazuh-kubernetes
 
 ### Step 3.1: Wazuh namespace and StorageClass
 
-The Wazuh namespace is used to handle all the elements of Kubernetes (services, deployments, pods) necessaries for Wazuh. In addition, it is necessary to create a StorageClass to use AWS EBS storage in our StateFulSet applications.
+The Wazuh namespace is used to handle all the Kubernetes elements (services, deployments, pods) necessary for Wazuh. In addition, you must create a StorageClass to use AWS EBS storage in our StateFulSet applications.
 
 ```BASH
 $ kubectl apply -f base/wazuh-ns.yaml
@@ -142,7 +142,7 @@ $ kubectl apply -f base/aws-gp2-storage-class.yaml
 
 ### Step 3.2: Deploy Elasticsearch
 
-Deployment of Elasticsearch.
+Elasticsearch deployment.
 
 ```BASH
 $ kubectl apply -f elastic_stack/elasticsearch/elasticsearch-svc.yaml
@@ -152,7 +152,7 @@ $ kubectl apply -f elastic_stack/elasticsearch/elasticsearch-sts.yaml
 
 ### Step 3.3: Deploy Kibana and Nginx
 
-Deployment of Kibana and Nginx.
+Kibana and Nginx deployment.
 
 In case you need to provide a domain name, update the `domainName` annotation value in the [nginx-svc.yaml](nginx-svc.yaml) file before deploying that service. You should also set a valid AWS ACM certificate ARN in the [nginx-svc.yaml](nginx-svc.yaml) for the `service.beta.kubernetes.io/aws-load-balancer-ssl-cert` annotation. That certificate should match with the `domainName`.
 
@@ -166,7 +166,7 @@ $ kubectl apply -f elastic_stack/kibana/nginx-deploy.yaml
 
 ### Step 3.4: Deploy Logstash
 
-Deployment of Logstash
+Logstash deployment.
 
 ```BASH
 $ kubectl apply -f elastic_stack/logstash/logstash-svc.yaml
@@ -175,7 +175,7 @@ $ kubectl apply -f elastic_stack/logstash/logstash-deploy.yaml
 
 ### Step 3.5: Deploy Wazuh
 
-Deployment of Wazuh cluster.
+Wazuh cluster deployment.
 
 In case you need to provide a domain name, update the `domainName` annotation value in both the [wazuh-master-svc.yaml](wazuh-master-svc.yaml) and the [wazuh-workers-svc.yaml](wazuh-workers-svc.yaml) files before deploying those services. You should also set a valid AWS ACM certificate ARN in the [wazuh-api-svc.yaml](wazuh-api-svc.yaml) for the `service.beta.kubernetes.io/aws-load-balancer-ssl-cert` annotation. That certificate should match with the `domainName`.
 
@@ -280,4 +280,3 @@ In this case, we have 2 options:
 - Install the agent on the host: This is the option that we recommend since the agent was originally designed for this purpose.
 
 We are researching if the agent is able to run as a *DaemonSet* container. A *DaemonSet* is a special type of Pod which is logically guaranteed to run on each Kubernetes node. This kind of agent will have access only to its container, so we should mount volumes used by other containers to monitor logs, files, etc.
-
