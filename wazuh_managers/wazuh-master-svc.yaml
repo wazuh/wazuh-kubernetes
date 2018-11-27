@@ -1,0 +1,35 @@
+# Copyright (C) 2018 Wazuh Inc.
+#
+# This program is a free software; you can redistribute it
+# and/or modify it under the terms of the GNU General Public
+# License (version 2) as published by the FSF - Free Software
+# Foundation.
+
+# Wazuh master Service: API and registration (authd)
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: wazuh  # Don't change, unless you update the Wazuh Kibana app config
+  namespace: wazuh
+  labels:
+    app: wazuh-manager
+    # dns: route53
+  annotations:
+    # domainName: 'wazuh-master.some-domain.com'  # TODO: Change this for a Hosted Zone you configured in AWS Route 53
+    service.beta.kubernetes.io/aws-load-balancer-internal: 0.0.0.0/0
+    service.beta.kubernetes.io/aws-load-balancer-backend-protocol: ssl
+    # service.beta.kubernetes.io/aws-load-balancer-ssl-cert: 'put_your_aws_acm_certificate_arn_here' # TODO: Change this for the certificate for your Hosted Zone
+    service.beta.kubernetes.io/aws-load-balancer-ssl-ports: '55000'
+spec:
+  type: LoadBalancer
+  selector:
+    app: wazuh-manager
+    node-type: master
+  ports:
+    - name: ossec-authd
+      port: 1515
+      targetPort: 1515
+    - name: wazuh-api
+      port: 55000
+      targetPort: 55000
