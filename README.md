@@ -5,7 +5,7 @@
 [![Documentation](https://img.shields.io/badge/docs-view-green.svg)](https://documentation.wazuh.com)
 [![Documentation](https://img.shields.io/badge/web-view-green.svg)](https://wazuh.com)
 
-Deploy on Kubernetes a Wazuh cluster with a basic Elastic stack.
+Deploy a Wazuh cluster with a basic Elastic stack on Kubernetes .
 
 ## Documentation
 
@@ -13,7 +13,7 @@ The *instructions.md* file describes how to deploy Wazuh on Kubernetes.
 
 ## Branches
 
-* `stable` branch on correspond to the last Wazuh stable version.
+* `stable` branch corresponds to the last Wazuh stable version.
 * `master` branch contains the latest code, be aware of possible bugs on this branch.
 
 ## Contribute
