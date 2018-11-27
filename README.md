@@ -13,7 +13,6 @@ The *instructions.md* file describes how to deploy Wazuh on Kubernetes.
 
 ## Branches
 
-* `stable` branch corresponds to the last Wazuh stable version.
 * `master` branch contains the latest code, be aware of possible bugs on this branch.
 
 ## Contribute
