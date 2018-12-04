@@ -5,15 +5,15 @@
 # License (version 2) as published by the FSF - Free Software
 # Foundation.
 
-# Elasticsearch StatefulSet: Single node.
+# Elasticsearch StatefulSet: 3 data nodes.
 
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: wazuh-elasticsearch
+  name: data-elasticsearch
   namespace: wazuh
 spec:
-  replicas: 1
+  replicas: 3
   selector:
     matchLabels:
       app: wazuh-elasticsearch
@@ -42,6 +42,14 @@ spec:
           volumeMounts:
             - name: wazuh-elasticsearch
               mountPath: /usr/share/elasticsearch/data
+        - name: increase-the-vm-max-map-count
+          image: busybox
+          command:
+            - sysctl
+            - -w
+            - vm.max_map_count=262144
+          securityContext:
+            privileged: true
       containers:
         - name: wazuh-elasticsearch
           image: 'docker.elastic.co/elasticsearch/elasticsearch:6.5.0'
@@ -55,14 +63,24 @@ spec:
           env:
             - name: ES_JAVA_OPTS
               value: '-Xms1024m -Xmx1024m'
+            - name: node.master
+              value: "false"
+            - name: node.data
+              value: "true"
+            - name: node.ingest
+              value: "false"
             - name: bootstrap.memory_lock
-              value: 'false'
+              value: "false"
             - name: cluster.name
               value: wazuh
             - name: network.host
               value: 0.0.0.0
             - name: node.name
-              value: node-1
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: discovery.zen.ping.unicast.hosts
+              value: "wazuh-elasticsearch"
           volumeMounts:
             - name: wazuh-elasticsearch
               mountPath: /usr/share/elasticsearch/data
@@ -74,11 +92,11 @@ spec:
   volumeClaimTemplates:
     - metadata:
         name: wazuh-elasticsearch
-        namespace: wazuh
+        namespace: es-cluster
       spec:
         accessModes:
           - ReadWriteOnce
         storageClassName: gp2-encrypted-retained
         resources:
           requests:
-            storage: 30Gi
+            storage: 10Gi
