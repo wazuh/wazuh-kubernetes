@@ -167,6 +167,8 @@ Worker 1.
 ubuntu@k8s-control-server:~$ kubectl delete persistentvolume pvc-024466da-f7c5-11e8-b9b8-022ada63b4ac
 ```
 
+#### Do not forget to delete the volumes manually in AWS.
+
 ## Elasticsearch
 
 The process for cleaning the Elasticsearch installation environment is similar to that of the Wazuh cluster. In order to do this remove the Elasticsearch deployment as well as its associated services and volumes. 
@@ -246,6 +248,8 @@ Master.
 ```
 ubuntu@k8s-control-server:~$ kubectl delete persistentvolume pvc-b3226ad3-f7c4-11e8-b9b8-022ada63b4ac
 ```
+
+#### Do not forget to delete the volumes manually in AWS.
 
 
 ## Logstash
