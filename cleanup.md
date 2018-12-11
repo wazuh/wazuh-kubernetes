@@ -1,12 +1,14 @@
 # Clean up 
 
-We will see below the steps to follow to perform a clean up of our deployments, services and volumes used in our environment. 
+Steps to perform a clean up of our deployments, services and volumes used in our environment. 
 
 ## Wazuh managers
 
 The deployment of the Wazuh cluster of managers involves the use of various statefulSet elements as well as configuration maps and services. 
 
 ### 1. The first step is to remove the pods corresponding to the managers. 
+
+List the pods created.
 
 ```
 ubuntu@k8s-control-server:~$ kubectl get pods --namespace wazuh
@@ -20,7 +22,7 @@ wazuh-manager-worker-1-0          1/1       Running   0          6d
 wazuh-nginx-57c8c65486-7crh2      1/1       Running   0          6d
 ```
 
-We can see the pods we have created. We proceed to remove the pods from Wazuh managers. 
+Proceed to remove the pods from Wazuh managers. 
 
 ```
 ubuntu@k8s-control-server:~$ kubectl delete pod wazuh-manager-master-0 --namespace wazuh
@@ -35,7 +37,9 @@ ubuntu@k8s-control-server:~$ kubectl delete pod wazuh-manager-worker-1-0 --names
 ```
 
 
-### 2. Next we will remove the services related to the Wazuh cluster. 
+### 2. Next remove the services related to the Wazuh cluster. 
+
+List the services created.
 
 ```
 ubuntu@k8s-control-server:~$ kubectl get services --namespace wazuh
@@ -50,7 +54,7 @@ wazuh-nginx           LoadBalancer   172.20.166.239   internal-ac0c...   80:3040
 wazuh-workers         LoadBalancer   172.20.17.252    internal-aec3...   1514:32047/TCP                   6d
 ```
 
-We list the services and then eliminate the ones indicated. 
+Delete the corresponding services.  
 
 ```
 ubuntu@k8s-control-server:~$ kubectl delete service wazuh-cluster --namespace wazuh
@@ -64,7 +68,7 @@ ubuntu@k8s-control-server:~$ kubectl delete service wazuh-workers --namespace wa
 ubuntu@k8s-control-server:~$ kubectl delete service wazuh --namespace wazuh
 ```
 
-### 3. In this step we delete the StatefulSet.
+### 3. In this step delete the StatefulSet.
 
 ```
 ubuntu@k8s-control-server:~$ kubectl get StatefulSet --namespace wazuh
@@ -75,7 +79,7 @@ wazuh-manager-worker-0   1         1         6d
 wazuh-manager-worker-1   1         1         6d
 ```
 
-We removed the three StatefulSets from the Wazuh cluster managers.
+Remove the three StatefulSets from the Wazuh cluster managers.
 
 ```
 ubuntu@k8s-control-server:~$ kubectl delete StatefulSet wazuh-manager-master --namespace wazuh
@@ -89,7 +93,7 @@ ubuntu@k8s-control-server:~$ kubectl delete StatefulSet wazuh-manager-worker-0 -
 ubuntu@k8s-control-server:~$ kubectl delete StatefulSet wazuh-manager-worker-1 --namespace wazuh
 ```
 
-### 4. We take care of deleting the configuration maps. 
+### 4. Take care of deleting the configuration maps. 
 
 ```
 ubuntu@k8s-control-server:~$ kubectl get ConfigMap --namespace wazuh
@@ -111,7 +115,7 @@ ubuntu@k8s-control-server:~$ kubectl delete ConfigMap wazuh-manager-worker-0-con
 ubuntu@k8s-control-server:~$ kubectl delete ConfigMap wazuh-manager-worker-1-conf --namespace wazuh
 ```
 
-### 5. Now we will eliminate the persistent volume claims. 
+### 5. Now eliminate the persistent volume claims. 
 
 ```
 ubuntu@k8s-control-server:~$ kubectl get persistentvolumeclaim --namespace wazuh
@@ -134,7 +138,7 @@ ubuntu@k8s-control-server:~$ kubectl delete persistentvolumeclaim wazuh-manager-
 ubuntu@k8s-control-server:~$ kubectl delete persistentvolumeclaim wazuh-manager-master-wazuh-manager-worker-1-0 --namespace wazuh
 ```
 
-### 6. We finally eliminated the persistent volumes. 
+### 6. Finally eliminate the persistent volumes. 
 
 ```
 ubuntu@k8s-control-server:~$ kubectl get persistentvolume
@@ -165,7 +169,7 @@ ubuntu@k8s-control-server:~$ kubectl delete persistentvolume pvc-024466da-f7c5-1
 
 ## Elasticsearch
 
-The process for cleaning the Elasticsearch installation environment is similar to that of the Wazuh cluster. In order to do this we must uninstall the Elasticsearch deployment as well as its associated services and volumes. 
+The process for cleaning the Elasticsearch installation environment is similar to that of the Wazuh cluster. In order to do this remove the Elasticsearch deployment as well as its associated services and volumes. 
 
 ### 1. The first step is to remove the pods corresponding to Elasticsearch.
 
@@ -182,7 +186,7 @@ wazuh-nginx-57c8c65486-7crh2      1/1       Running   0          6d
 ubuntu@k8s-control-server:~$ kubectl delete pod wazuh-elasticsearch-0 --namespace wazuh
 ```
 
-### 2. Next we will remove the services related to Elasticsearch. 
+### 2. Next remove the services related to Elasticsearch. 
 
 ```
 ubuntu@k8s-control-server:~$ kubectl get services --namespace wazuh
@@ -202,7 +206,7 @@ ubuntu@k8s-control-server:~$ kubectl delete service elasticsearch --namespace wa
 ubuntu@k8s-control-server:~$ kubectl delete service wazuh-elasticsearch --namespace wazuh
 ```
 
-### 3. In this step we delete the StatefulSet.
+### 3. In this step delete the StatefulSet.
 
 ```
 ubuntu@k8s-control-server:~$ kubectl get StatefulSet --namespace wazuh
@@ -214,7 +218,7 @@ wazuh-elasticsearch      1         1         6d
 ubuntu@k8s-control-server:~$ kubectl delete StatefulSet wazuh-elasticsearch --namespace wazuh
 ```
 
-### 4. Now we will eliminate the persistent volume claims. 
+### 4. Now eliminate the persistent volume claims. 
 
 ```
 ubuntu@k8s-control-server:~$ kubectl get persistentvolumeclaim --namespace wazuh
@@ -226,7 +230,7 @@ wazuh-elasticsearch-wazuh-elasticsearch-0       Bound     pvc-b3226ad3-f7c4-11e8
 ubuntu@k8s-control-server:~$ kubectl delete persistentvolumeclaim wazuh-elasticsearch-wazuh-elasticsearch-0 --namespace wazuh
 ```
 
-### 5. We finally eliminated the persistent volumes. 
+### 5. Finally delete the persistent volumes. 
 
 ```
 ubuntu@k8s-control-server:~$ kubectl get persistentvolume
@@ -246,7 +250,7 @@ ubuntu@k8s-control-server:~$ kubectl delete persistentvolume pvc-b3226ad3-f7c4-1
 
 ## Logstash
 
-To clean the Logstash installation we will have to remove the Logstash deployments and services. 
+To clean the Logstash installation remove the Logstash deployments and services. 
 
 ### 1. The first step is to remove the pods corresponding to Logstash.
 
@@ -262,7 +266,7 @@ wazuh-nginx-57c8c65486-7crh2      1/1       Running   0          6d
 ubuntu@k8s-control-server:~$ kubectl delete pod wazuh-logstash-646689f76f-lcf8b --namespace wazuh
 ```
 
-### 2. Next we will remove the services related to Logstash. 
+### 2. Next remove the services related to Logstash. 
 
 ```
 ubuntu@k8s-control-server:~$ kubectl get services --namespace wazuh
@@ -277,7 +281,7 @@ ubuntu@k8s-control-server:~$ kubectl delete service logstash --namespace wazuh
 ``` 
 
 
-### 3. Finally we then eliminate the deployment. 
+### 3. Finally eliminate the deployment. 
 
 ```
 ubuntu@k8s-control-server:~$ kubectl get deploy --namespace wazuh
@@ -294,7 +298,7 @@ ubuntu@k8s-control-server:~$ kubectl delete deploy wazuh-logstash --namespace wa
 
 ## Kibana and Nginx
 
-To clean the Kibana and Nginx installation we will have to remove their deployments and services. 
+To clean the Kibana and Nginx installation remove their deployments and services. 
 
 ### 1. The first step is to remove the pods corresponding to Kibana and Nginx.
 
@@ -313,7 +317,7 @@ ubuntu@k8s-control-server:~$ kubectl delete pod wazuh-kibana-78cb4bbb7-xf4s8 --n
 ubuntu@k8s-control-server:~$ kubectl delete pod wazuh-nginx-57c8c65486-7crh2 --namespace wazuh
 ```
 
-### 2. Next we will remove the services related to Kibana and Nginx. 
+### 2. Next remove the services related to Kibana and Nginx. 
 
 ```
 ubuntu@k8s-control-server:~$ kubectl get services --namespace wazuh
@@ -330,7 +334,7 @@ ubuntu@k8s-control-server:~$ kubectl delete service kibana --namespace wazuh
 ubuntu@k8s-control-server:~$ kubectl delete service wazuh-nginx --namespace wazuh
 ``` 
 
-### 3. Finally we then eliminate the deployments. 
+### 3. Finally delete the deployments. 
 
 ```
 ubuntu@k8s-control-server:~$ kubectl get deploy --namespace wazuh
@@ -348,3 +352,4 @@ ubuntu@k8s-control-server:~$ kubectl delete deploy wazuh-nginx --namespace wazuh
 ``` 
 
 
+Once these steps are completed, our Kubernetes environment will be clean of deployments relating to the Wazuh cluster and related Elastic Stack components.
