@@ -68,7 +68,7 @@ spec:
             - containerPort: 1514
               name: agents-events
             - containerPort: 1516
-              name: wazuh-clusterd
+              name: cluster
   volumeClaimTemplates:
     - metadata:
         name: wazuh-manager-worker

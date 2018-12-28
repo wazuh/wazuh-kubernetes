@@ -52,11 +52,11 @@ spec:
               mountPath: /etc/postfix
           ports:
             - containerPort: 1515
-              name: ossec-authd
+              name: registration
             - containerPort: 1516
-              name: wazuh-clusterd
+              name: cluster
             - containerPort: 55000
-              name: wazuh-api
+              name: api
   volumeClaimTemplates:
     - metadata:
         name: wazuh-manager-master
@@ -67,4 +67,4 @@ spec:
         storageClassName: gp2-encrypted-retained
         resources:
           requests:
-            storage: 10Gi
+            storage: 50Gi
