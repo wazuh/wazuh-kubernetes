@@ -36,6 +36,10 @@ spec:
           env:
             - name: NGINX_PORT
               value: '443'
+            - name: NGINX_NAME
+              value: 'user_changeMe'
+            - name: NGINX_PWD
+              value: 'password_changeMe'
           ports:
             - containerPort: 80
             - containerPort: 443
