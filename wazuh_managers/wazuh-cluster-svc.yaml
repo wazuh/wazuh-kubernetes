@@ -18,7 +18,7 @@ spec:
   selector:
     app: wazuh-manager
   ports:
-    - name: wazuh-clusterd
+    - name: cluster
       port: 1516
       targetPort: 1516
   clusterIP: None

@@ -16,20 +16,17 @@ metadata:
     app: wazuh-manager
     # dns: route53
   annotations:
-    # domainName: 'wazuh-master.some-domain.com'  # TODO: Change this for a Hosted Zone you configured in AWS Route 53
-    service.beta.kubernetes.io/aws-load-balancer-internal: 0.0.0.0/0
-    service.beta.kubernetes.io/aws-load-balancer-backend-protocol: ssl
-    # service.beta.kubernetes.io/aws-load-balancer-ssl-cert: 'put_your_aws_acm_certificate_arn_here' # TODO: Change this for the certificate for your Hosted Zone
-    service.beta.kubernetes.io/aws-load-balancer-ssl-ports: '55000'
+    # domainName: 'changeme'
+    service.beta.kubernetes.io/aws-load-balancer-backend-protocol: tcp
 spec:
   type: LoadBalancer
   selector:
     app: wazuh-manager
     node-type: master
   ports:
-    - name: ossec-authd
+    - name: registration
       port: 1515
       targetPort: 1515
-    - name: wazuh-api
+    - name: api
       port: 55000
       targetPort: 55000
