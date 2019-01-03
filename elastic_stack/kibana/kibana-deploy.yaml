@@ -42,14 +42,14 @@ spec:
             - name: NODE_OPTIONS
               value: '--max-old-space-size=512'
             - name: WAZUH_SHARDS
-              value: 1
+              value: '1'
             - name: WAZUH_REPLICAS
-              value: 0
+              value: '0'
             - name: WAZUH_VERSION_SHARDS
-              value: 1
+              value: '1'
             - name: WAZUH_VERSION_REPLICAS
-              value: 0
+              value: '0'
             - name: WAZUH_MONITORING_SHARDS
-              value: 1
+              value: '1'
             - name: WAZUH_MONITORING_REPLICAS
-              value: 0
+              value: '0'
