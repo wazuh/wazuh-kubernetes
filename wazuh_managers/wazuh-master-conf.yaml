@@ -56,7 +56,7 @@ data:
 
       <!-- Policy monitoring -->
       <rootcheck>
-        <disabled>no</disabled>
+        <disabled>yes</disabled>
         <check_unixaudit>yes</check_unixaudit>
         <check_files>yes</check_files>
         <check_trojans>yes</check_trojans>
@@ -137,7 +137,7 @@ data:
 
       <!-- File integrity monitoring -->
       <syscheck>
-        <disabled>no</disabled>
+        <disabled>yes</disabled>
 
         <!-- Frequency that syscheck is executed default every 12 hours -->
         <frequency>43200</frequency>
@@ -327,21 +327,4 @@ data:
         <hidden>no</hidden>
         <disabled>no</disabled>
       </cluster>
-    </ossec_config>
-
-    <ossec_config>
-      <localfile>
-        <log_format>syslog</log_format>
-        <location>/var/ossec/logs/active-responses.log</location>
-      </localfile>
-
-      <localfile>
-        <log_format>syslog</log_format>
-        <location>/var/log/syslog</location>
-      </localfile>
-
-      <localfile>
-        <log_format>syslog</log_format>
-        <location>/var/log/dpkg.log</location>
-      </localfile>
     </ossec_config>
