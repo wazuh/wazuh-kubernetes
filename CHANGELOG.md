@@ -2,6 +2,8 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v3.8.0]
+
 ## [v3.7.2]
 
 ### Added
