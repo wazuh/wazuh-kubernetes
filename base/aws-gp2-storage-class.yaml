@@ -15,4 +15,5 @@ provisioner: kubernetes.io/aws-ebs
 parameters:
   encrypted: 'true'
   type: gp2
+  zone: "us-east-2b"
 reclaimPolicy: Retain  # Useful in case you delete the PersistentVolumeClaim
