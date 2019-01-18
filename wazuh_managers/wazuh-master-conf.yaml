@@ -318,7 +318,6 @@ data:
         <node_type>master</node_type>
         <!-- TODO: Don't hardcode the key! (and change it) -->
         <key>123a45bc67def891gh23i45jk67l8mn9</key>
-        <interval>10s</interval>
         <port>1516</port>
         <bind_addr>0.0.0.0</bind_addr>
         <nodes>
