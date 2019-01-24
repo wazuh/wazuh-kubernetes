@@ -6,7 +6,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changed 
 
-- Uptade to Wazu hversion 3.8.1 ([#25](https://github.com/wazuh/wazuh-kubernetes/pull/25))
+- Update to Wazuh v3.8.1. ([#25](https://github.com/wazuh/wazuh-kubernetes/pull/25))
 
 ## [v3.8.0]
 
