@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v3.8.1]
+
+Update pro cloud Wazuh version to 3.8.1. ([#26](https://github.com/wazuh/wazuh-kubernetes/pull/26))
+
 ## [v3.7.2]
 
 ### Added
