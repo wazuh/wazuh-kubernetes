@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v3.8.2]
+
+### Changed 
+
+- Update to Wazuh version v3.8.2. ([#27](https://github.com/wazuh/wazuh-kubernetes/pull/27))
+
 ## [v3.8.1]
 
 ### Changed 
