@@ -154,7 +154,7 @@ $ kubectl apply -f elastic_stack/elasticsearch/elasticsearch-sts.yaml
 
 Kibana and Nginx deployment.
 
-In case you need to provide a domain name, update the `domainName` annotation value in the [nginx-svc.yaml](nginx-svc.yaml) file before deploying that service. You should also set a valid AWS ACM certificate ARN in the [nginx-svc.yaml](nginx-svc.yaml) for the `service.beta.kubernetes.io/aws-load-balancer-ssl-cert` annotation. That certificate should match with the `domainName`.
+In case you need to provide a domain name, update the `domainName` annotation value in the [nginx-svc.yaml](elastic_stack/kibana/nginx-svc.yaml) file before deploying that service. You should also set a valid AWS ACM certificate ARN in the [nginx-svc.yaml](elastic_stack/kibana/nginx-svc.yaml) for the `service.beta.kubernetes.io/aws-load-balancer-ssl-cert` annotation. That certificate should match with the `domainName`.
 
 ```BASH
 $ kubectl apply -f elastic_stack/kibana/kibana-svc.yaml
