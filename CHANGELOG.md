@@ -5,6 +5,9 @@ All notable changes to this project will be documented in this file.
 
 ## [v3.9.0]
 
+- Update to Wazuh version 3.9.0 ([#38](https://github.com/wazuh/wazuh-kubernetes/pull/38))
+- Fix broken links of instructions.md ([#34](https://github.com/wazuh/wazuh-kubernetes/pull/34))
+
 
 ## [v3.8.1]
 
