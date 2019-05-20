@@ -27,12 +27,12 @@ Any file that we modify referring to the files previously mentioned, will be cha
 
 To better understand it, we will give an example:
 
-We have our newly created Kubernetes environment following our instructions. In this example, the image of Wazuh used has been `wazuh/wazuh:3.6.1_6.4.0`.
+We have our newly created Kubernetes environment following our instructions. In this example, the image of Wazuh used has been `wazuh/wazuh:3.9.0_6.7.2`.
 
 ```
 containers:
 - name: wazuh-manager
-  image: 'wazuh/wazuh:3.6.1_6.4.0'
+  image: 'wazuh/wazuh:3.9.0_6.7.2'
 ```
 
 Let's proceed by creating a set of rules in our `local_rules.xml` file at location `/var/ossec/etc/rules` in our wazuh manager master pod. 
@@ -179,7 +179,7 @@ For example we had this version before:
 ```
 containers:
 - name: wazuh-manager
-  image: 'wazuh/wazuh:3.6.1_6.4.0'
+  image: 'wazuh/wazuh:3.8.2_6.5.4'
 ```
 
 And now we're going to upgrade to the next version: 
@@ -187,7 +187,7 @@ And now we're going to upgrade to the next version:
 ```
 containers:
 - name: wazuh-manager
-  image: 'wazuh/wazuh:3.7.0_6.5.0'
+  image: 'wazuh/wazuh:3.9.0_6.7.2'
 ```
 
 
