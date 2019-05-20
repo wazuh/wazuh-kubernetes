@@ -5,7 +5,14 @@ All notable changes to this project will be documented in this file.
 
 ## [v3.9.0]
 
-- Update to Wazuh version 3.9.0 ([#38](https://github.com/wazuh/wazuh-kubernetes/pull/38))
+- Update to Wazuh version 3.9.0 ([#40](https://github.com/wazuh/wazuh-kubernetes/pull/38))
+
+### Changed
+
+- Use of Wazuh elasticsearch images ([manuasir](https://github.com/manuasir)) [#40](https://github.com/wazuh/wazuh-kubernetes/pull/40)
+
+### Fixed
+
 - Fix broken links of instructions.md ([#34](https://github.com/wazuh/wazuh-kubernetes/pull/34))
 
 
