@@ -52,7 +52,7 @@ spec:
             privileged: true    
       containers:
         - name: wazuh-elasticsearch
-          image: 'docker.elastic.co/elasticsearch/elasticsearch:6.7.2'
+          image: 'wazuh/wazuh-elasticsearch:3.9.0_6.7.2'
           resources:
             requests:
               cpu: 500m
