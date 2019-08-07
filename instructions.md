@@ -29,7 +29,7 @@ This pod contains the master node of the Wazuh cluster. The master node centrali
 The management is performed only in this node, so the agent registration service (authd) and the API are placed here.
 
 Details:
-- Image: Docker Hub 'wazuh/wazuh:3.9.2_6.8.0'
+- Image: Docker Hub 'wazuh/wazuh:3.9.3_6.8.1'
 - Controller: StatefulSet
 
 #### Wazuh worker 0 / 1
@@ -37,7 +37,7 @@ Details:
 These pods contain a worker node of the Wazuh cluster. They will receive the agent events.
 
 Details:
-- Image: Docker Hub 'wazuh/wazuh:3.9.2_6.8.0'
+- Image: Docker Hub 'wazuh/wazuh:3.9.3_6.8.1'
 - Controller: StatefulSet
 
 
@@ -46,7 +46,7 @@ Details:
 Elasticsearch pod. It receives and stores alerts received from Logstash. No Elasticsearch cluster is supported yet.
 
 Details:
-- Image: wazuh/wazuh-elasticsearch:3.9.2_6.8.0
+- Image: wazuh/wazuh-elasticsearch:3.9.3_6.8.1
 - Controller: StatefulSet
 
 
@@ -55,7 +55,7 @@ Details:
 Logstash pod. It receives the alerts from each Filebeat located in every Wazuh manager. Then, the alerts are sent to Elasticsearch.
 
 Details:
-- image: Docker Hub 'wazuh/logstash:3.9.2_6.8.0'
+- image: Docker Hub 'wazuh/logstash:3.9.3_6.8.1'
 - Controller: Deployment
 
 
@@ -64,7 +64,7 @@ Details:
 Kibana pod. It lets you visualize your Elasticsearch data, along with other features as the Wazuh app.
 
 Details:
-- image: Docker Hub 'wazuh/kibana:3.9.2_6.8.0'
+- image: Docker Hub 'wazuh/kibana:3.9.3_6.8.1'
 - Controller: Deployment
 
 #### Nginx
@@ -72,7 +72,7 @@ Details:
 The nginx pod acts as a reverse proxy for a safer access to Kibana.
 
 Details:
-- image: Docker Hub 'wazuh/nginx:3.9.2_6.8.0'
+- image: Docker Hub 'wazuh/nginx:3.9.3_6.8.1'
 - Controller: Deployment
 
 
