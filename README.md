@@ -36,11 +36,7 @@ The *instructions.md* file describes how to deploy Wazuh on Kubernetes.
     │ │ │ ├── kibana-svc.yaml
     │ │ │ ├── nginx-deploy.yaml
     │ │ │ ├── nginx-svc.yaml
-    │ │  
-    │ │ ├── logstash
-    │ │ │ ├── logstash-deploy.yaml
-    │ │ │ ├── logstash-svc.yaml
-    │
+    | |
     │ ├── wazuh_managers
     │ │ ├── wazuh-cluster-svc.yaml
     │ │ ├── wazuh-master-conf.yaml

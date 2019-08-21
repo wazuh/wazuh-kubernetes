@@ -19,7 +19,7 @@ Like a Deployment, a StatefulSet manages Pods that are based on an identical con
 
 It is useful for stateful applications like databases that save the data to a persistent storage. The states of each Wazuh manager as well as Elasticsearch are desirable to maintain, so we declare them using StatefulSet to ensure that they maintain their states in every startup.
 
-Deployments are intended for stateless use and are quite lightweight and seem to be appropriate for Logstash, Kibana and Nginx, where it is not necessary to maintain the states.
+Deployments are intended for stateless use and are quite lightweight and seem to be appropriate for Kibana and Nginx, where it is not necessary to maintain the states.
 
 ### Pods
 
@@ -29,7 +29,7 @@ This pod contains the master node of the Wazuh cluster. The master node centrali
 The management is performed only in this node, so the agent registration service (authd) and the API are placed here.
 
 Details:
-- Image: Docker Hub 'wazuh/wazuh:3.9.4_6.8.2'
+- Image: Docker Hub 'wazuh/wazuh:3.9.4_7.1.0'
 - Controller: StatefulSet
 
 #### Wazuh worker 0 / 1
@@ -37,34 +37,24 @@ Details:
 These pods contain a worker node of the Wazuh cluster. They will receive the agent events.
 
 Details:
-- Image: Docker Hub 'wazuh/wazuh:3.9.4_6.8.2'
+- Image: Docker Hub 'wazuh/wazuh:3.9.4_7.1.0'
 - Controller: StatefulSet
 
 
 #### Elasticsearch
 
-Elasticsearch pod. It receives and stores alerts received from Logstash. No Elasticsearch cluster is supported yet.
+Elasticsearch pod. No Elasticsearch cluster is supported yet.
 
 Details:
-- Image: wazuh/wazuh-elasticsearch:3.9.4_6.8.2
+- Image: wazuh/wazuh-elasticsearch:3.9.4_7.1.0
 - Controller: StatefulSet
-
-
-#### Logstash
-
-Logstash pod. It receives the alerts from each Filebeat located in every Wazuh manager. Then, the alerts are sent to Elasticsearch.
-
-Details:
-- image: Docker Hub 'wazuh/logstash:3.9.4_6.8.2'
-- Controller: Deployment
-
 
 #### Kibana
 
 Kibana pod. It lets you visualize your Elasticsearch data, along with other features as the Wazuh app.
 
 Details:
-- image: Docker Hub 'wazuh/kibana:3.9.4_6.8.2'
+- image: Docker Hub 'wazuh/kibana:3.9.4_7.1.0'
 - Controller: Deployment
 
 #### Nginx
@@ -72,7 +62,7 @@ Details:
 The nginx pod acts as a reverse proxy for a safer access to Kibana.
 
 Details:
-- image: Docker Hub 'wazuh/nginx:3.9.4_6.8.2'
+- image: Docker Hub 'wazuh/nginx:3.9.4_7.1.0'
 - Controller: Deployment
 
 
@@ -83,13 +73,11 @@ Details:
 - wazuh-elasticsearch:
   - Communication for Elasticsearch nodes.
 - elasticsearch:
-  - Elasticsearch API. Used by Logstash/Kibana to write/read alerts.
+  - Elasticsearch API. Used by Kibana to write/read alerts.
 - wazuh-nginx:
   - Nginx proxy to access Kibana: https://wazuh.your-domain.com:443
 - kibana:
   - Kibana service.
-- Logstash:
-  - Logstash service, each Manager node has a Filebeat pointing to this service.
 
 #### Wazuh
 
@@ -164,15 +152,6 @@ $ kubectl apply -f elastic_stack/kibana/kibana-deploy.yaml
 $ kubectl apply -f elastic_stack/kibana/nginx-deploy.yaml
 ```
 
-### Step 3.4: Deploy Logstash
-
-Logstash deployment.
-
-```BASH
-$ kubectl apply -f elastic_stack/logstash/logstash-svc.yaml
-$ kubectl apply -f elastic_stack/logstash/logstash-deploy.yaml
-```
-
 ### Step 3.5: Deploy Wazuh
 
 Wazuh cluster deployment.
@@ -210,7 +189,6 @@ $ kubectl get services -n wazuh
 NAME                  TYPE           CLUSTER-IP       EXTERNAL-IP        PORT(S)                          AGE
 elasticsearch         ClusterIP      xxx.yy.zzz.24    <none>             9200/TCP                         12m
 kibana                ClusterIP      xxx.yy.zzz.76    <none>             5601/TCP                         11m
-logstash              ClusterIP      xxx.yy.zzz.41    <none>             5000/TCP                         10m
 wazuh                 LoadBalancer   xxx.yy.zzz.209   internal-a7a8...   1515:32623/TCP,55000:30283/TCP   9m
 wazuh-cluster         ClusterIP      None             <none>             1516/TCP                         9m
 wazuh-elasticsearch   ClusterIP      None             <none>             9300/TCP                         12m
@@ -224,7 +202,6 @@ wazuh-workers         LoadBalancer   xxx.yy.zzz.26    internal-a7f9...   1514:31
 $ kubectl get deployments -n wazuh
 NAME             DESIRED   CURRENT   UP-TO-DATE   AVAILABLE   AGE
 wazuh-kibana     1         1         1            1           11m
-wazuh-logstash   1         1         1            1           10m
 wazuh-nginx      1         1         1            1           11m
 ```
 
@@ -247,7 +224,6 @@ $ kubectl get pods -n wazuh
 NAME                              READY     STATUS    RESTARTS   AGE
 wazuh-elasticsearch-0             1/1       Running   0          15m
 wazuh-kibana-f4d9c7944-httsd      1/1       Running   0          14m
-wazuh-logstash-777b7cd47b-7cxfq   1/1       Running   0          13m
 wazuh-manager-master-0            1/1       Running   0          12m
 wazuh-manager-worker-0-0          1/1       Running   0          11m
 wazuh-manager-worker-1-0          1/1       Running   0          11m

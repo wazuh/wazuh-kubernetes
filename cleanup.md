@@ -15,7 +15,6 @@ ubuntu@k8s-control-server:~$ kubectl get pods --namespace wazuh
 NAME                              READY     STATUS    RESTARTS   AGE
 wazuh-elasticsearch-0             1/1       Running   0          6d
 wazuh-kibana-78cb4bbb7-xf4s8      1/1       Running   0          6d
-wazuh-logstash-646689f76f-lcf8b   1/1       Running   0          6d
 wazuh-manager-master-0            1/1       Running   0          6d
 wazuh-manager-worker-0-0          1/1       Running   0          6d
 wazuh-manager-worker-1-0          1/1       Running   0          6d
@@ -46,7 +45,6 @@ ubuntu@k8s-control-server:~$ kubectl get services --namespace wazuh
 NAME                  TYPE           CLUSTER-IP       EXTERNAL-IP        PORT(S)                          AGE
 elasticsearch         ClusterIP      172.20.247.17    <none>             9200/TCP                         6d
 kibana                ClusterIP      172.20.121.19    <none>             5601/TCP                         6d
-logstash              ClusterIP      172.20.160.68    <none>             5000/TCP                         6d
 wazuh                 LoadBalancer   172.20.240.162   internal-ae32...   1515:30732/TCP,55000:30839/TCP   6d
 wazuh-cluster         ClusterIP      None             <none>             1516/TCP                         6d
 wazuh-elasticsearch   ClusterIP      None             <none>             9300/TCP                         6d
@@ -180,7 +178,6 @@ ubuntu@k8s-control-server:~$ kubectl get pods --namespace wazuh
 NAME                              READY     STATUS    RESTARTS   AGE
 wazuh-elasticsearch-0             1/1       Running   0          6d
 wazuh-kibana-78cb4bbb7-xf4s8      1/1       Running   0          6d
-wazuh-logstash-646689f76f-lcf8b   1/1       Running   0          6d
 wazuh-nginx-57c8c65486-7crh2      1/1       Running   0          6d
 ```
 
@@ -195,7 +192,6 @@ ubuntu@k8s-control-server:~$ kubectl get services --namespace wazuh
 NAME                  TYPE           CLUSTER-IP       EXTERNAL-IP        PORT(S)                          AGE
 elasticsearch         ClusterIP      172.20.247.17    <none>             9200/TCP                         6d
 kibana                ClusterIP      172.20.121.19    <none>             5601/TCP                         6d
-logstash              ClusterIP      172.20.160.68    <none>             5000/TCP                         6d
 wazuh-elasticsearch   ClusterIP      None             <none>             9300/TCP                         6d
 wazuh-nginx           LoadBalancer   172.20.166.239   internal-ac0c...   80:30409/TCP,443:32575/TCP       6d
 ```
@@ -250,55 +246,6 @@ ubuntu@k8s-control-server:~$ kubectl delete persistentvolume pvc-b3226ad3-f7c4-1
 ```
 
 #### Do not forget to delete the volumes manually in AWS.
-
-
-## Logstash
-
-To clean the Logstash installation remove the Logstash deployments and services. 
-
-### 1. The first step is to remove the pods corresponding to Logstash.
-
-```
-ubuntu@k8s-control-server:~$ kubectl get pods --namespace wazuh
-NAME                              READY     STATUS    RESTARTS   AGE
-wazuh-kibana-78cb4bbb7-xf4s8      1/1       Running   0          6d
-wazuh-logstash-646689f76f-lcf8b   1/1       Running   0          6d
-wazuh-nginx-57c8c65486-7crh2      1/1       Running   0          6d
-```
-
-```
-ubuntu@k8s-control-server:~$ kubectl delete pod wazuh-logstash-646689f76f-lcf8b --namespace wazuh
-```
-
-### 2. Next remove the services related to Logstash. 
-
-```
-ubuntu@k8s-control-server:~$ kubectl get services --namespace wazuh
-NAME                  TYPE           CLUSTER-IP       EXTERNAL-IP        PORT(S)                          AGE
-kibana                ClusterIP      172.20.121.19    <none>             5601/TCP                         6d
-logstash              ClusterIP      172.20.160.68    <none>             5000/TCP                         6d
-wazuh-nginx           LoadBalancer   172.20.166.239   internal-ac0c...   80:30409/TCP,443:32575/TCP       6d
-```
-
-```
-ubuntu@k8s-control-server:~$ kubectl delete service logstash --namespace wazuh
-``` 
-
-
-### 3. Finally eliminate the deployment. 
-
-```
-ubuntu@k8s-control-server:~$ kubectl get deploy --namespace wazuh
-NAME             DESIRED   CURRENT   UP-TO-DATE   AVAILABLE   AGE
-wazuh-kibana     1         1         1            1           6d
-wazuh-logstash   1         1         1            1           6d
-wazuh-nginx      1         1         1            1           6d
-```
-
-```
-ubuntu@k8s-control-server:~$ kubectl delete deploy wazuh-logstash --namespace wazuh
-``` 
-
 
 ## Kibana and Nginx
 
