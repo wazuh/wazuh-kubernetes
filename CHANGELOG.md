@@ -4,16 +4,13 @@ All notable changes to this project will be documented in this file.
 
 ## [v3.9.4]
 
-- Update to Wazuh version 3.9.4_6.8.2
+### Added
 
-## [v3.9.3]
+- Update to Wazuh version 3.9.1_7.1.0
 
-- Update to Wazuh version 3.9.3_6.8.1
+### Removed
 
-
-## [v3.9.2]
-
-- Update to Wazuh version 3.9.2_6.8.0
+- Deleted Logstash from repository ([jm404](https://github.com/jm404)) [#dae6c2f](https://github.com/wazuh/wazuh-kubernetes/commit/dae6c2f169b06d8c2534713bd8ec80b7ececc4dd)
 
 ## [v3.9.1]
 
