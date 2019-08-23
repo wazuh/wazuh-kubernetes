@@ -48,8 +48,6 @@ spec:
               readOnly: true
             - name: wazuh-manager-master
               mountPath: /var/ossec/data
-            - name: wazuh-manager-master
-              mountPath: /etc/postfix
           ports:
             - containerPort: 1515
               name: registration

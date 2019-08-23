@@ -75,8 +75,6 @@ root@wazuh-manager-master-0:/# cat /var/ossec/etc/rules/local_rules.xml
 
 ```
 
-This action has modified the `local_rules.xml` file in the `/var/ossec/data/etc/rules` path and in the `/etc/postfix/etc/` rules path due these routes reference our volume assembly points. 
-
 ```
 volumeMounts:
 - name: config
@@ -85,8 +83,6 @@ volumeMounts:
   readOnly: true
 - name: wazuh-manager-master
   mountPath: /var/ossec/data
-- name: wazuh-manager-master
-  mountPath: /etc/postfix
 ```
 
 We can see their content.
@@ -125,7 +121,6 @@ root@wazuh-manager-master-0:/# cat /var/ossec/data/etc/rules/local_rules.xml
   </rule>
 
 </group>
-root@wazuh-manager-master-0:/# cat /etc/postfix/etc/rules/local_rules.xml
 <!-- Local rules -->
 
 <!-- Modify it at your will. -->

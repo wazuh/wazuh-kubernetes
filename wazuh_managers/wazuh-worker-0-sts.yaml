@@ -62,8 +62,6 @@ spec:
               readOnly: true
             - name: wazuh-manager-worker
               mountPath: /var/ossec/data
-            - name: wazuh-manager-worker
-              mountPath: /etc/postfix
           ports:
             - containerPort: 1514
               name: agents-events
