@@ -25,7 +25,8 @@ spec:
     spec:
       containers:
         - name: wazuh-kibana
-          image: 'wazuh/wazuh-kibana:3.9.5_7.2.1'
+          image: 'wazuh-docker_kibana:latest'
+          imagePullPolicy: Never
           resources:
             requests:
               cpu: 200m

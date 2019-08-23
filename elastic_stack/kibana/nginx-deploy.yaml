@@ -25,7 +25,8 @@ spec:
     spec:
       containers:
         - name: wazuh-nginx
-          image: 'wazuh/wazuh-nginx:3.9.5_7.2.1'
+          image: 'wazuh-docker_nginx:latest'
+          imagePullPolicy: Never
           resources:
             requests:
               cpu: 100m

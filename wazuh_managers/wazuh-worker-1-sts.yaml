@@ -47,7 +47,8 @@ spec:
             name: wazuh-manager-worker-1-conf
       containers:
         - name: wazuh-manager
-          image: 'wazuh/wazuh:3.9.5_7.2.1'
+          image: 'wazuh-docker_wazuh:latest'
+          imagePullPolicy: Never
           resources:
             requests:
               cpu: 500m
