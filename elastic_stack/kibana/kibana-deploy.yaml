@@ -42,3 +42,11 @@ spec:
               value: 'http://elasticsearch:9200'
             - name: NODE_OPTIONS
               value: '--max-old-space-size=512'
+          volumeMounts:
+            - name: es-kibana
+              mountPath: /usr/share/kibana/config/certs
+      volumes:
+        - name: es-kibana
+          hostPath:
+            path: /certs/kibana
+            type: Directory

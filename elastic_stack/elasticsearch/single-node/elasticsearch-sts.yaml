@@ -74,11 +74,18 @@ spec:
           volumeMounts:
             - name: wazuh-elasticsearch
               mountPath: /usr/share/elasticsearch/data
+            - name: es-certs
+              mountPath: /usr/share/elasticsearch/config/certs
           ports:
             - containerPort: 9200
               name: es-rest
             - containerPort: 9300
               name: es-nodes
+      volumes:
+        - name: es-certs
+          hostPath:
+            path: /certs/elasticsearch
+            type: Directory
   volumeClaimTemplates:
     - metadata:
         name: wazuh-elasticsearch
