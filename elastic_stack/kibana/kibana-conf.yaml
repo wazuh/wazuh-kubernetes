@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kibana-config
+  namespace: wazuh
+data:
+  kibana.yml: |-
+    server.name: kibana
+    server.host: "0"
+    elasticsearch.hosts: https://elasticsearch:9200
+    elasticsearch.username: admin
+    elasticsearch.password: admin
+
+    elasticsearch.requestHeadersWhitelist: ["securitytenant","Authorization"]
+
+    opendistro_security.multitenancy.enabled: false
+    opendistro_security.multitenancy.tenants.preferred: ["Private", "Global"]
+    elasticsearch.ssl.certificateAuthorities: ["/usr/share/kibana/config/root-ca.pem"]
+    elasticsearch.ssl.verificationMode: none
+
+
