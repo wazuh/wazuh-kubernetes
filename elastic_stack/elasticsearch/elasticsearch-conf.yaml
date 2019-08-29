@@ -1,0 +1,47 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: elasticsearch-config
+  namespace: wazuh
+data:
+  elasticsearch.yml: |-
+
+    cluster.name: "docker-cluster"
+    network.host: 0.0.0.0
+    discovery.type: single-node
+
+    # # minimum_master_nodes need to be explicitly set when bound on a public IP
+    # # set to 1 to allow single node clusters
+    # # Details: https://github.com/elastic/elasticsearch/pull/17288
+    # discovery.zen.minimum_master_nodes: 1
+
+    # # Breaking change in 7.0
+    # # https://www.elastic.co/guide/en/elasticsearch/reference/7.0/breaking-changes-7.0.html#breaking_70_discovery_changes
+    # cluster.initial_master_nodes: 
+    #    - elasticsearch1
+    #    - docker-test-node-1 
+    ######## Start OpenDistro for Elasticsearch Security Demo Configuration ########
+    # WARNING: revise all the lines below before you go into production
+
+    opendistro_security.ssl.transport.pemcert_filepath: node.pem
+    opendistro_security.ssl.transport.pemkey_filepath: node-key.pem
+    opendistro_security.ssl.transport.pemtrustedcas_filepath: root-ca.pem
+    opendistro_security.ssl.transport.enforce_hostname_verification: false
+    opendistro_security.ssl.http.enabled: true
+    opendistro_security.ssl.http.pemcert_filepath: node.pem
+    opendistro_security.ssl.http.pemkey_filepath: node-key.pem
+    opendistro_security.ssl.http.pemtrustedcas_filepath: root-ca.pem
+    opendistro_security.allow_default_init_securityindex: true
+    opendistro_security.authcz.admin_dn:
+      - CN=elasticsearch,O=Internet Widgits Pty Ltd,ST=Some-State,C=AU
+    opendistro_security.nodes_dn:
+      - 'CN=elasticsearch,O=Internet Widgits Pty Ltd,ST=Some-State,C=AU'
+    opendistro_security.audit.type: internal_elasticsearch
+    opendistro_security.enable_snapshot_restore_privilege: true
+    opendistro_security.check_snapshot_restore_write_privileges: true
+    opendistro_security.restapi.roles_enabled: ["all_access", "security_rest_api_access"]
+    cluster.routing.allocation.disk.threshold_enabled: false
+    node.max_local_storage_nodes: 3
+    opendistro_security.audit.config.disabled_rest_categories: NONE
+    opendistro_security.audit.config.disabled_transport_categories: NONE
+    
