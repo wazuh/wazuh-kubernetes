@@ -29,4 +29,4 @@ spec:
   ports:
   - name: https
     port: 443
-targetPort: 5601
+    targetPort: 5601
