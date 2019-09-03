@@ -71,21 +71,36 @@ spec:
               value: 0.0.0.0
             - name: node.name
               value: node-1
+            - name: discovery.seed_hosts
+              value: node-1
+            - name: cluster.initial_master_nodes
+              value: node-1
           volumeMounts:
-            - name: wazuh-elasticsearch
-              mountPath: /usr/share/elasticsearch/data
-            - name: es-certs
-              mountPath: /usr/share/elasticsearch/config/certs
+            - name: elasticsearch-configuration-volume
+              mountPath: /usr/share/elasticsearch/config/elasticsearch.yml
+              subPath: elasticsearch.yml
+              readOnly: true
+            - mountPath: /usr/share/elasticsearch/config/node.pem
+              name: elasticsearch-certs
+              subPath: node.pem
+            - mountPath: /usr/share/elasticsearch/config/node-key.pem
+              name: elasticsearch-certs
+              subPath: node-key.pem
+            - mountPath: /usr/share/elasticsearch/config/root-ca.pem
+              name: elasticsearch-certs
+              subPath: root-ca.pem
           ports:
             - containerPort: 9200
               name: es-rest
             - containerPort: 9300
               name: es-nodes
       volumes:
-        - name: es-certs
-          hostPath:
-            path: /certs/elasticsearch
-            type: Directory
+        - name: elasticsearch-certs
+          secret:
+            secretName: elasticsearch-certs-secret
+        - name: elasticsearch-configuration-volume
+          configMap:
+            name: elasticsearch-config
   volumeClaimTemplates:
     - metadata:
         name: wazuh-elasticsearch
