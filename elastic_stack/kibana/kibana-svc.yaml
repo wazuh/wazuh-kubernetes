@@ -22,11 +22,12 @@ metadata:
     service.beta.kubernetes.io/aws-load-balancer-connection-idle-timeout: '3600'
 spec:
   loadBalancerSourceRanges:
+  # All IPs allowed
     - 0.0.0.0/0
   type: LoadBalancer
   selector:
     app: wazuh-kibana
   ports:
-  - name: https
+  - name: kibana
     port: 443
     targetPort: 5601
