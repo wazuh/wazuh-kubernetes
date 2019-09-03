@@ -133,23 +133,24 @@ $ kubectl apply -f base/aws-gp2-storage-class.yaml
 Elasticsearch deployment.
 
 ```BASH
-$ kubectl apply -f elastic_stack/elasticsearch/elasticsearch-svc.yaml
-$ kubectl apply -f elastic_stack/elasticsearch/elasticsearch-api-svc.yaml
-$ kubectl apply -f elastic_stack/elasticsearch/elasticsearch-sts.yaml
+kubectl apply -f elastic_stack/elasticsearch/elasticsearch-svc.yaml
+kubectl apply -f elastic_stack/elasticsearch/single-node/elasticsearch-api-svc.yaml
+kubectl apply -f elastic_stack/elasticsearch/elasticsearch-secret.yaml
+kubectl apply -f elastic_stack/elasticsearch/elasticsearch-conf.yaml
+kubectl apply -f elastic_stack/elasticsearch/single-node/elasticsearch-sts.yaml
 ```
 
-### Step 3.3: Deploy Kibana and Nginx
+### Step 3.3: Deploy Kibana 
 
-Kibana and Nginx deployment.
+Kibana deployment.
 
-In case you need to provide a domain name, update the `domainName` annotation value in the [nginx-svc.yaml](elastic_stack/kibana/nginx-svc.yaml) file before deploying that service. You should also set a valid AWS ACM certificate ARN in the [nginx-svc.yaml](elastic_stack/kibana/nginx-svc.yaml) for the `service.beta.kubernetes.io/aws-load-balancer-ssl-cert` annotation. That certificate should match with the `domainName`.
+In case you need to provide a domain name, update the `domainName` annotation value in the [nginx-svc.yaml](elastic_stack/kibana/nginx-svc.yaml) file before deploying that service. You should also set a valid AWS ACM certificate ARN in the [kibana-svc.yaml](elastic_stack/kibana/kibana-svc.yaml) for the `service.beta.kubernetes.io/aws-load-balancer-ssl-cert` annotation. That certificate should match with the `domainName`.
 
 ```BASH
-$ kubectl apply -f elastic_stack/kibana/kibana-svc.yaml
-$ kubectl apply -f elastic_stack/kibana/nginx-svc.yaml
-
-$ kubectl apply -f elastic_stack/kibana/kibana-deploy.yaml
-$ kubectl apply -f elastic_stack/kibana/nginx-deploy.yaml
+kubectl apply -f elastic_stack/kibana/kibana-svc.yaml
+kubectl apply -f elastic_stack/kibana/kibana-secret.yaml
+kubectl apply -f elastic_stack/kibana/kibana-conf.yaml
+kubectl apply -f elastic_stack/kibana/kibana-deploy.yaml
 ```
 
 ### Step 3.5: Deploy Wazuh
@@ -160,17 +161,19 @@ In case you need to provide a domain name, update the `domainName` annotation va
 
 
 ```BASH
-$ kubectl apply -f wazuh_managers/wazuh-master-svc.yaml
-$ kubectl apply -f wazuh_managers/wazuh-cluster-svc.yaml
-$ kubectl apply -f wazuh_managers/wazuh-workers-svc.yaml
+kubectl apply -f wazuh_managers/wazuh-master-svc.yaml
+kubectl apply -f wazuh_managers/wazuh-cluster-svc.yaml
+kubectl apply -f wazuh_managers/wazuh-workers-svc.yaml
 
-$ kubectl apply -f wazuh_managers/wazuh-master-conf.yaml
-$ kubectl apply -f wazuh_managers/wazuh-worker-0-conf.yaml
-$ kubectl apply -f wazuh_managers/wazuh-worker-1-conf.yaml
+kubectl apply -f wazuh_managers/filebeat-secret.yaml
+kubectl apply -f wazuh_managers/filebeat-conf.yaml
+kubectl apply -f wazuh_managers/wazuh-master-conf.yaml
+kubectl apply -f wazuh_managers/wazuh-worker-0-conf.yaml
+kubectl apply -f wazuh_managers/wazuh-worker-1-conf.yaml
 
-$ kubectl apply -f wazuh_managers/wazuh-master-sts.yaml
-$ kubectl apply -f wazuh_managers/wazuh-worker-0-sts.yaml
-$ kubectl apply -f wazuh_managers/wazuh-worker-1-sts.yaml
+kubectl apply -f wazuh_managers/wazuh-master-sts.yaml
+kubectl apply -f wazuh_managers/wazuh-worker-0-sts.yaml
+kubectl apply -f wazuh_managers/wazuh-worker-1-sts.yaml
 ```
 
 ### Verifying the deployment
