@@ -35,9 +35,8 @@ spec:
           configMap:
             name: filebeat-config
         - name: filebeat-certs
-          hostPath:
-            path: /certs/filebeat
-            type: Directory
+          secret:
+            secretName: filebeat-certs-secret
       containers:
         - name: wazuh-manager
           image: 'wazuh-docker_wazuh:latest'
@@ -53,7 +52,7 @@ spec:
             - name: ELASTICSEARCH_URL
               value: 'https://elasticsearch:9200'
             - name: SSL_CERTIFICATE_AUTHORITIES
-              value: '/etc/filebeat/certs/root-ca.pem'
+              value: '/etc/filebeat/root-ca.pem'
             - name: USERNAME
               value: admin
             - name: PASSWORD
@@ -65,8 +64,9 @@ spec:
               readOnly: true
             - name: wazuh-manager-master
               mountPath: /var/ossec/data
-            - name: filebeat-certs
-              mountPath: /etc/filebeat/certs
+            - mountPath: /etc/filebeat/root-ca.pem
+              name: filebeat-certs
+              subPath: root-ca.pem
           ports:
             - containerPort: 1515
               name: registration

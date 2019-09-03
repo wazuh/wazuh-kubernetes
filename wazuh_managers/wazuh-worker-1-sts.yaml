@@ -49,9 +49,8 @@ spec:
           configMap:
             name: filebeat-config
         - name: filebeat-certs
-          hostPath:
-            path: /certs/filebeat
-            type: Directory
+          secret:
+            secretName: filebeat-certs-secret
       containers:
         - name: wazuh-manager
           image: 'wazuh-docker_wazuh:latest'
@@ -79,8 +78,9 @@ spec:
               readOnly: true
             - name: wazuh-manager-worker
               mountPath: /var/ossec/data
-            - name: filebeat-certs
-              mountPath: /etc/filebeat/certs
+            - mountPath: /etc/filebeat/root-ca.pem
+              name: filebeat-certs
+              subPath: root-ca.pem
           ports:
             - containerPort: 1514
               name: agents-events
