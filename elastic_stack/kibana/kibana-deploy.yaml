@@ -40,6 +40,8 @@ spec:
           env:
             - name: NODE_OPTIONS
               value: '--max-old-space-size=512'
+            - name: CURL_PARAMETERS
+              value: "--cacert /usr/share/kibana/config/root-ca.pem -u admin:admin -k"
             - name: ELASTICSEARCH_URL
               value: "https://elasticsearch:9200"
           volumeMounts:
