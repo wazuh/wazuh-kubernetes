@@ -266,7 +266,8 @@ docker-compose build
 
 If you execute `docker image list` you should see the following images:
 
-## INSERT IMAGE
+![image](https://user-images.githubusercontent.com/46649922/64194844-5e048100-ce80-11e9-9e41-1339db20fb4c.png)
+
 
 You can execute this directly on your node or create the images in your host and export them with:
 
@@ -279,7 +280,6 @@ And after importing them in the desired node you can load them with:
 ```
 docker load -i <path to image tar file>
 ```
-
 
 
 ### Configure Kibana HTTPS
@@ -354,11 +354,7 @@ kubectl get persistentvolume -n wazuh
 
 You should get something like the following:
 
-
-
-## INSERT IMAGE
-
-
+![2019-09-03_19-09](https://user-images.githubusercontent.com/46649922/64194892-72e11480-ce80-11e9-9582-204fb1849396.png)
 
 
 Pay special attention to `READY`, `STATUS` and `RESTARTS` , your output should be the same if you didn't change the replicas.
@@ -377,6 +373,8 @@ To access Kibana, copy the `EXTERNAL-IP` of the Kibana Loadbalancer obtained and
 
 Also, copy the Wazuh `EXTENAL-IP` as we will use lately to setup our Wazuh API
 
+![opendistro_welcome_screen](https://user-images.githubusercontent.com/46649922/64195027-be93be00-ce80-11e9-89d1-e93f5ed88b87.png)
+
 
 Insert the credentials defined in *kibana.yml *, by default **admin:admin**  and you will be logged into Kibana.
 
@@ -387,11 +385,9 @@ Go to the Wazuh App and insert the credentials for the Wazuh API, by default:
 - URL: *http://<YOUR_WAZUH_EXTERNAL-IP>*
 - Port: *55000*
 
-
-## Insert IMAGE
-
 And that's it, all the setup and configuration is completed and you can navigate through the alerts and dashboards.
 
+![image](https://user-images.githubusercontent.com/46649922/64195160-13cfcf80-ce81-11e9-9984-fff6c60d2a4f.png)
 
 
 ### References
