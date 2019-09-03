@@ -15,7 +15,14 @@ data:
 
     opendistro_security.multitenancy.enabled: false
     opendistro_security.multitenancy.tenants.preferred: ["Private", "Global"]
-    elasticsearch.ssl.certificateAuthorities: ["/usr/share/kibana/config/root-ca.pem"]
-    elasticsearch.ssl.verificationMode: none
+    server.ssl.enabled: true
+    server.ssl.certificate: /usr/share/kibana/config/node2.pem
+    server.ssl.key: /usr/share/kibana/config/node-key2.pem
 
+    opendistro_security.allow_client_certificates: true
+    elasticsearch.ssl.certificate: /usr/share/kibana/config/node2.pem
+    elasticsearch.ssl.key: /usr/share/kibana/config/node-key2.pem
+
+    elasticsearch.ssl.certificateAuthorities: ["/usr/share/kibana/config/root-ca.pem"]
+    elasticsearch.ssl.verificationMode: full
 
