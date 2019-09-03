@@ -252,7 +252,7 @@ https://github.com/wazuh/wazuh-kubernetes/blob/a1dcfe5d66b6868a34dfa8519105d1527
 
 ### Preparing the Docker images
 
-There is a **prepared branch** to work with this Kubernetes configuration in our [Wazuh Docker repository] (https://github.com/wazuh/wazuh-docker/tree/centos-openssl-fips)
+There is a **prepared branch** to work with this Kubernetes configuration in our [Wazuh Docker repository](https://github.com/wazuh/wazuh-docker/tree/centos-openssl-fips)
 
 
 
@@ -298,7 +298,7 @@ Substitute this with the ARN of your AWS certificate.
 
 So we have our configuration files ready and the images properly load on the node.
 
-To deploy the whole installation you can get the detailed deploy information in the Deploy instructions](https://github.com/wazuh/wazuh-kubernetes/blob/docker-centos-fips/instructions.md)
+To deploy the whole installation you can get the detailed deploy information in the [Deploy instructions](https://github.com/wazuh/wazuh-kubernetes/blob/docker-centos-fips/instructions.md)
 
 
 
