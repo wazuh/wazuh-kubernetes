@@ -36,11 +36,11 @@ spec:
           image: 'wazuh/wazuh:3.9.1_7.1.0'
           resources:
             requests:
-              cpu: 500m
-              memory: 256Mi
+              cpu: 2
+              memory: 1024Mi
             limits:
-              cpu: 1
-              memory: 512Mi
+              cpu: 2
+              memory: 2048Mi
           volumeMounts:
             - name: config
               mountPath: /wazuh-config-mount/etc/ossec.conf
