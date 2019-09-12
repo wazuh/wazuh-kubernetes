@@ -2,6 +2,24 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v3.9.5]
+
+### Added
+
+- Update to Wazuh version 3.9.5_7.2.1
+
+### Changed
+
+- Changed default Nginx login credentials ([jm404](https://github.com/jm404)) [#8b5ec11](https://github.com/wazuh/wazuh-kubernetes/commit/8b5ec111354cc71deae33fbc7182275a29272024)
+
+- Changed resources limit for Wazuh Manager containers ([jm404](https://github.com/jm404)) [#ec6bc40](https://github.com/wazuh/wazuh-kubernetes/commit/ec6bc4020f8a4cfd3268a9947421bbe92a5808f1)
+
+### Removed
+
+- Deleted Logstash from repository ([jm404](https://github.com/jm404)) [#dae6c2f](https://github.com/wazuh/wazuh-kubernetes/commit/dae6c2f169b06d8c2534713bd8ec80b7ececc4dd)
+
+- Deleted Postfix volume from Wazuh Managers ([jm404](https://github.com/jm404)) [#29fdf65](https://github.com/wazuh/wazuh-kubernetes/commit/29fdf652e6a4306e76035ade2d89d018ca008226)
+
 ## [v3.9.4]
 
 ### Added
