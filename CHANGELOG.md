@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v3.10.2]
+
+### Added
+
+- Update to Wazuh version 3.10.2_7.3.2
+
 ## [v3.10.0]
 
 ### Added
