@@ -25,7 +25,7 @@ spec:
     spec:
       containers:
         - name: wazuh-nginx
-          image: 'wazuh/wazuh-nginx:3.9.5_7.2.1'
+          image: 'wazuh/wazuh-nginx:3.10.0_7.3.2'
           resources:
             requests:
               cpu: 100m
