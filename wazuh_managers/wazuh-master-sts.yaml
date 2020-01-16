@@ -30,44 +30,24 @@ spec:
       volumes:
         - name: config
           configMap:
-            name: wazuh-manager-master-conf
-        - name: pod-health
-          configMap:
-            name: health-check-configmap        
+            name: wazuh-manager-master-conf   
       containers:
         - name: wazuh-manager
           image: 'wazuh/wazuh:3.11.1_7.5.1'
           resources:
             requests:
-              cpu: 1
-              memory: 512Mi
-            limits:
-              cpu: 1
+              cpu: 2
               memory: 1024Mi
-          livenessProbe:
-            exec:
-              command:
-                - /usr/bin/python3 
-                - /var/health_check.py
-            initialDelaySeconds: 120
-            periodSeconds: 360
-          readinessProbe:
-            exec:
-              command:
-                - /usr/bin/python3 
-                - /var/health_check.py
-            initialDelaySeconds: 60
-            periodSeconds: 180
+            limits:
+              cpu: 2
+              memory: 2048Mi
           volumeMounts:
             - name: config
               mountPath: /wazuh-config-mount/etc/ossec.conf
               subPath: ossec.conf
               readOnly: true
             - name: wazuh-manager-master
-              mountPath: /var/ossec/data
-            - name: pod-health
-              mountPath: /var/health_check.py
-              subPath: health_check.py                
+              mountPath: /var/ossec/data              
           ports:
             - containerPort: 1515
               name: registration
