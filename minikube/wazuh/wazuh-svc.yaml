@@ -1,0 +1,31 @@
+# Copyright (C) 2018 Wazuh Inc.
+#
+# This program is a free software; you can redistribute it
+# and/or modify it under the terms of the GNU General Public
+# License (version 2) as published by the FSF - Free Software
+# Foundation.
+
+# Wazuh master Service: API and registration (authd)
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: wazuh  # Don't change, unless you update the Wazuh Kibana app config
+  labels:
+    app: wazuh-manager
+spec:
+  type: NodePort
+  selector:
+    app: wazuh-manager
+  ports:
+    - name: registration
+      port: 1515
+      targetPort: 1515
+      nodePort: 31515
+    - name: logging
+      port: 1514
+      targetPort: 1514
+      nodePort: 31514
+    - name: api
+      port: 55000
+
