@@ -23,6 +23,7 @@ spec:
       targetPort: 1515
       nodePort: 31515
     - name: logging
+      protocol: UDP
       port: 1514
       targetPort: 1514
       nodePort: 31514
