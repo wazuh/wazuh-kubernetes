@@ -79,7 +79,6 @@ spec:
   volumeClaimTemplates:
     - metadata:
         name: wazuh-elasticsearch
-        namespace: wazuh
       spec:
         accessModes:
           - ReadWriteOnce
