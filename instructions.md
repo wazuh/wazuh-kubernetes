@@ -134,9 +134,10 @@ Elasticsearch deployment.
 
 ```BASH
 $ kubectl apply -f elastic_stack/elasticsearch/elasticsearch-svc.yaml
-$ kubectl apply -f elastic_stack/elasticsearch/elasticsearch-api-svc.yaml
-$ kubectl apply -f elastic_stack/elasticsearch/elasticsearch-sts.yaml
+$ kubectl apply -f elastic_stack/elasticsearch/<architecture>/elasticsearch-api-svc.yaml
+$ kubectl apply -f elastic_stack/elasticsearch/<architecture>/elasticsearch-sts.yaml
 ```
+Where `<architecture>` is either `single-node` or `cluster`
 
 ### Step 3.3: Deploy Kibana and Nginx
 
