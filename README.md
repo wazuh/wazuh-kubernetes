@@ -51,7 +51,7 @@ The *instructions.md* file describes how to deploy Wazuh on Kubernetes.
     │ ├── README.md
     │ ├── VERSION
     │ ├── CHANGELOG.md
-    │ ├── LICENSE    
+    │ ├── LICENSE
     │ ├── cleanup.md
     │ ├── instructions.md
     │ ├── upgrade.md
@@ -59,6 +59,12 @@ The *instructions.md* file describes how to deploy Wazuh on Kubernetes.
 ## Branches
 
 * `master` branch contains the latest code, be aware of possible bugs on this branch.
+* `local-environment` branch contains modifications for deploying on local environments.
+
+## Local development
+
+To deploy a cluster on your local environment (like Minikube or Kind) use the branch [local-environment](https://github.com/wazuh/wazuh-kubernetes/tree/local-environment/minikube)
+
 
 ## Contribute
 
