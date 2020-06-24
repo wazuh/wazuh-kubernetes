@@ -52,7 +52,7 @@ spec:
             privileged: true    
       containers:
         - name: wazuh-elasticsearch
-          image: 'wazuh/wazuh-elasticsearch:3.12.3_7.6.2'
+          image: 'wazuh/wazuh-elasticsearch:3.13.0_7.7.1'
           resources:
             requests:
               cpu: 500m
