@@ -24,7 +24,7 @@ spec:
     spec:
       containers:
         - name: wazuh-kibana
-          image: 'wazuh/wazuh-kibana:3.11.3_7.5.2'
+          image: 'wazuh/wazuh-kibana:3.13.0_7.7.1'
           resources:
             requests:
               cpu: 200m
