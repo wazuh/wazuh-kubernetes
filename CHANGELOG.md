@@ -2,11 +2,52 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v3.13.1]
+
+### Added
+
+- Update to Wazuh version 3.13.1_7.8.0
+
+## [v3.13.0]
+
+### Added
+
+- Update to Wazuh version 3.13.0_7.7.1
+
+## [v3.12.3]
+
+### Added
+
+- Update to Wazuh version 3.12.3_7.6.2
+
+## [v3.12.2]
+
+### Added
+
+- Update to Wazuh version 3.12.2_7.6.2
+- Add reference to local-env branch on the readme ([@xr09](https://github.com/xr09)) [PR#82](https://github.com/wazuh/wazuh-kubernetes/pull/82)
+
+### Fixed
+
+- Path to elasticearch deployment yamls was outdated ([@jctello](https://github.com/jctello)) [PR#82](https://github.com/wazuh/wazuh-kubernetes/pull/84/commits/927b7dabc96d5c1c9f63981858661bba6206b6ef)
+
+## [v3.12.0]
+
+### Added
+
+- Update to Wazuh version 3.12.0_7.6.1
+
+## [v3.11.4]
+
+### Added
+
+- Update to Wazuh version 3.11.4_7.6.1
+
 ## [v3.11.3]
 
 ### Added
 
-- Update to Wazuh version 3.11.3_7.5.2
+- Update to Wazuh version 3.11.4_7.6.1
 
 ## [v3.11.2]
 

@@ -25,14 +25,14 @@ spec:
     spec:
       containers:
         - name: wazuh-kibana
-          image: 'wazuh/wazuh-kibana:3.11.3_7.5.2'
+          image: 'wazuh/wazuh-kibana:3.13.1_7.8.0'
           resources:
             requests:
               cpu: 200m
               memory: 512Mi
             limits:
               cpu: 400m
-              memory: 1024Mi
+              memory: 2048Mi
           ports:
             - containerPort: 5601
               name: kibana
@@ -40,4 +40,4 @@ spec:
             - name: ELASTICSEARCH_URL
               value: 'http://elasticsearch:9200'
             - name: NODE_OPTIONS
-              value: '--max-old-space-size=512'
+              value: '--max-old-space-size=2048'
