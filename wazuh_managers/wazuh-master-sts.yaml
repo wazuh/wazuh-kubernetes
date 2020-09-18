@@ -30,10 +30,10 @@ spec:
       volumes:
         - name: config
           configMap:
-            name: wazuh-manager-master-conf   
+            name: wazuh-manager-master-conf
       containers:
         - name: wazuh-manager
-          image: 'wazuh/wazuh:3.13.1_7.8.0'
+          image: 'wazuh/wazuh:3.13.2_7.9.1'
           resources:
             requests:
               cpu: 2
@@ -47,7 +47,7 @@ spec:
               subPath: ossec.conf
               readOnly: true
             - name: wazuh-manager-master
-              mountPath: /var/ossec/data              
+              mountPath: /var/ossec/data
           ports:
             - containerPort: 1515
               name: registration

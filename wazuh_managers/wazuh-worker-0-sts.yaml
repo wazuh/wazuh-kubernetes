@@ -47,7 +47,7 @@ spec:
             name: wazuh-manager-worker-0-conf
       containers:
         - name: wazuh-manager
-          image: 'wazuh/wazuh:3.13.1_7.8.0'
+          image: 'wazuh/wazuh:3.13.2_7.9.1'
           resources:
             requests:
               cpu: 2

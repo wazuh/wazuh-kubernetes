@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v3.13.2]
+
+### Added
+
+- Update to Wazuh version 3.13.2_7.9.1
+
+### Fixed
+
+- Increased Kibana max-old-space-size ([@DFolchA](https://github.com/DFolchA)) [#98](https://github.com/wazuh/wazuh-kubernetes/pull/98)
+
 ## [v3.13.1]
 
 ### Added
