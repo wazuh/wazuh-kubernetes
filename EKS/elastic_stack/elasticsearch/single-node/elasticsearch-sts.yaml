@@ -49,10 +49,10 @@ spec:
             - -w
             - vm.max_map_count=262144
           securityContext:
-            privileged: true    
+            privileged: true
       containers:
         - name: wazuh-elasticsearch
-          image: 'wazuh/wazuh-elasticsearch:3.13.1_7.8.0'
+          image: 'wazuh/wazuh-elasticsearch:3.13.2_7.9.1'
           resources:
             requests:
               cpu: 500m

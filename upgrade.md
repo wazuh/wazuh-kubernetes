@@ -1,10 +1,10 @@
 # Wazuh Upgrade
 
-When upgrading our version of Wazuh installed in Kubernetes we must follow the following steps. 
+When upgrading our version of Wazuh installed in Kubernetes we must follow the following steps.
 
 ## Check which files are exported to the volume
 
-Our Kubernetes deployment uses our Wazuh images from Docker. If we look at the following code extracted from the Wazuh configuration using Docker we can see which directories and files are used in the upgrades. 
+Our Kubernetes deployment uses our Wazuh images from Docker. If we look at the following code extracted from the Wazuh configuration using Docker we can see which directories and files are used in the upgrades.
 
 ```
 DATA_DIRS[((i++))]="api/configuration"
@@ -32,10 +32,10 @@ We have our newly created Kubernetes environment following our instructions. In 
 ```
 containers:
 - name: wazuh-manager
-  image: 'wazuh/wazuh:3.13.1_7.8.0'
+  image: 'wazuh/wazuh:3.13.2_7.9.1'
 ```
 
-Let's proceed by creating a set of rules in our `local_rules.xml` file at location `/var/ossec/etc/rules` in our wazuh manager master pod. 
+Let's proceed by creating a set of rules in our `local_rules.xml` file at location `/var/ossec/etc/rules` in our wazuh manager master pod.
 
 ```
 root@wazuh-manager-master-0:/# vim /var/ossec/etc/rules/local_rules.xml
@@ -75,7 +75,7 @@ root@wazuh-manager-master-0:/# cat /var/ossec/etc/rules/local_rules.xml
 
 ```
 
-This action has modified the `local_rules.xml` file in the `/var/ossec/data/etc/rules` path and in the `/etc/postfix/etc/` rules path due these routes reference our volume assembly points. 
+This action has modified the `local_rules.xml` file in the `/var/ossec/data/etc/rules` path and in the `/etc/postfix/etc/` rules path due these routes reference our volume assembly points.
 
 ```
 volumeMounts:
@@ -161,13 +161,13 @@ root@wazuh-manager-master-0:/# cat /etc/postfix/etc/rules/local_rules.xml
 
 ```
 
-At this point, if the pod was dropped or updated, Kubernetes would be in charge of creating a replica of it that would link to the volumes created and would maintain any changes referenced in the files and directories that we export to those volumes. 
+At this point, if the pod was dropped or updated, Kubernetes would be in charge of creating a replica of it that would link to the volumes created and would maintain any changes referenced in the files and directories that we export to those volumes.
 
-Once explained the operation regarding the volumes, we proceed to update Wazuh in two simple steps. 
+Once explained the operation regarding the volumes, we proceed to update Wazuh in two simple steps.
 
 ## 1. Change the image of the container
 
-The first step is to change the image of the pod in each file that deploys each node of the Wazuh cluster. 
+The first step is to change the image of the pod in each file that deploys each node of the Wazuh cluster.
 
 These files are the statefulSet files:
 - wazuh-master-sts.yaml
@@ -179,15 +179,15 @@ For example we had this version before:
 ```
 containers:
 - name: wazuh-manager
-  image: 'wazuh/wazuh:3.8.2_6.5.4'
+  image: 'wazuh/wazuh:3.13.1_7.8.0'
 ```
 
-And now we're going to upgrade to the next version: 
+And now we're going to upgrade to the next version:
 
 ```
 containers:
 - name: wazuh-manager
-  image: 'wazuh/wazuh:3.13.1_7.8.0'
+  image: 'wazuh/wazuh:3.13.2_7.9.1'
 ```
 
 
@@ -200,6 +200,6 @@ ubuntu@k8s-control-server:~/wazuh-kubernetes/manager_cluster$ kubectl apply -f w
 statefulset.apps "wazuh-manager-master" configured
 ```
 
-This process will end the old pod while creating a new one with the new version, linked to the same volume. Once the Pods are booted, we will have our update ready and we can check the new version of Wazuh installed, the cluster and the changes that have been maintained through the use of the volumes. 
+This process will end the old pod while creating a new one with the new version, linked to the same volume. Once the Pods are booted, we will have our update ready and we can check the new version of Wazuh installed, the cluster and the changes that have been maintained through the use of the volumes.
 
 ### Note: It is important to update all Wazuh node pods, because the cluster only works when all nodes have the same version.
