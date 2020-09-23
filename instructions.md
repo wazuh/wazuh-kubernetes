@@ -166,12 +166,10 @@ $ kubectl apply -f wazuh_managers/wazuh-cluster-svc.yaml
 $ kubectl apply -f wazuh_managers/wazuh-workers-svc.yaml
 
 $ kubectl apply -f wazuh_managers/wazuh-master-conf.yaml
-$ kubectl apply -f wazuh_managers/wazuh-worker-0-conf.yaml
-$ kubectl apply -f wazuh_managers/wazuh-worker-1-conf.yaml
+$ kubectl apply -f wazuh_managers/wazuh-worker-conf.yaml
 
 $ kubectl apply -f wazuh_managers/wazuh-master-sts.yaml
-$ kubectl apply -f wazuh_managers/wazuh-worker-0-sts.yaml
-$ kubectl apply -f wazuh_managers/wazuh-worker-1-sts.yaml
+$ kubectl apply -f wazuh_managers/wazuh-worker-sts.yaml
 ```
 
 ### Verifying the deployment
@@ -213,8 +211,7 @@ $ kubectl get statefulsets -n wazuh
 NAME                     DESIRED   CURRENT   AGE
 wazuh-elasticsearch      1         1         13m
 wazuh-manager-master     1         1         9m
-wazuh-manager-worker-0   1         1         9m
-wazuh-manager-worker-1   1         1         9m
+wazuh-manager-worker     1         1         9m
 
 ```
 
@@ -226,8 +223,8 @@ NAME                              READY     STATUS    RESTARTS   AGE
 wazuh-elasticsearch-0             1/1       Running   0          15m
 wazuh-kibana-f4d9c7944-httsd      1/1       Running   0          14m
 wazuh-manager-master-0            1/1       Running   0          12m
-wazuh-manager-worker-0-0          1/1       Running   0          11m
-wazuh-manager-worker-1-0          1/1       Running   0          11m
+wazuh-manager-worker-0            1/1       Running   0          11m
+wazuh-manager-worker-1            1/1       Running   0          11m
 wazuh-nginx-748fb8494f-xwwhw      1/1       Running   0          14m
 ```
 
