@@ -242,18 +242,3 @@ $ kubectl get services -o wide -n wazuh
 NAME                  TYPE           CLUSTER-IP       EXTERNAL-IP                                                                       PORT(S)                          AGE       SELECTOR
 wazuh-nginx           LoadBalancer   xxx.xx.xxx.xxx   internal-xxx-yyy.us-east-1.elb.amazonaws.com                                      80:31831/TCP,443:30974/TCP       15m       app=wazuh-nginx
 ```
-
-## Agents
-
-### Monitoring hosts
-
-Wazuh agents are designed to monitor hosts. Just register the agent using the registration service, then configure the agent to use the reporting service.
-
-### Monitoring containers
-
-In this case, we have 2 options:
-
-- Running the agent in the container: containers are sealed and designed to run a single process. It is not practicable solution.
-- Install the agent on the host: This is the option that we recommend since the agent was originally designed for this purpose.
-
-We are researching if the agent is able to run as a *DaemonSet* container. A *DaemonSet* is a special type of Pod which is logically guaranteed to run on each Kubernetes node. This kind of agent will have access only to its container, so we should mount volumes used by other containers to monitor logs, files, etc.
