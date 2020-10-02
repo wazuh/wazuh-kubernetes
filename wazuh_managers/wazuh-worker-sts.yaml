@@ -10,15 +10,14 @@
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: wazuh-manager-worker-0
+  name: wazuh-manager-worker
   namespace: wazuh
 spec:
-  replicas: 1
+  replicas: 2
   selector:
     matchLabels:
       app: wazuh-manager
       node-type: worker
-      sts-id: '0'
   serviceName: wazuh-cluster
   podManagementPolicy: Parallel
   template:
@@ -26,28 +25,21 @@ spec:
       labels:
         app: wazuh-manager
         node-type: worker
-        sts-id: '0'
-      name: wazuh-manager-worker-0
+      name: wazuh-manager-worker
     spec:
       affinity:
         podAntiAffinity:
           preferredDuringSchedulingIgnoredDuringExecution:
             - weight: 100
               podAffinityTerm:
-                labelSelector:
-                  matchExpressions:
-                    - key: sts-id
-                      operator: In
-                      values:
-                        - '1'
                 topologyKey: kubernetes.io/hostname
       volumes:
         - name: config
           configMap:
-            name: wazuh-manager-worker-0-conf
+            name: wazuh-manager-worker-conf
       containers:
         - name: wazuh-manager
-          image: 'wazuh/wazuh:3.13.2_7.9.1'
+          image: "wazuh/wazuh:3.13.2_7.9.1"
           resources:
             requests:
               cpu: 2

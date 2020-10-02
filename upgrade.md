@@ -171,8 +171,7 @@ The first step is to change the image of the pod in each file that deploys each 
 
 These files are the statefulSet files:
 - wazuh-master-sts.yaml
-- wazuh-worker-0-sts.yaml
-- wazuh-worker-1-sts.yaml
+- wazuh-worker-sts.yaml
 
 For example we had this version before:
 

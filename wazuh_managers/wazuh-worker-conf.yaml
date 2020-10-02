@@ -5,12 +5,12 @@
 # License (version 2) as published by the FSF - Free Software
 # Foundation.
 
-# Wazuh worker conf: 1
+# Wazuh worker conf
 
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: wazuh-manager-worker-1-conf
+  name: wazuh-manager-worker-conf
   namespace: wazuh
 data:
   # /var/ossec/etc-template/ossec.conf
@@ -314,7 +314,7 @@ data:
 
       <cluster>
         <name>wazuh</name>
-        <node_name>wazuh-manager-worker-1</node_name>
+        <node_name>to_be_replaced_by_hostname</node_name>
         <node_type>worker</node_type>
         <!-- TODO: Don't hardcode the key! (and change it) -->
         <key>123a45bc67def891gh23i45jk67l8mn9</key>
