@@ -73,6 +73,11 @@ spec:
                 secretKeyRef:
                   name: wazuh-api-cred
                   key: password
+            - name: WAZUH_CLUSTER_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: wazuh-cluster-key
+                  key: key
   volumeClaimTemplates:
     - metadata:
         name: wazuh-manager-master
