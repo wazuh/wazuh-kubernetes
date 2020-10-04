@@ -62,6 +62,17 @@ spec:
               name: cluster
             - containerPort: 55000
               name: api
+          env:
+            - name: API_USER
+              valueFrom:
+                secretKeyRef:
+                  name: wazuh-api-cred
+                  key: username
+            - name: API_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: wazuh-api-cred
+                  key: password
   volumeClaimTemplates:
     - metadata:
         name: wazuh-manager-master
