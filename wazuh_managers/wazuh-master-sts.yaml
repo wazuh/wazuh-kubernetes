@@ -31,6 +31,9 @@ spec:
         - name: config
           configMap:
             name: wazuh-manager-master-conf
+        - name: wazuh-authd-pass
+          secret:
+            secretName: wazuh-authd-pass
       containers:
         - name: wazuh-manager
           image: 'wazuh/wazuh:3.13.2_7.9.1'
@@ -48,6 +51,10 @@ spec:
               readOnly: true
             - name: wazuh-manager-master
               mountPath: /var/ossec/data
+            - name: wazuh-authd-pass
+              mountPath: /wazuh-config-mount/etc/authd.pass
+              subPath: authd.pass
+              readOnly: true
           ports:
             - containerPort: 1515
               name: registration
