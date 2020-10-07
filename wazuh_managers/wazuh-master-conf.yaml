@@ -302,7 +302,7 @@ data:
         <force_insert>no</force_insert>
         <force_time>0</force_time>
         <purge>no</purge>
-        <use_password>no</use_password>
+        <use_password>yes</use_password>
         <limit_maxagents>yes</limit_maxagents>
         <ciphers>HIGH:!ADH:!EXP:!MD5:!RC4:!3DES:!CAMELLIA:@STRENGTH</ciphers>
         <!-- <ssl_agent_ca></ssl_agent_ca> -->
@@ -316,8 +316,7 @@ data:
         <name>wazuh</name>
         <node_name>wazuh-manager-master</node_name>
         <node_type>master</node_type>
-        <!-- TODO: Don't hardcode the key! (and change it) -->
-        <key>123a45bc67def891gh23i45jk67l8mn9</key>
+        <key>to_be_replaced_by_cluster_key</key>
         <port>1516</port>
         <bind_addr>0.0.0.0</bind_addr>
         <nodes>

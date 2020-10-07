@@ -59,6 +59,22 @@ spec:
               name: agents-events
             - containerPort: 1516
               name: cluster
+          env:
+            - name: API_USER
+              valueFrom:
+                secretKeyRef:
+                  name: wazuh-api-cred
+                  key: username
+            - name: API_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: wazuh-api-cred
+                  key: password
+            - name: WAZUH_CLUSTER_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: wazuh-cluster-key
+                  key: key
   volumeClaimTemplates:
     - metadata:
         name: wazuh-manager-worker

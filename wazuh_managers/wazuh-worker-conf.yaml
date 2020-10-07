@@ -316,8 +316,7 @@ data:
         <name>wazuh</name>
         <node_name>to_be_replaced_by_hostname</node_name>
         <node_type>worker</node_type>
-        <!-- TODO: Don't hardcode the key! (and change it) -->
-        <key>123a45bc67def891gh23i45jk67l8mn9</key>
+        <key>to_be_replaced_by_cluster_key</key>
         <port>1516</port>
         <bind_addr>0.0.0.0</bind_addr>
         <nodes>
