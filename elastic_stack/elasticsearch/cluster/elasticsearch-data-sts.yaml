@@ -84,6 +84,9 @@ spec:
           volumeMounts:
             - name: wazuh-elasticsearch
               mountPath: /usr/share/elasticsearch/data
+          securityContext:
+            capabilities:
+              add: ["SYS_CHROOT"]
           ports:
             - containerPort: 9200
               name: es-rest

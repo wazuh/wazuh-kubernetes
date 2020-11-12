@@ -59,6 +59,9 @@ spec:
               name: agents-events
             - containerPort: 1516
               name: cluster
+          securityContext:
+            capabilities:
+              add: ["SYS_CHROOT"]
           env:
             - name: API_USER
               valueFrom:

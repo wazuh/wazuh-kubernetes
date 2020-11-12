@@ -71,6 +71,9 @@ spec:
               value: 0.0.0.0
             - name: node.name
               value: node-1
+          securityContext:
+            capabilities:
+              add: ["SYS_CHROOT"]
           volumeMounts:
             - name: wazuh-elasticsearch
               mountPath: /usr/share/elasticsearch/data

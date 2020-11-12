@@ -55,6 +55,9 @@ spec:
               mountPath: /wazuh-config-mount/etc/authd.pass
               subPath: authd.pass
               readOnly: true
+          securityContext:
+            capabilities:
+              add: ["SYS_CHROOT"]
           ports:
             - containerPort: 1515
               name: registration
