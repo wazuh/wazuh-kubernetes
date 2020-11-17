@@ -42,11 +42,11 @@ spec:
           image: 'wazuh/wazuh-odfe:4.0.0_1.10.1'
           resources:
             requests:
-              cpu: 0.5
+              cpu: 2
               memory: 1Gi
             limits:
-              cpu: 0.5
-              memory: 1Gi
+              cpu: 2
+              memory: 2Gi
           securityContext:
             capabilities:
               add: ["SYS_CHROOT"]
