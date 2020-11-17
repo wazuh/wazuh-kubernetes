@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
+## [4.0.0]
+
+### Added
+
+- Update to Wazuh version 4.0.0_1.10.1
+- Support Opendistro for Elasticsearch v1.10.1
+- Use a single wazuh-manager-worker StatefulSet ([@rjmoseley](https://github.com/rjmoseley) [#106](https://github.com/wazuh/wazuh-kubernetes/pull/106))
+- Using Kubernetes secrets to store credentials ([@1stOfHisGame](https://github.com/1stOfHisGame) [#108](https://github.com/wazuh/wazuh-kubernetes/pull/108))
+
 ## [v3.13.2]
 
 ### Added
