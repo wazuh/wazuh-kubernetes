@@ -42,7 +42,7 @@ spec:
           image: 'wazuh/wazuh-odfe:4.0.0_1.10.1'
           resources:
             requests:
-              cpu: 2
+              cpu: 1
               memory: 1Gi
             limits:
               cpu: 2
@@ -132,16 +132,16 @@ spec:
               value: /etc/ssl/filebeat.pem
             - name: SSL_KEY
               value: /etc/ssl/filebeat.key
-            - name: API_USERNAME
-              valueFrom:
-                secretKeyRef:
-                  name: wazuh-api-cred
-                  key: username
-            - name: API_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: wazuh-api-cred
-                  key: password
+            # - name: API_USERNAME
+            #   valueFrom:
+            #     secretKeyRef:
+            #       name: wazuh-api-cred
+            #       key: username
+            # - name: API_PASSWORD
+            #   valueFrom:
+            #     secretKeyRef:
+            #       name: wazuh-api-cred
+            #       key: password
             - name: WAZUH_CLUSTER_KEY
               valueFrom:
                 secretKeyRef:

@@ -70,13 +70,13 @@ spec:
               value: /usr/share/kibana/config/key.pem
             - name: WAZUH_API_URL
               value: https://wazuh-manager-master-0.wazuh-cluster
-            - name: API_USERNAME
-              valueFrom:
-                secretKeyRef:
-                  name: wazuh-api-cred
-                  key: username
-            - name: API_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: wazuh-api-cred
-                  key: password
+            # - name: API_USERNAME
+            #   valueFrom:
+            #     secretKeyRef:
+            #       name: wazuh-api-cred
+            #       key: username
+            # - name: API_PASSWORD
+            #   valueFrom:
+            #     secretKeyRef:
+            #       name: wazuh-api-cred
+            #       key: password
