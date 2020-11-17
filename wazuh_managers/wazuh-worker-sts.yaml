@@ -1,11 +1,11 @@
-# Copyright (C) 2018 Wazuh Inc.
+# Copyright (C) 2020 Wazuh Inc.
 #
 # This program is a free software; you can redistribute it
 # and/or modify it under the terms of the GNU General Public
 # License (version 2) as published by the FSF - Free Software
 # Foundation.
 
-# Wazuh worker StatefulSet: 0
+# Wazuh workers StatefulSet
 
 apiVersion: apps/v1
 kind: StatefulSet
@@ -36,43 +36,99 @@ spec:
       volumes:
         - name: config
           configMap:
-            name: wazuh-manager-worker-conf
+            name: wazuh-conf
+        - name: filebeat-certs
+          secret:
+            secretName: odfe-ssl-certs
       containers:
         - name: wazuh-manager
-          image: "wazuh/wazuh:3.13.2_7.9.1"
+          image: 'wazuh/wazuh-odfe:4.0.0_1.10.1'
           resources:
             requests:
-              cpu: 2
-              memory: 1024Mi
+              cpu: 0.5
+              memory: 1Gi
             limits:
-              cpu: 2
-              memory: 2048Mi
+              cpu: 0.5
+              memory: 1Gi
+          securityContext:
+            capabilities:
+              add: ["SYS_CHROOT"]
           volumeMounts:
             - name: config
               mountPath: /wazuh-config-mount/etc/ossec.conf
-              subPath: ossec.conf
+              subPath: worker.conf
+              readOnly: true
+            - name: filebeat-certs
+              mountPath: /etc/ssl/root-ca.pem
+              readOnly: true
+              subPath: root-ca.pem
+            - name: filebeat-certs
+              mountPath: /etc/ssl/filebeat.pem
+              subPath: filebeat.pem
+              readOnly: true
+            - name: filebeat-certs
+              mountPath: /etc/ssl/filebeat.key
+              subPath: filebeat-key.pem
               readOnly: true
             - name: wazuh-manager-worker
-              mountPath: /var/ossec/data
+              mountPath: /var/ossec/api/configuration
+              subPath: wazuh/var/ossec/api/configuration
+            - name: wazuh-manager-worker
+              mountPath: /var/ossec/etc
+              subPath: wazuh/var/ossec/etc
+            - name: wazuh-manager-worker
+              mountPath: /var/ossec/logs
+              subPath: wazuh/var/ossec/logs
+            - name: wazuh-manager-worker
+              mountPath: /var/ossec/queue
+              subPath: wazuh/var/ossec/queue
+            - name: wazuh-manager-worker
+              mountPath: /var/ossec/var/multigroups
+              subPath: wazuh/var/ossec/var/multigroups
+            - name: wazuh-manager-worker
+              mountPath: /var/ossec/integrations
+              subPath: wazuh/var/ossec/integrations
+            - name: wazuh-manager-worker
+              mountPath: /var/ossec/active-response/bin
+              subPath: wazuh/var/ossec/active-response/bin
+            - name: wazuh-manager-worker
+              mountPath: /var/ossec/agentless
+              subPath: wazuh/var/ossec/agentless
+            - name: wazuh-manager-worker
+              mountPath: /var/ossec/wodles
+              subPath: wazuh/var/ossec/wodles
+            - name: wazuh-manager-worker
+              mountPath: /etc/filebeat
+              subPath: filebeat/etc/filebeat
+            - name: wazuh-manager-worker
+              mountPath: /var/lib/filebeat
+              subPath: filebeat/var/lib/filebeat
           ports:
             - containerPort: 1514
               name: agents-events
             - containerPort: 1516
               name: cluster
-          securityContext:
-            capabilities:
-              add: ["SYS_CHROOT"]
           env:
-            - name: API_USER
+            - name: ELASTICSEARCH_URL
+              value: 'https://wazuh-elasticsearch-0.wazuh-elasticsearch:9200'
+            - name: ELASTIC_USERNAME
               valueFrom:
                 secretKeyRef:
-                  name: wazuh-api-cred
+                  name: elastic-cred
                   key: username
-            - name: API_PASS
+            - name: ELASTIC_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: wazuh-api-cred
+                  name: elastic-cred
                   key: password
+            - name: FILEBEAT_SSL_VERIFICATION_MODE
+              value: 'none'
+            - name: SSL_CERTIFICATE_AUTHORITIES
+              value: /etc/ssl/root-ca.pem
+            - name: SSL_CERTIFICATE
+              value: /etc/ssl/filebeat.pem
+            - name: SSL_KEY
+              value: /etc/ssl/filebeat.key
             - name: WAZUH_CLUSTER_KEY
               valueFrom:
                 secretKeyRef:
@@ -88,4 +144,4 @@ spec:
         storageClassName: gp2-encrypted-retained
         resources:
           requests:
-            storage: 10Gi
+            storage: 2Gi
