@@ -1,4 +1,4 @@
-# Copyright (C) 2018 Wazuh Inc.
+# Copyright (C) 2020 Wazuh Inc.
 #
 # This program is a free software; you can redistribute it
 # and/or modify it under the terms of the GNU General Public
@@ -24,7 +24,14 @@ spec:
         app: wazuh-elasticsearch
       name: wazuh-elasticsearch
     spec:
-      # Set the wazuh-elasticsearch volume permissions so the elasticsearch user can use it!
+      # Set the wazuh-elasticsearch volume permissions so the elasticsearch user can use it
+      volumes:
+        - name: odfe-ssl-certs
+          secret:
+            secretName: odfe-ssl-certs
+        - name: elastic-odfe-conf
+          configMap:
+            name: elastic-odfe-conf
       initContainers:
         - name: volume-mount-hack
           image: busybox
@@ -52,7 +59,7 @@ spec:
             privileged: true
       containers:
         - name: wazuh-elasticsearch
-          image: 'wazuh/wazuh-elasticsearch:3.13.2_7.9.1'
+          image: 'amazon/opendistro-for-elasticsearch:1.10.1'
           resources:
             requests:
               cpu: 500m
@@ -62,33 +69,55 @@ spec:
               memory: 2Gi
           env:
             - name: ES_JAVA_OPTS
-              value: '-Xms512m -Xmx512m'
-            - name: node.master
-              value: 'true'
-            - name: node.data
-              value: 'false'
-            - name: node.ingest
-              value: 'false'
-            - name: bootstrap.memory_lock
-              value: 'false'
-            - name: cluster.name
+              value: '-Xms1g -Xmx1g'
+            - name: CLUSTER_NAME
               value: wazuh
-            - name: network.host
-              value: 0.0.0.0
-            - name: node.name
+            - name: NETWORK_HOST
+              value: "0.0.0.0"
+            - name: NODE_NAME
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.name
-            - name: discovery.zen.ping.unicast.hosts
-              value: "wazuh-elasticsearch"
-            - name: discovery.zen.minimum_master_nodes
-              value: "2"
-          volumeMounts:
-            - name: wazuh-elasticsearch
-              mountPath: /usr/share/elasticsearch/data
+            - name: DISCOVERY_SERVICE
+              value: wazuh-elasticsearch
+            - name: KUBERNETES_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
           securityContext:
             capabilities:
               add: ["SYS_CHROOT"]
+          volumeMounts:
+            - name: wazuh-elasticsearch
+              mountPath: /usr/share/elasticsearch/data
+            - name: odfe-ssl-certs
+              mountPath: /usr/share/elasticsearch/config/node-key.pem
+              subPath: node-key.pem
+              readOnly: true
+            - name: odfe-ssl-certs
+              mountPath: /usr/share/elasticsearch/config/node.pem
+              subPath: node.pem
+              readOnly: true
+            - name: odfe-ssl-certs
+              mountPath: /usr/share/elasticsearch/config/root-ca.pem
+              subPath: root-ca.pem
+              readOnly: true
+            - name: odfe-ssl-certs
+              mountPath: /usr/share/elasticsearch/config/admin.pem
+              subPath: admin.pem
+              readOnly: true
+            - name: odfe-ssl-certs
+              mountPath: /usr/share/elasticsearch/config/admin-key.pem
+              subPath: admin-key.pem
+              readOnly: true
+            - name: elastic-odfe-conf
+              mountPath: /usr/share/elasticsearch/config/elasticsearch.yml
+              subPath: elasticsearch.yml
+              readOnly: true
+            - name: elastic-odfe-conf
+              mountPath: /usr/share/elasticsearch/plugins/opendistro_security/securityconfig/internal_users.yml
+              subPath: internal_users.yml
+              readOnly: true
           ports:
             - containerPort: 9200
               name: es-rest

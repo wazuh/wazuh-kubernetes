@@ -29,7 +29,7 @@ This pod contains the master node of the Wazuh cluster. The master node centrali
 The management is performed only in this node, so the agent registration service (authd) and the API are placed here.
 
 Details:
-- Image: Docker Hub 'wazuh/wazuh:3.13.2_7.9.1'
+- Image: Docker Hub 'wazuh/wazuh-odfe'
 - Controller: StatefulSet
 
 #### Wazuh worker 0 / 1
@@ -37,7 +37,7 @@ Details:
 These pods contain a worker node of the Wazuh cluster. They will receive the agent events.
 
 Details:
-- Image: Docker Hub 'wazuh/wazuh:3.13.2_7.9.1'
+- Image: Docker Hub 'wazuh/wazuh-odfe'
 - Controller: StatefulSet
 
 
@@ -46,7 +46,7 @@ Details:
 Elasticsearch pod. No Elasticsearch cluster is supported yet.
 
 Details:
-- Image: wazuh/wazuh-elasticsearch:3.13.2_7.9.1
+- Image: amazon/opendistro-for-elasticsearch
 - Controller: StatefulSet
 
 #### Kibana
@@ -54,17 +54,8 @@ Details:
 Kibana pod. It lets you visualize your Elasticsearch data, along with other features as the Wazuh app.
 
 Details:
-- image: Docker Hub 'wazuh/kibana:3.13.2_7.9.1'
+- image: Docker Hub 'wazuh/wazuh-kibana-odfe'
 - Controller: Deployment
-
-#### Nginx
-
-The nginx pod acts as a reverse proxy for a safer access to Kibana.
-
-Details:
-- image: Docker Hub 'wazuh/nginx:3.13.2_7.9.1'
-- Controller: Deployment
-
 
 ### Services
 
@@ -74,10 +65,8 @@ Details:
   - Communication for Elasticsearch nodes.
 - elasticsearch:
   - Elasticsearch API. Used by Kibana to write/read alerts.
-- wazuh-nginx:
-  - Nginx proxy to access Kibana: https://wazuh.your-domain.com:443
 - kibana:
-  - Kibana service.
+  - Kibana service. https://wazuh.your-domain.com:443
 
 #### Wazuh
 
@@ -119,58 +108,14 @@ $ git clone https://github.com/wazuh/wazuh-kubernetes.git
 $ cd wazuh-kubernetes
 ```
 
-### Step 3.1: Wazuh namespace and StorageClass
+### Step 3.1: Apply all manifests using kustomize
 
-The Wazuh namespace is used to handle all the Kubernetes elements (services, deployments, pods) necessary for Wazuh. In addition, you must create a StorageClass to use AWS EBS storage in our StateFulSet applications.
-
-```BASH
-$ kubectl apply -f base/wazuh-ns.yaml
-$ kubectl apply -f base/aws-gp2-storage-class.yaml
-```
-
-### Step 3.2: Deploy Elasticsearch
-
-Elasticsearch deployment.
+By using the kustomization.yml we can now deploy the whole cluster in a single command.
 
 ```BASH
-$ kubectl apply -f elastic_stack/elasticsearch/elasticsearch-svc.yaml
-$ kubectl apply -f elastic_stack/elasticsearch/<architecture>/elasticsearch-api-svc.yaml
-$ kubectl apply -f elastic_stack/elasticsearch/<architecture>/elasticsearch-sts.yaml
-```
-Where `<architecture>` is either `single-node` or `cluster`
-
-### Step 3.3: Deploy Kibana and Nginx
-
-Kibana and Nginx deployment.
-
-In case you need to provide a domain name, update the `domainName` annotation value in the [nginx-svc.yaml](elastic_stack/kibana/nginx-svc.yaml) file before deploying that service. You should also set a valid AWS ACM certificate ARN in the [nginx-svc.yaml](elastic_stack/kibana/nginx-svc.yaml) for the `service.beta.kubernetes.io/aws-load-balancer-ssl-cert` annotation. That certificate should match with the `domainName`.
-
-```BASH
-$ kubectl apply -f elastic_stack/kibana/kibana-svc.yaml
-$ kubectl apply -f elastic_stack/kibana/nginx-svc.yaml
-
-$ kubectl apply -f elastic_stack/kibana/kibana-deploy.yaml
-$ kubectl apply -f elastic_stack/kibana/nginx-deploy.yaml
+$ kubectl apply -k .
 ```
 
-### Step 3.5: Deploy Wazuh
-
-Wazuh cluster deployment.
-
-In case you need to provide a domain name, update the `domainName` annotation value in both the [wazuh-master-svc.yaml](wazuh_managers/wazuh-master-svc.yaml) and the [wazuh-workers-svc.yaml](wazuh_managers/wazuh-workers-svc.yaml) files before deploying those services. You should also set a valid AWS ACM certificate ARN in the [wazuh-master-svc.yaml](wazuh_managers/wazuh-master-svc.yaml) for the `service.beta.kubernetes.io/aws-load-balancer-ssl-cert` annotation. That certificate should match with the `domainName`.
-
-
-```BASH
-$ kubectl apply -f wazuh_managers/wazuh-master-svc.yaml
-$ kubectl apply -f wazuh_managers/wazuh-cluster-svc.yaml
-$ kubectl apply -f wazuh_managers/wazuh-workers-svc.yaml
-
-$ kubectl apply -f wazuh_managers/wazuh-master-conf.yaml
-$ kubectl apply -f wazuh_managers/wazuh-worker-conf.yaml
-
-$ kubectl apply -f wazuh_managers/wazuh-master-sts.yaml
-$ kubectl apply -f wazuh_managers/wazuh-worker-sts.yaml
-```
 
 ### Verifying the deployment
 
@@ -191,7 +136,6 @@ kibana                ClusterIP      xxx.yy.zzz.76    <none>             5601/TC
 wazuh                 LoadBalancer   xxx.yy.zzz.209   internal-a7a8...   1515:32623/TCP,55000:30283/TCP   9m
 wazuh-cluster         ClusterIP      None             <none>             1516/TCP                         9m
 wazuh-elasticsearch   ClusterIP      None             <none>             9300/TCP                         12m
-wazuh-nginx           LoadBalancer   xxx.yy.zzz.223   internal-a3b1...   80:31831/TCP,443:30974/TCP       11m
 wazuh-workers         LoadBalancer   xxx.yy.zzz.26    internal-a7f9...   1514:31593/TCP                   9m
 ```
 
@@ -201,31 +145,30 @@ wazuh-workers         LoadBalancer   xxx.yy.zzz.26    internal-a7f9...   1514:31
 $ kubectl get deployments -n wazuh
 NAME             DESIRED   CURRENT   UP-TO-DATE   AVAILABLE   AGE
 wazuh-kibana     1         1         1            1           11m
-wazuh-nginx      1         1         1            1           11m
 ```
 
 #### Statefulsets
 
 ```BASH
 $ kubectl get statefulsets -n wazuh
-NAME                     DESIRED   CURRENT   AGE
-wazuh-elasticsearch      1         1         13m
-wazuh-manager-master     1         1         9m
-wazuh-manager-worker     1         1         9m
-
+NAME                   READY   AGE
+wazuh-elasticsearch    3/3     15m
+wazuh-manager-master   1/1     15m
+wazuh-manager-worker   2/2     15m
 ```
 
 #### Pods
 
 ```BASH
 $ kubectl get pods -n wazuh
-NAME                              READY     STATUS    RESTARTS   AGE
-wazuh-elasticsearch-0             1/1       Running   0          15m
-wazuh-kibana-f4d9c7944-httsd      1/1       Running   0          14m
-wazuh-manager-master-0            1/1       Running   0          12m
-wazuh-manager-worker-0            1/1       Running   0          11m
-wazuh-manager-worker-1            1/1       Running   0          11m
-wazuh-nginx-748fb8494f-xwwhw      1/1       Running   0          14m
+NAME                            READY   STATUS    RESTARTS   AGE
+wazuh-elasticsearch-0           1/1     Running   0          15m
+wazuh-elasticsearch-1           1/1     Running   0          15m
+wazuh-elasticsearch-2           1/1     Running   0          14m
+wazuh-kibana-7c9657f5c5-z95pt   1/1     Running   0          6m18s
+wazuh-manager-master-0          1/1     Running   0          6m10s
+wazuh-manager-worker-0          1/1     Running   0          8m18s
+wazuh-manager-worker-1          1/1     Running   0          8m38s
 ```
 
 #### Accessing Kibana
@@ -237,5 +180,5 @@ Also, you can access using the External-IP (from the VPC): https://internal-xxx-
 ```BASH
 $ kubectl get services -o wide -n wazuh
 NAME                  TYPE           CLUSTER-IP       EXTERNAL-IP                                                                       PORT(S)                          AGE       SELECTOR
-wazuh-nginx           LoadBalancer   xxx.xx.xxx.xxx   internal-xxx-yyy.us-east-1.elb.amazonaws.com                                      80:31831/TCP,443:30974/TCP       15m       app=wazuh-nginx
+kibana           LoadBalancer   xxx.xx.xxx.xxx   internal-xxx-yyy.us-east-1.elb.amazonaws.com                                      80:31831/TCP,443:30974/TCP       15m       app=wazuh-nginx
 ```

@@ -23,21 +23,54 @@ spec:
         app: wazuh-kibana
       name: wazuh-kibana
     spec:
+      volumes:
+        - name: kibana-certs
+          secret:
+            secretName: kibana-certs
       containers:
         - name: wazuh-kibana
-          image: 'wazuh/wazuh-kibana:3.13.2_7.9.1'
+          image: 'wazuh/wazuh-kibana-odfe:4.0.0_1.10.1'
           resources:
             requests:
               cpu: 200m
               memory: 512Mi
             limits:
               cpu: 400m
-              memory: 2048Mi
+              memory: 2Gi
+          volumeMounts:
+            - name: kibana-certs
+              mountPath: /usr/share/kibana/config/cert.pem
+              readOnly: true
+              subPath: cert.pem
+            - name: kibana-certs
+              mountPath: /usr/share/kibana/config/key.pem
+              readOnly: true
+              subPath: key.pem
           ports:
             - containerPort: 5601
               name: kibana
           env:
             - name: ELASTICSEARCH_URL
-              value: 'http://elasticsearch:9200'
-            - name: NODE_OPTIONS
-              value: '--max-old-space-size=2048'
+              value: 'https://wazuh-elasticsearch-0.wazuh-elasticsearch:9200'
+            - name: ELASTICSEARCH_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: elastic-cred
+                  key: username
+            - name: ELASTICSEARCH_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: elastic-cred
+                  key: password
+            - name: SERVER_SSL_ENABLED
+              value: "true"
+            - name: SERVER_SSL_CERTIFICATE
+              value: /usr/share/kibana/config/cert.pem
+            - name: SERVER_SSL_KEY
+              value: /usr/share/kibana/config/key.pem
+            - name: WAZUH_API_URL
+              value: https://wazuh-manager-master-0.wazuh-cluster
+            - name: API_USERNAME
+              value: wazuh-wui
+            - name: API_PASSWORD
+              value: wazuh-wui
