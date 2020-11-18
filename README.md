@@ -13,48 +13,47 @@ The *instructions.md* file describes how to deploy Wazuh on Kubernetes.
 
 ## Directory structure
 
-    ├── wazuh-kubernetes
-    │ ├── base
-    │ │ ├── aws-gp2-storage-class.yaml
-    │ │ ├── wazuh-ns.yaml
-    │
-    │ ├── elastic_stack
-    │ │ ├── elasticsearch
-    │ │ │ ├── cluster
-    │ │ │ │ ├── elasticsearch-api-svc.yaml
-    │ │ │ │ ├── elasticsearch-data-sts.yaml
-    │ │ │ │ ├── elasticsearch-master-sts.yaml
-    │ │ │
-    │ │ │ ├── single-node
-    │ │ │ │ ├── elasticsearch-api-svc.yaml
-    │ │ │ │ ├── elasticsearch-sts.yaml
-    │ │ │
-    │ │ │ ├── elasticsearch-svc.yaml
-    │ │
-    │ │ ├── kibana
-    │ │ │ ├── kibana-deploy.yaml
-    │ │ │ ├── kibana-svc.yaml
-    │ │ │ ├── nginx-deploy.yaml
-    │ │ │ ├── nginx-svc.yaml
-    | |
-    │ ├── wazuh_managers
-    │ │ ├── wazuh-cluster-svc.yaml
-    │ │ ├── wazuh-master-conf.yaml
-    │ │ ├── wazuh-master-sts.yaml
-    │ │ ├── wazuh-master-svc.yaml
-    │ │ ├── wazuh-worker-0-conf.yaml
-    │ │ ├── wazuh-worker-0-sts.yaml
-    │ │ ├── wazuh-worker-1-conf.yaml
-    │ │ ├── wazuh-worker-1-sts.yaml
-    │ │ ├── wazuh-workers-svc.yaml
-    │ │
-    │ ├── README.md
-    │ ├── VERSION
-    │ ├── CHANGELOG.md
-    │ ├── LICENSE
-    │ ├── cleanup.md
-    │ ├── instructions.md
-    │ ├── upgrade.md
+    ├── base
+    │   ├── aws-gp2-storage-class.yaml
+    │   └── wazuh-ns.yaml
+    ├── certs
+    │   ├── kibana_http
+    │   └── odfe_cluster
+    ├── CHANGELOG.md
+    ├── cleanup.md
+    ├── elastic_stack
+    │   ├── elasticsearch
+    │   │   ├── cluster
+    │   │   │   ├── elasticsearch-api-svc.yaml
+    │   │   │   └── elasticsearch-sts.yaml
+    │   │   ├── elastic_conf
+    │   │   │   ├── elasticsearch.yml
+    │   │   │   └── internal_users.yml
+    │   │   └── elasticsearch-svc.yaml
+    │   └── kibana
+    │       ├── kibana-deploy.yaml
+    │       └── kibana-svc.yaml
+    ├── instructions.md
+    ├── kustomization.yml
+    ├── LICENSE
+    ├── README.md
+    ├── secrets
+    │   ├── elastic-cred-secret.yaml
+    │   ├── wazuh-api-cred-secret.yaml
+    │   ├── wazuh-authd-pass-secret.yaml
+    │   └── wazuh-cluster-key-secret.yaml
+    ├── upgrade.md
+    ├── VERSION
+    └── wazuh_managers
+        ├── wazuh-cluster-svc.yaml
+        ├── wazuh_conf
+        │   ├── master.conf
+        │   └── worker.conf
+        ├── wazuh-master-sts.yaml
+        ├── wazuh-master-svc.yaml
+        ├── wazuh-workers-svc.yaml
+        └── wazuh-worker-sts.yaml
+
 
 ## Branches
 
