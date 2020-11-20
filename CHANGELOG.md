@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [4.0.2]
+
+### Added
+
+- Update to Wazuh version 4.0.2_1.11.0
+- Support Opendistro for Elasticsearch v1.11.0
+
 ## [4.0.1]
 
 ### Added
