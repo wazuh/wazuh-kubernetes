@@ -132,16 +132,16 @@ spec:
               value: /etc/ssl/filebeat.pem
             - name: SSL_KEY
               value: /etc/ssl/filebeat.key
-            # - name: API_USERNAME
-            #   valueFrom:
-            #     secretKeyRef:
-            #       name: wazuh-api-cred
-            #       key: username
-            # - name: API_PASSWORD
-            #   valueFrom:
-            #     secretKeyRef:
-            #       name: wazuh-api-cred
-            #       key: password
+            - name: API_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: wazuh-api-cred
+                  key: username
+            - name: API_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: wazuh-api-cred
+                  key: password
             - name: WAZUH_CLUSTER_KEY
               valueFrom:
                 secretKeyRef:

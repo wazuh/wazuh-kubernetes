@@ -71,6 +71,12 @@ spec:
             - name: WAZUH_API_URL
               value: https://wazuh-manager-master-0.wazuh-cluster
             - name: API_USERNAME
-              value: wazuh-wui
+              valueFrom:
+                secretKeyRef:
+                  name: wazuh-api-cred
+                  key: username
             - name: API_PASSWORD
-              value: wazuh-wui
+              valueFrom:
+                secretKeyRef:
+                  name: wazuh-api-cred
+                  key: password
