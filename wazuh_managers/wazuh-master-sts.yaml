@@ -39,7 +39,7 @@ spec:
             secretName: wazuh-authd-pass
       containers:
         - name: wazuh-manager
-          image: 'wazuh/wazuh-odfe:4.0.0_1.10.1'
+          image: 'wazuh/wazuh-odfe:4.0.1_1.11.0'
           resources:
             requests:
               cpu: 1
@@ -132,16 +132,16 @@ spec:
               value: /etc/ssl/filebeat.pem
             - name: SSL_KEY
               value: /etc/ssl/filebeat.key
-            # - name: API_USERNAME
-            #   valueFrom:
-            #     secretKeyRef:
-            #       name: wazuh-api-cred
-            #       key: username
-            # - name: API_PASSWORD
-            #   valueFrom:
-            #     secretKeyRef:
-            #       name: wazuh-api-cred
-            #       key: password
+            - name: API_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: wazuh-api-cred
+                  key: username
+            - name: API_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: wazuh-api-cred
+                  key: password
             - name: WAZUH_CLUSTER_KEY
               valueFrom:
                 secretKeyRef:

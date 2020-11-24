@@ -29,7 +29,7 @@ spec:
             secretName: kibana-certs
       containers:
         - name: wazuh-kibana
-          image: 'wazuh/wazuh-kibana-odfe:4.0.0_1.10.1'
+          image: 'wazuh/wazuh-kibana-odfe:4.0.1_1.11.0'
           resources:
             requests:
               cpu: 200m
@@ -71,6 +71,12 @@ spec:
             - name: WAZUH_API_URL
               value: https://wazuh-manager-master-0.wazuh-cluster
             - name: API_USERNAME
-              value: wazuh-wui
+              valueFrom:
+                secretKeyRef:
+                  name: wazuh-api-cred
+                  key: username
             - name: API_PASSWORD
-              value: wazuh-wui
+              valueFrom:
+                secretKeyRef:
+                  name: wazuh-api-cred
+                  key: password
