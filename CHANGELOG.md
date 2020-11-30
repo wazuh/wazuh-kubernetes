@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [4.0.3]
+
+### Added
+
+- Update to Wazuh version 4.0.3_1.11.0
+
+### Fixed
+
+- Specify `volumeBindingMode` on the storage class  ([@gwvandesteeg](https://github.com/gwvandesteeg)  [#116](https://github.com/wazuh/wazuh-kubernetes/issues/116))
+
 ## [4.0.2]
 
 ### Added
