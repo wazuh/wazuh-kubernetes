@@ -15,4 +15,5 @@ provisioner: kubernetes.io/aws-ebs
 parameters:
   encrypted: 'true'
   type: gp2
+volumeBindingMode: WaitForFirstConsumer
 reclaimPolicy: Retain  # Useful in case you delete the PersistentVolumeClaim
