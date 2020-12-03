@@ -108,14 +108,38 @@ $ git clone https://github.com/wazuh/wazuh-kubernetes.git
 $ cd wazuh-kubernetes
 ```
 
-### Step 3.1: Apply all manifests using kustomize
+### Step 3.1: Setup SSL certificates
+
+You can generate self-signed certificates for the ODFE cluster using the script at `certs/odfe_cluster/generate_certs.sh` or provide your own.
+
+Since Kibana has HTTPS enabled it will require its own certificates, these may be generated with: `openssl req -x509 -batch -nodes -days 365 -newkey rsa:2048 -keyout key.pem -out cert.pem`
+
+The required certificates are imported via secretGenerator on the `kustomization.yml` file:
+
+    secretGenerator:
+    - name: odfe-ssl-certs
+        files:
+        - certs/odfe_cluster/root-ca.pem
+        - certs/odfe_cluster/node.pem
+        - certs/odfe_cluster/node-key.pem
+        - certs/odfe_cluster/kibana.pem
+        - certs/odfe_cluster/kibana-key.pem
+        - certs/odfe_cluster/admin.pem
+        - certs/odfe_cluster/admin-key.pem
+        - certs/odfe_cluster/filebeat.pem
+        - certs/odfe_cluster/filebeat-key.pem
+    - name: kibana-certs
+        files:
+        - certs/kibana_http/cert.pem
+        - certs/kibana_http/key.pem
+
+### Step 3.2: Apply all manifests using kustomize
 
 By using the kustomization.yml we can now deploy the whole cluster in a single command.
 
 ```BASH
 $ kubectl apply -k .
 ```
-
 
 ### Verifying the deployment
 
