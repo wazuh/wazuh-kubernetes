@@ -204,5 +204,5 @@ Also, you can access using the External-IP (from the VPC): https://internal-xxx-
 ```BASH
 $ kubectl get services -o wide -n wazuh
 NAME                  TYPE           CLUSTER-IP       EXTERNAL-IP                                                                       PORT(S)                          AGE       SELECTOR
-kibana           LoadBalancer   xxx.xx.xxx.xxx   internal-xxx-yyy.us-east-1.elb.amazonaws.com                                      80:31831/TCP,443:30974/TCP       15m       app=wazuh-nginx
+kibana                LoadBalancer   xxx.xx.xxx.xxx   internal-xxx-yyy.us-east-1.elb.amazonaws.com                                      80:31831/TCP,443:30974/TCP       15m       app=wazuh-kibana
 ```
