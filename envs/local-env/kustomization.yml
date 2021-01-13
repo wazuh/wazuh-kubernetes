@@ -1,0 +1,4 @@
+bases:
+  - ../../wazuh
+patches:
+  - storage-class.yaml
