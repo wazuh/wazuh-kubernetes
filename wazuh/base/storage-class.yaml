@@ -1,0 +1,14 @@
+# Copyright (C) 2020 Wazuh Inc.
+#
+# This program is a free software; you can redistribute it
+# and/or modify it under the terms of the GNU General Public
+# License (version 2) as published by the FSF - Free Software
+# Foundation.
+
+# Wazuh StorageClass
+
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: gp2-encrypted-retained
+# provisioner: k8s.io/minikube-hostpath
