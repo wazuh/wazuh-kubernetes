@@ -42,7 +42,7 @@ spec:
           image: 'wazuh/wazuh-odfe:4.0.4_1.11.0'
           resources:
             limits:
-              cpu: 300m
+              cpu: 400m
               memory: 512Mi
           securityContext:
             capabilities:

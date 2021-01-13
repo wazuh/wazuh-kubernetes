@@ -32,7 +32,7 @@ spec:
           image: 'wazuh/wazuh-kibana-odfe:4.0.4_1.11.0'
           resources:
             limits:
-              cpu: 300m
+              cpu: 500m
               memory: 1Gi
           volumeMounts:
             - name: kibana-certs

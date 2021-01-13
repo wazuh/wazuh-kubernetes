@@ -62,7 +62,7 @@ spec:
           image: 'amazon/opendistro-for-elasticsearch:1.11.0'
           resources:
             limits:
-              cpu: 300m
+              cpu: 500m
               memory: 1Gi
           env:
             - name: ES_JAVA_OPTS
