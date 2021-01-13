@@ -1,0 +1,6 @@
+bases:
+  - ../../wazuh
+patches:
+  - storage-class.yaml
+  - wazuh-resources.yaml
+  - elastic-resources.yaml
