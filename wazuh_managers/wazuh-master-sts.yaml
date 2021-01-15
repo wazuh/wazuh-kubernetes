@@ -1,4 +1,4 @@
-# Copyright (C) 2020 Wazuh Inc.
+# Copyright (C) 2021 Wazuh Inc.
 #
 # This program is a free software; you can redistribute it
 # and/or modify it under the terms of the GNU General Public
@@ -39,7 +39,7 @@ spec:
             secretName: wazuh-authd-pass
       containers:
         - name: wazuh-manager
-          image: 'wazuh/wazuh-odfe:4.0.3_1.11.0'
+          image: 'wazuh/wazuh-odfe:4.0.4_1.11.0'
           resources:
             requests:
               cpu: 1

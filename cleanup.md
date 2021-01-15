@@ -2,15 +2,11 @@
 
 Steps to perform a clean up of our deployments, services and volumes used in our environment.
 
-## Wazuh managers
+## Delete the cluster
 
-The deployment of the Wazuh cluster of managers involves the use of various statefulSet elements as well as configuration maps and services.
+To delete your Wazuh cluster just use `kubectl delete -k .` from this repository directory.
 
-
-To delete your Wazuh cluster just use: `kubectl delete -k .` from this repository directory.
-
-
-### Delete the persistent volumes manually.
+## Delete the persistent volumes manually.
 
 Since we use `reclaimPolicy: Retain` in the storage class definition you must delete volumes manually if you want to clean these as well.
 
@@ -28,4 +24,4 @@ pvc-ffe7bf66-f7c4-11e8-b9b8-022ada63b4ac   10Gi       RWO            Retain     
 ubuntu@k8s-control-server:~$ kubectl delete persistentvolume pvc-b3226ad3-f7c4-11e8-b9b8-022ada63b4ac
 ```
 
-Once these steps are completed, our Kubernetes environment will be clean of deployments relating to the Wazuh cluster and related Elastic Stack components.
+Once these steps are completed, our Wazuh deployment will have been removed from the Kubernetes environment.
