@@ -1,5 +1,8 @@
 #!/bin/bash
 
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+cd $DIR
+
 echo "Root CA"
 
 openssl genrsa -out root-ca-key.pem 2048
