@@ -6,7 +6,7 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
-- Update to Wazuh version 4.0.4_1.11.0
+- Update to Wazuh version [4.0.4_1.11.0](https://github.com/wazuh/wazuh/blob/v4.0.4/CHANGELOG.md#v404)
 
 ## [4.0.3]
 
