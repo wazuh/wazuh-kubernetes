@@ -10,11 +10,11 @@ spec:
         - name: wazuh-elasticsearch
           resources:
             requests:
-                cpu: 500m
-                memory: 1Gi
-              limits:
-                cpu: 1
-                memory: 2Gi
+              cpu: 500m
+              memory: 1Gi
+            limits:
+              cpu: 1
+              memory: 2Gi
   volumeClaimTemplates:
     - metadata:
         name: wazuh-elasticsearch
