@@ -10,5 +10,5 @@
 apiVersion: storage.k8s.io/v1
 kind: StorageClass
 metadata:
-  name: gp2-encrypted-retained
+  name: wazuh-storage
 # provisioner: k8s.io/minikube-hostpath

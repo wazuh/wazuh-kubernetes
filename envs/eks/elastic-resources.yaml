@@ -29,7 +29,7 @@ spec:
       spec:
         accessModes:
           - ReadWriteOnce
-        storageClassName: gp2-encrypted-retained
+        storageClassName: wazuh-storage
         resources:
           requests:
             storage: 10Gi

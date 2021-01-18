@@ -10,7 +10,7 @@
 apiVersion: storage.k8s.io/v1
 kind: StorageClass
 metadata:
-  name: gp2-encrypted-retained
+  name: wazuh-storage
 
 # Microk8s is our standard for local development
 provisioner: microk8s.io/hostpath

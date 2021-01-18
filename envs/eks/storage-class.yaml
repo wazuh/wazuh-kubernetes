@@ -10,7 +10,7 @@
 apiVersion: storage.k8s.io/v1
 kind: StorageClass
 metadata:
-  name: gp2-encrypted-retained
+  name: wazuh-storage
 provisioner: kubernetes.io/aws-ebs
 parameters:
   encrypted: 'true'
