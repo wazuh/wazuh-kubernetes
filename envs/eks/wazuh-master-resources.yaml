@@ -8,28 +8,27 @@
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: wazuh-elasticsearch
-  namespace: wazuh
+  name: wazuh-manager-master
 spec:
   template:
     spec:
       containers:
-        - name: wazuh-elasticsearch
+        - name: wazuh-manager
           resources:
             requests:
-              cpu: 500m
+              cpu: 1
               memory: 1Gi
             limits:
-              cpu: 1
+              cpu: 2
               memory: 2Gi
   volumeClaimTemplates:
     - metadata:
-        name: wazuh-elasticsearch
-        namespace: es-cluster
+        name: wazuh-manager-master
+        namespace: wazuh
       spec:
         accessModes:
           - ReadWriteOnce
         storageClassName: gp2-encrypted-retained
         resources:
           requests:
-            storage: 10Gi
+            storage: 50Gi
