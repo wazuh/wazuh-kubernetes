@@ -31,12 +31,9 @@ spec:
         - name: wazuh-kibana
           image: 'wazuh/wazuh-kibana-odfe:4.0.4_1.11.0'
           resources:
-            requests:
-              cpu: 200m
-              memory: 512Mi
             limits:
-              cpu: 400m
-              memory: 2Gi
+              cpu: 500m
+              memory: 1Gi
           volumeMounts:
             - name: kibana-certs
               mountPath: /usr/share/kibana/config/cert.pem

@@ -41,12 +41,9 @@ spec:
         - name: wazuh-manager
           image: 'wazuh/wazuh-odfe:4.0.4_1.11.0'
           resources:
-            requests:
-              cpu: 1
-              memory: 1Gi
             limits:
-              cpu: 2
-              memory: 2Gi
+              cpu: 400m
+              memory: 512Mi
           securityContext:
             capabilities:
               add: ["SYS_CHROOT"]
@@ -154,7 +151,7 @@ spec:
       spec:
         accessModes:
           - ReadWriteOnce
-        storageClassName: gp2-encrypted-retained
+        storageClassName: wazuh-storage
         resources:
           requests:
-            storage: 50Gi
+            storage: 500Mi

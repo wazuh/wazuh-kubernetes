@@ -61,12 +61,9 @@ spec:
         - name: wazuh-elasticsearch
           image: 'amazon/opendistro-for-elasticsearch:1.11.0'
           resources:
-            requests:
+            limits:
               cpu: 500m
               memory: 1Gi
-            limits:
-              cpu: 1
-              memory: 2Gi
           env:
             - name: ES_JAVA_OPTS
               value: '-Xms1g -Xmx1g'
@@ -130,7 +127,7 @@ spec:
       spec:
         accessModes:
           - ReadWriteOnce
-        storageClassName: gp2-encrypted-retained
+        storageClassName: wazuh-storage
         resources:
           requests:
-            storage: 10Gi
+            storage: 500Mi

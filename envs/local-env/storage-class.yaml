@@ -1,0 +1,22 @@
+# Copyright (C) 2021 Wazuh Inc.
+#
+# This program is a free software; you can redistribute it
+# and/or modify it under the terms of the GNU General Public
+# License (version 2) as published by the FSF - Free Software
+# Foundation.
+
+# Wazuh StorageClass
+
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: wazuh-storage
+
+# Microk8s is our standard for local development
+provisioner: microk8s.io/hostpath
+
+# In case you're running Minikube you can comment the line above and use this one
+# provisioner: k8s.io/minikube-hostpath
+
+# If you're using a different provider you can list storage classes
+# with: "kubectl get sc" and look for the column "Provisioner"

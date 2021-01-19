@@ -40,7 +40,7 @@ configMapGenerator:
 
 resources:
   - base/wazuh-ns.yaml
-  - base/aws-gp2-storage-class.yaml
+  - base/storage-class.yaml
 
   - secrets/wazuh-api-cred-secret.yaml
   - secrets/wazuh-authd-pass-secret.yaml
