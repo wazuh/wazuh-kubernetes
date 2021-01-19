@@ -9,7 +9,7 @@ Deploy a Wazuh cluster with a basic Elastic stack on Kubernetes .
 
 ## Documentation
 
-The *instructions.md* file describes how to deploy Wazuh on Kubernetes.
+The [instructions.md](instructions.md) file describes how to deploy Wazuh on Kubernetes.
 
 ## Directory structure
 
