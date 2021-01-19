@@ -13,56 +13,72 @@ The *instructions.md* file describes how to deploy Wazuh on Kubernetes.
 
 ## Directory structure
 
-    ├── base
-    │   ├── aws-gp2-storage-class.yaml
-    │   └── wazuh-ns.yaml
-    ├── certs
-    │   ├── kibana_http
-    │   └── odfe_cluster
     ├── CHANGELOG.md
     ├── cleanup.md
-    ├── elastic_stack
-    │   ├── elasticsearch
-    │   │   ├── cluster
-    │   │   │   ├── elasticsearch-api-svc.yaml
-    │   │   │   └── elasticsearch-sts.yaml
-    │   │   ├── elastic_conf
-    │   │   │   ├── elasticsearch.yml
-    │   │   │   └── internal_users.yml
-    │   │   └── elasticsearch-svc.yaml
-    │   └── kibana
-    │       ├── kibana-deploy.yaml
-    │       └── kibana-svc.yaml
     ├── instructions.md
-    ├── kustomization.yml
     ├── LICENSE
     ├── README.md
-    ├── secrets
-    │   ├── elastic-cred-secret.yaml
-    │   ├── wazuh-api-cred-secret.yaml
-    │   ├── wazuh-authd-pass-secret.yaml
-    │   └── wazuh-cluster-key-secret.yaml
     ├── upgrade.md
     ├── VERSION
-    └── wazuh_managers
-        ├── wazuh-cluster-svc.yaml
-        ├── wazuh_conf
-        │   ├── master.conf
-        │   └── worker.conf
-        ├── wazuh-master-sts.yaml
-        ├── wazuh-master-svc.yaml
-        ├── wazuh-workers-svc.yaml
-        └── wazuh-worker-sts.yaml
+    ├── envs
+    │   ├── eks
+    │   │   ├── elastic-resources.yaml
+    │   │   ├── kibana-resources.yaml
+    │   │   ├── kustomization.yml
+    │   │   ├── storage-class.yaml
+    │   │   ├── wazuh-master-resources.yaml
+    │   │   └── wazuh-worker-resources.yaml
+    │   └── local-env
+    │       ├── elastic-resources.yaml
+    │       ├── kustomization.yml
+    │       ├── storage-class.yaml
+    │       └── wazuh-resources.yaml
+    └── wazuh
+        ├── base
+        │   ├── storage-class.yaml
+        │   └── wazuh-ns.yaml
+        ├── certs
+        │   ├── kibana_http
+        │   └── odfe_cluster
+        │       ├── generate_certs.sh
+        ├── elastic_stack
+        │   ├── elasticsearch
+        │   │   ├── cluster
+        │   │   │   ├── elasticsearch-api-svc.yaml
+        │   │   │   └── elasticsearch-sts.yaml
+        │   │   ├── elastic_conf
+        │   │   │   ├── elasticsearch.yml
+        │   │   │   └── internal_users.yml
+        │   │   └── elasticsearch-svc.yaml
+        │   └── kibana
+        │       ├── kibana-deploy.yaml
+        │       └── kibana-svc.yaml
+        ├── kustomization.yml
+        ├── secrets
+        │   ├── elastic-cred-secret.yaml
+        │   ├── wazuh-api-cred-secret.yaml
+        │   ├── wazuh-authd-pass-secret.yaml
+        │   └── wazuh-cluster-key-secret.yaml
+        └── wazuh_managers
+            ├── wazuh-cluster-svc.yaml
+            ├── wazuh_conf
+            │   ├── master.conf
+            │   └── worker.conf
+            ├── wazuh-master-sts.yaml
+            ├── wazuh-master-svc.yaml
+            ├── wazuh-workers-svc.yaml
+            └── wazuh-worker-sts.yaml
+
 
 
 ## Branches
 
 * `master` branch contains the latest code, be aware of possible bugs on this branch.
-* `local-environment` branch contains modifications for deploying on local environments.
+
 
 ## Local development
 
-To deploy a cluster on your local environment (like Minikube or Kind) use the branch [local-environment](https://github.com/wazuh/wazuh-kubernetes/tree/local-environment/minikube)
+To deploy a cluster on your local environment (like Minikube, Kind or Microk8s) read the section "local environment" on *instructions.md*.
 
 ## Contribute
 
