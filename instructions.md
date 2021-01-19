@@ -110,9 +110,9 @@ $ cd wazuh-kubernetes
 
 ### Step 3.1: Setup SSL certificates
 
-You can generate self-signed certificates for the ODFE cluster using the script at `certs/odfe_cluster/generate_certs.sh` or provide your own.
+You can generate self-signed certificates for the ODFE cluster using the script at `wazuh/certs/odfe_cluster/generate_certs.sh` or provide your own.
 
-Since Kibana has HTTPS enabled it will require its own certificates, these may be generated with: `openssl req -x509 -batch -nodes -days 365 -newkey rsa:2048 -keyout key.pem -out cert.pem`
+Since Kibana has HTTPS enabled it will require its own certificates, these may be generated with: `openssl req -x509 -batch -nodes -days 365 -newkey rsa:2048 -keyout key.pem -out cert.pem`, there is an utility script at `wazuh/certs/kibana_http/generate_certs.sh` to help with this.
 
 The required certificates are imported via secretGenerator on the `kustomization.yml` file:
 
@@ -135,10 +135,15 @@ The required certificates are imported via secretGenerator on the `kustomization
 
 ### Step 3.2: Apply all manifests using kustomize
 
-By using the kustomization.yml we can now deploy the whole cluster in a single command.
+We are using the overlay feature of kustomize two create two variants: `eks` and `local-env`, in this guide we're using `eks`. (For a deployment on a local environment check the guide on `local-environment.md`)
+
+You can adjust resources for the cluster on `envs/eks/`, you can tune cpu, memory as well as storage for persistent volumes of each of the cluster objects.
+
+
+By using the kustomization file on the `eks` variant we can now deploy the whole cluster with a single command:
 
 ```BASH
-$ kubectl apply -k .
+$ kubectl apply -k envs/eks/
 ```
 
 ### Verifying the deployment

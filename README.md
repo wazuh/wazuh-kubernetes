@@ -78,7 +78,7 @@ The *instructions.md* file describes how to deploy Wazuh on Kubernetes.
 
 ## Local development
 
-To deploy a cluster on your local environment (like Minikube, Kind or Microk8s) read the section "local environment" on *instructions.md*.
+To deploy a cluster on your local environment (like Minikube, Kind or Microk8s) read the instructions on "local-environment.md".
 
 ## Contribute
 
