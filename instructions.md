@@ -135,7 +135,7 @@ The required certificates are imported via secretGenerator on the `kustomization
 
 ### Step 3.2: Apply all manifests using kustomize
 
-We are using the overlay feature of kustomize two create two variants: `eks` and `local-env`, in this guide we're using `eks`. (For a deployment on a local environment check the guide on `local-environment.md`)
+We are using the overlay feature of kustomize to create two variants: `eks` and `local-env`, in this guide we're using `eks`. (For a deployment on a local environment check the guide on [local-environment.md](local-environment.md))
 
 You can adjust resources for the cluster on `envs/eks/`, you can tune cpu, memory as well as storage for persistent volumes of each of the cluster objects.
 

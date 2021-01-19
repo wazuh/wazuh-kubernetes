@@ -2,7 +2,7 @@
 
 This guide describes the necessary steps to deploy Wazuh on a local Kubernetes environment (Microk8s, Minikube, Kind).
 
-Here we will describe the steps unique for a deployment on a local development scenario. For general knowledge read `instructions.md` as well which describes a deployment in more detail using an EKS cluster.
+Here we will describe the steps unique for a deployment on a local development scenario. For general knowledge read [instructions.md](instructions.md) as well which describes a deployment in more detail using an EKS cluster.
 
 ## Pre-requisites
 
@@ -61,7 +61,7 @@ The provisioner column displays `microk8s.io/hostpath`, you must edit the file `
 
 ### Apply all manifests using kustomize
 
-We are using the overlay feature of kustomize two create two variants: `eks` and `local-env`, in this guide we're using `local-env`. (For a production deployment on EKS check the guide on `instructions.md`)
+We are using the overlay feature of kustomize two create two variants: `eks` and `local-env`, in this guide we're using `local-env`. (For a production deployment on EKS check the guide on [instructions.md](instructions.md))
 
 It is possible to adjust resources for the cluster by editing patches on `envs/local-env/`, the number of replicas for Elasticsearch and Wazuh clusters are reduced on the `local-env` variant to save resources. This could be undone by removing these patches from the `kustomization.yaml` or alter its contents with different values than the base files on `wazuh/`.
 
