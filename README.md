@@ -39,6 +39,7 @@ The [instructions.md](instructions.md) file describes how to deploy Wazuh on Kub
         │   └── wazuh-ns.yaml
         ├── certs
         │   ├── kibana_http
+        │   │   ├── generate_certs.sh
         │   └── odfe_cluster
         │       ├── generate_certs.sh
         ├── elastic_stack
