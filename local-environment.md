@@ -76,5 +76,15 @@ It is possible to adjust resources for the cluster by editing patches on `envs/l
 By using the kustomization file on the `local-env` variant we can now deploy the whole cluster with a single command:
 
 ```BASH
-$ kubectl apply -k envs/eks/
+$ kubectl apply -k envs/local-env/
 ```
+
+#### Accessing Kibana
+
+To access the Kibana interface you can use port-forward:
+
+```bash
+$ kubectl -n wazuh port-forward service/kibana 8443:443
+```
+
+Kibana will be accesible on ``https://localhost:8443``.
