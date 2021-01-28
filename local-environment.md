@@ -71,9 +71,9 @@ The provisioner column displays `microk8s.io/hostpath`, you must edit the file `
 
 We are using the overlay feature of kustomize two create two variants: `eks` and `local-env`, in this guide we're using `local-env`. (For a production deployment on EKS check the guide on [instructions.md](instructions.md))
 
-It is possible to adjust resources for the cluster by editing patches on `envs/local-env/`, the number of replicas for Elasticsearch nodes and Wazuh workers are reduced on the `local-env` variant to save resources. This could be undone by removing these patches from the `kustomization.yaml` or alter its contents with different values than the base files on `wazuh/`.
+It is possible to adjust resources for the cluster by editing patches on `envs/local-env/`, the number of replicas for Elasticsearch nodes and Wazuh workers are reduced on the `local-env` variant to save resources. This could be undone by removing these patches from the `kustomization.yaml` or alter the patches themselves with different values.
 
-By using the kustomization file on the `eks` variant we can now deploy the whole cluster with a single command:
+By using the kustomization file on the `local-env` variant we can now deploy the whole cluster with a single command:
 
 ```BASH
 $ kubectl apply -k envs/eks/
