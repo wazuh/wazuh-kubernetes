@@ -43,7 +43,7 @@ Details:
 
 #### Elasticsearch
 
-Elasticsearch pod. No Elasticsearch cluster is supported yet.
+Elasticsearch pod. Used to build an Elasticsearch cluster.
 
 Details:
 - Image: amazon/opendistro-for-elasticsearch
