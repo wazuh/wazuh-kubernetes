@@ -2,6 +2,55 @@
 
 All notable changes to this project will be documented in this file.
 
+## [4.0.4]
+
+### Added
+
+- Update to Wazuh version [4.0.4_1.11.0](https://github.com/wazuh/wazuh/blob/v4.0.4/CHANGELOG.md#v404)
+
+## [4.0.3]
+
+### Added
+
+- Update to Wazuh version 4.0.3_1.11.0
+
+### Fixed
+
+- Specify `volumeBindingMode` on the storage class  ([@gwvandesteeg](https://github.com/gwvandesteeg)  [#116](https://github.com/wazuh/wazuh-kubernetes/issues/116))
+
+## [4.0.2]
+
+### Added
+
+- Update to Wazuh version 4.0.2_1.11.0
+- Support Opendistro for Elasticsearch v1.11.0
+
+## [4.0.1]
+
+### Added
+
+- Update to Wazuh version 4.0.1_1.11.0
+- Support Opendistro for Elasticsearch v1.11.0
+
+## [4.0.0]
+
+### Added
+
+- Update to Wazuh version 4.0.0_1.10.1
+- Support Opendistro for Elasticsearch v1.10.1
+- Use a single wazuh-manager-worker StatefulSet ([@rjmoseley](https://github.com/rjmoseley) [#106](https://github.com/wazuh/wazuh-kubernetes/pull/106))
+- Using Kubernetes secrets to store credentials ([@1stOfHisGame](https://github.com/1stOfHisGame) [#108](https://github.com/wazuh/wazuh-kubernetes/pull/108))
+
+## [v3.13.2]
+
+### Added
+
+- Update to Wazuh version 3.13.2_7.9.1
+
+### Fixed
+
+- Increased Kibana max-old-space-size ([@DFolchA](https://github.com/DFolchA)) [#98](https://github.com/wazuh/wazuh-kubernetes/pull/98)
+
 ## [v3.13.1]
 
 ### Added

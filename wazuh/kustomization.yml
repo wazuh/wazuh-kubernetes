@@ -1,0 +1,61 @@
+# Copyright (C) 2021 Wazuh Inc.
+#
+# This program is a free software; you can redistribute it
+# and/or modify it under the terms of the GNU General Public
+# License (version 2) as published by the FSF - Free Software
+# Foundation.
+
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# Adds wazuh namespace to all resources.
+namespace: wazuh
+
+secretGenerator:
+  - name: odfe-ssl-certs
+    files:
+      - certs/odfe_cluster/root-ca.pem
+      - certs/odfe_cluster/node.pem
+      - certs/odfe_cluster/node-key.pem
+      - certs/odfe_cluster/kibana.pem
+      - certs/odfe_cluster/kibana-key.pem
+      - certs/odfe_cluster/admin.pem
+      - certs/odfe_cluster/admin-key.pem
+      - certs/odfe_cluster/filebeat.pem
+      - certs/odfe_cluster/filebeat-key.pem
+  - name: kibana-certs
+    files:
+      - certs/kibana_http/cert.pem
+      - certs/kibana_http/key.pem
+
+configMapGenerator:
+  - name: elastic-odfe-conf
+    files:
+      - elastic_stack/elasticsearch/elastic_conf/elasticsearch.yml
+      - elastic_stack/elasticsearch/elastic_conf/internal_users.yml
+  - name: wazuh-conf
+    files:
+      - wazuh_managers/wazuh_conf/master.conf
+      - wazuh_managers/wazuh_conf/worker.conf
+
+resources:
+  - base/wazuh-ns.yaml
+  - base/storage-class.yaml
+
+  - secrets/wazuh-api-cred-secret.yaml
+  - secrets/wazuh-authd-pass-secret.yaml
+  - secrets/wazuh-cluster-key-secret.yaml
+  - secrets/elastic-cred-secret.yaml
+
+  - wazuh_managers/wazuh-cluster-svc.yaml
+  - wazuh_managers/wazuh-master-svc.yaml
+  - wazuh_managers/wazuh-workers-svc.yaml
+  - wazuh_managers/wazuh-master-sts.yaml
+  - wazuh_managers/wazuh-worker-sts.yaml
+
+  - elastic_stack/elasticsearch/elasticsearch-svc.yaml
+  - elastic_stack/elasticsearch/cluster/elasticsearch-api-svc.yaml
+  - elastic_stack/elasticsearch/cluster/elasticsearch-sts.yaml
+
+  - elastic_stack/kibana/kibana-svc.yaml
+  - elastic_stack/kibana/kibana-deploy.yaml

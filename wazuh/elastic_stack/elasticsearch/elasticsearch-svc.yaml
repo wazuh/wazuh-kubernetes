@@ -1,0 +1,24 @@
+# Copyright (C) 2021 Wazuh Inc.
+#
+# This program is a free software; you can redistribute it
+# and/or modify it under the terms of the GNU General Public
+# License (version 2) as published by the FSF - Free Software
+# Foundation.
+
+# Elasticsearch service: Communications
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: wazuh-elasticsearch
+  namespace: wazuh
+  labels:
+    app: wazuh-elasticsearch
+spec:
+  selector:
+    app: wazuh-elasticsearch
+  ports:
+    - name: es-nodes
+      port: 9300
+      targetPort: 9300
+  clusterIP: None
