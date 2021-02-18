@@ -10,10 +10,5 @@
 apiVersion: storage.k8s.io/v1
 kind: StorageClass
 metadata:
-  name: gp2-encrypted-retained
-provisioner: kubernetes.io/aws-ebs
-parameters:
-  encrypted: 'true'
-  type: gp2
-volumeBindingMode: WaitForFirstConsumer
-reclaimPolicy: Retain  # Useful in case you delete the PersistentVolumeClaim
+  name: wazuh-storage
+# provisioner: k8s.io/minikube-hostpath
