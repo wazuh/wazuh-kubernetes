@@ -7,6 +7,11 @@ All notable changes to this project will be documented in this file.
 ### Added
 
 - Update to Wazuh version [4.1.0](https://github.com/wazuh/wazuh/blob/v4.1.0/CHANGELOG.md#v410)
+- Use overlays to create multiple envs ([@xr09](https://github.com/xr09)) [PR#142](https://github.com/wazuh/wazuh-kubernetes/pull/142)
+
+## Fixed
+
+- Set DISABLE_INSTALL_DEMO_CONFIG ([@xr09](https://github.com/xr09)) [PR#146](https://github.com/wazuh/wazuh-kubernetes/pull/146)
 
 ## [4.0.4]
 
