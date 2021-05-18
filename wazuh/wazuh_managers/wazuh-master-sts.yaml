@@ -49,8 +49,8 @@ spec:
               add: ["SYS_CHROOT"]
           volumeMounts:
             - name: config
-              mountPath: /wazuh-config-mount/etc/ossec.conf
-              subPath: master.conf
+              mountPath: /wazuh-config-mount/etc/manager.conf
+              subPath: manager.conf
               readOnly: true
             - name: filebeat-certs
               mountPath: /etc/ssl/root-ca.pem

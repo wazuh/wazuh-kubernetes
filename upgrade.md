@@ -80,8 +80,8 @@ This action has modified the `local_rules.xml` file in the `/var/ossec/data/etc/
 ```
 volumeMounts:
 - name: config
-  mountPath: /wazuh-config-mount/etc/ossec.conf
-  subPath: ossec.conf
+  mountPath: /wazuh-config-mount/etc/manager.conf
+  subPath: manager.conf
   readOnly: true
 - name: wazuh-manager-master
   mountPath: /var/ossec/data
