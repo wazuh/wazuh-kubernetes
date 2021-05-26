@@ -75,6 +75,7 @@ The [instructions.md](instructions.md) file describes how to deploy Wazuh on Kub
 ## Branches
 
 * `master` branch contains the latest code, be aware of possible bugs on this branch.
+* `stable` branch on correspond to the last Wazuh stable version.
 
 
 ## Local development
