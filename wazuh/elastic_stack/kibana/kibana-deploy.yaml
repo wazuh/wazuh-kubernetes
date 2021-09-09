@@ -29,7 +29,7 @@ spec:
             secretName: kibana-certs
       containers:
         - name: wazuh-kibana
-          image: 'wazuh/wazuh-kibana-odfe:4.2.0'
+          image: 'wazuh/wazuh-kibana-odfe:4.2.1'
           resources:
             limits:
               cpu: 500m
