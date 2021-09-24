@@ -24,17 +24,24 @@ spec:
       name: wazuh-kibana
     spec:
       volumes:
+        - name: config
+          configMap:
+            name: kibana-conf
         - name: kibana-certs
           secret:
             secretName: kibana-certs
       containers:
         - name: wazuh-kibana
-          image: 'wazuh/wazuh-kibana-odfe:4.2.2'
+          image: 'wazuh/wazuh-kibana-odfe:4.2.1'
           resources:
             limits:
               cpu: 500m
               memory: 1Gi
           volumeMounts:
+            - name: config
+              mountPath: /usr/share/kibana/config/kibana.yml
+              subPath: kibana.yml
+              readOnly: false
             - name: kibana-certs
               mountPath: /usr/share/kibana/config/cert.pem
               readOnly: true

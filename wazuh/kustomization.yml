@@ -37,6 +37,9 @@ configMapGenerator:
     files:
       - wazuh_managers/wazuh_conf/master.conf
       - wazuh_managers/wazuh_conf/worker.conf
+  - name: kibana-conf
+    files:
+      - elastic_stack/kibana/kibana_conf/kibana.yml
 
 resources:
   - base/wazuh-ns.yaml
