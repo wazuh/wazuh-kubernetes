@@ -21,7 +21,7 @@ openssl pkcs8 -inform PEM -outform PEM -in admin-key-temp.pem -topk8 -nocrypt -v
 
 echo "create: admin.csr"
 
-openssl req -days 3650 -new -key admin-key.pem -out admin.csr -subj "/C=US/L=California/O=CompanyUS/CN=admin"
+openssl req -days 3650 -new -key admin-key.pem -out admin.csr -subj "/C=US/L=California/O=Company/CN=admin"
 
 echo "create: admin.pem"
 
