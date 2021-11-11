@@ -39,7 +39,7 @@ spec:
             secretName: wazuh-authd-pass
       containers:
         - name: wazuh-manager
-          image: 'wazuh/wazuh-odfe:4.2.4'
+          image: 'merecu/wazuh-manager-odfe:4.2.4'
           resources:
             limits:
               cpu: 400m
@@ -144,6 +144,90 @@ spec:
                 secretKeyRef:
                   name: wazuh-cluster-key
                   key: key
+        - name: wazuh-filebeat
+          image: 'merecu/filebeat-odfe:4.2.4'
+          resources:
+            limits:
+              cpu: 400m
+              memory: 512Mi
+          securityContext:
+            capabilities:
+              add: ["SYS_CHROOT"]
+          volumeMounts:
+            - name: config
+              mountPath: /wazuh-config-mount/etc/ossec.conf
+              subPath: master.conf
+              readOnly: true
+            - name: filebeat-certs
+              mountPath: /etc/ssl/root-ca.pem
+              readOnly: true
+              subPath: root-ca.pem
+            - name: filebeat-certs
+              mountPath: /etc/ssl/filebeat.pem
+              subPath: filebeat.pem
+              readOnly: true
+            - name: filebeat-certs
+              mountPath: /etc/ssl/filebeat.key
+              subPath: filebeat-key.pem
+              readOnly: true
+            - name: wazuh-authd-pass
+              mountPath: /wazuh-config-mount/etc/authd.pass
+              subPath: authd.pass
+              readOnly: true
+            - name: wazuh-manager-master
+              mountPath: /var/ossec/api/configuration
+              subPath: wazuh/var/ossec/api/configuration
+            - name: wazuh-manager-master
+              mountPath: /var/ossec/etc
+              subPath: wazuh/var/ossec/etc
+            - name: wazuh-manager-master
+              mountPath: /var/ossec/logs
+              subPath: wazuh/var/ossec/logs
+            - name: wazuh-manager-master
+              mountPath: /var/ossec/queue
+              subPath: wazuh/var/ossec/queue
+            - name: wazuh-manager-master
+              mountPath: /var/ossec/var/multigroups
+              subPath: wazuh/var/ossec/var/multigroups
+            - name: wazuh-manager-master
+              mountPath: /var/ossec/integrations
+              subPath: wazuh/var/ossec/integrations
+            - name: wazuh-manager-master
+              mountPath: /var/ossec/active-response/bin
+              subPath: wazuh/var/ossec/active-response/bin
+            - name: wazuh-manager-master
+              mountPath: /var/ossec/agentless
+              subPath: wazuh/var/ossec/agentless
+            - name: wazuh-manager-master
+              mountPath: /var/ossec/wodles
+              subPath: wazuh/var/ossec/wodles
+            - name: wazuh-manager-master
+              mountPath: /etc/filebeat
+              subPath: filebeat/etc/filebeat
+            - name: wazuh-manager-master
+              mountPath: /var/lib/filebeat
+              subPath: filebeat/var/lib/filebeat
+          env:
+            - name: ELASTICSEARCH_URL
+              value: 'https://wazuh-elasticsearch-0.wazuh-elasticsearch:9200'
+            - name: ELASTIC_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: elastic-cred
+                  key: username
+            - name: ELASTIC_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: elastic-cred
+                  key: password
+            - name: FILEBEAT_SSL_VERIFICATION_MODE
+              value: 'none'
+            - name: SSL_CERTIFICATE_AUTHORITIES
+              value: /etc/ssl/root-ca.pem
+            - name: SSL_CERTIFICATE
+              value: /etc/ssl/filebeat.pem
+            - name: SSL_KEY
+              value: /etc/ssl/filebeat.key
   volumeClaimTemplates:
     - metadata:
         name: wazuh-manager-master
