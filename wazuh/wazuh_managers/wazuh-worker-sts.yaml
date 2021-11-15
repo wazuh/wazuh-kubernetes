@@ -42,7 +42,7 @@ spec:
             secretName: odfe-ssl-certs
       containers:
         - name: wazuh-manager
-          image: 'wazuh/wazuh-odfe:4.2.4'
+          image: 'wazuh/wazuh-odfe:4.2.5'
           resources:
             limits:
               cpu: 400m
