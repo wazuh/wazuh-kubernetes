@@ -1,2 +1,7 @@
+<<<<<<< HEAD
 VERSION="4.2.5"
 REVISION="40220"
+=======
+VERSION="4.2.4"
+REVISION="40219"
+>>>>>>> 42ee4b50f0bddd36b1fc3efbe266aff2ee37d231
