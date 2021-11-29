@@ -17,10 +17,18 @@ spec:
         - name: wazuh-manager
           resources:
             requests:
-              cpu: 1
+              cpu: 0.75
               memory: 1Gi
             limits:
-              cpu: 2
+              cpu: 1
+              memory: 2Gi
+        - name: wazuh-filebeat
+          resources:
+            requests:
+              cpu: 0.25
+              memory: 1Gi
+            limits:
+              cpu: 1
               memory: 2Gi
   volumeClaimTemplates:
     - metadata:
@@ -28,8 +36,8 @@ spec:
         namespace: wazuh
       spec:
         accessModes:
-          - ReadWriteOnce
-        storageClassName: wazuh-storage
+          - ReadWriteMany
+        storageClassName: efs-sc
         resources:
           requests:
             storage: 50Gi

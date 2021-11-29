@@ -47,9 +47,11 @@ resources:
   - secrets/wazuh-cluster-key-secret.yaml
   - secrets/elastic-cred-secret.yaml
 
+  - wazuh_managers/wazuh-master-pv.yaml
   - wazuh_managers/wazuh-cluster-svc.yaml
   - wazuh_managers/wazuh-master-svc.yaml
   - wazuh_managers/wazuh-workers-svc.yaml
+  - wazuh_managers/wazuh-master-fb-sts.yml
   - wazuh_managers/wazuh-master-sts.yaml
   - wazuh_managers/wazuh-worker-sts.yaml
 

@@ -8,16 +8,16 @@
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: wazuh-manager-master
+  name: wazuh-filebeat-master
   namespace: wazuh
 spec:
   template:
     spec:
       containers:
-        - name: wazuh-manager
+        - name: wazuh-filebeat
           resources:
             requests:
-              cpu: 0.75
+              cpu: 0.25
               memory: 1Gi
             limits:
               cpu: 1
