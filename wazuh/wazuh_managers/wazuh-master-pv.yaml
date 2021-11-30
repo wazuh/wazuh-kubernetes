@@ -15,6 +15,22 @@ spec:
     volumeHandle: fs-035361f0eab2bcccf
 ---
 apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: pv-manager-worker
+spec:
+  capacity:
+    storage: 50Gi
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: efs-sc
+  csi:
+    driver: efs.csi.aws.com
+    volumeHandle: fs-035361f0eab2bcccf
+---
+apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: pvc-wazuh-manager
@@ -28,3 +44,18 @@ spec:
   storageClassName: efs-sc
   volumeMode: Filesystem
   volumeName: pv-manager-master
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: pvc-wazuh-worker
+  namespace: wazuh
+spec:
+  accessModes:
+  - ReadWriteMany
+  resources:
+    requests:
+      storage: 50Gi
+  storageClassName: efs-sc
+  volumeMode: Filesystem
+  volumeName: pv-manager-worker

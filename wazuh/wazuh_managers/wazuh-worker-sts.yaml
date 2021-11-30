@@ -40,9 +40,12 @@ spec:
         - name: filebeat-certs
           secret:
             secretName: odfe-ssl-certs
+        - name: wazuh-manager-worker
+          persistentVolumeClaim:
+            claimName: pvc-wazuh-worker
       containers:
         - name: wazuh-manager
-          image: 'merecu/wazuh-manager-odfe:4.2.4'
+          image: 'merecu/wazuh-manager-odfe:4.2.5'
           resources:
             limits:
               cpu: 400m
@@ -61,43 +64,42 @@ spec:
               subPath: root-ca.pem
             - name: wazuh-manager-worker
               mountPath: /var/ossec/api/configuration
-              subPath: wazuh/var/ossec/api/configuration
+              subPathExpr: $(POD_NAME)/var/ossec/api/configuration
             - name: wazuh-manager-worker
               mountPath: /var/ossec/etc
-              subPath: wazuh/var/ossec/etc
+              subPathExpr: $(POD_NAME)/var/ossec/etc
             - name: wazuh-manager-worker
               mountPath: /var/ossec/logs
-              subPath: wazuh/var/ossec/logs
+              subPathExpr: $(POD_NAME)/var/ossec/logs
             - name: wazuh-manager-worker
               mountPath: /var/ossec/queue
-              subPath: wazuh/var/ossec/queue
+              subPathExpr: $(POD_NAME)/var/ossec/queue
             - name: wazuh-manager-worker
               mountPath: /var/ossec/var/multigroups
-              subPath: wazuh/var/ossec/var/multigroups
+              subPathExpr: $(POD_NAME)/var/ossec/var/multigroups
             - name: wazuh-manager-worker
               mountPath: /var/ossec/integrations
-              subPath: wazuh/var/ossec/integrations
+              subPathExpr: $(POD_NAME)/var/ossec/integrations
             - name: wazuh-manager-worker
               mountPath: /var/ossec/active-response/bin
-              subPath: wazuh/var/ossec/active-response/bin
+              subPathExpr: $(POD_NAME)/var/ossec/active-response/bin
             - name: wazuh-manager-worker
               mountPath: /var/ossec/agentless
-              subPath: wazuh/var/ossec/agentless
+              subPathExpr: $(POD_NAME)/var/ossec/agentless
             - name: wazuh-manager-worker
               mountPath: /var/ossec/wodles
-              subPath: wazuh/var/ossec/wodles
-            - name: wazuh-manager-worker
-              mountPath: /etc/filebeat
-              subPath: filebeat/etc/filebeat
-            - name: wazuh-manager-worker
-              mountPath: /var/lib/filebeat
-              subPath: filebeat/var/lib/filebeat
+              subPathExpr: $(POD_NAME)/var/ossec/wodles
           ports:
             - containerPort: 1514
               name: agents-events
             - containerPort: 1516
               name: cluster
           env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.name
             - name: ELASTICSEARCH_URL
               value: 'https://wazuh-elasticsearch-0.wazuh-elasticsearch:9200'
             - name: ELASTIC_USERNAME
@@ -124,7 +126,7 @@ spec:
                   name: wazuh-cluster-key
                   key: key
         - name: wazuh-filebeat
-          image: 'merecu/filebeat-odfe:4.2.4'
+          image: 'merecu/filebeat-odfe:4.2.5'
           resources:
             limits:
               cpu: 400m
@@ -147,15 +149,16 @@ spec:
               readOnly: true
             - name: wazuh-manager-worker
               mountPath: /var/ossec/logs
-              subPath: wazuh/var/ossec/logs
-              readOnly: true
-            - name: wazuh-manager-worker
-              mountPath: /etc/filebeat
-              subPath: filebeat/etc/filebeat
+              subPathExpr: $(POD_NAME)/var/ossec/logs
             - name: wazuh-manager-worker
               mountPath: /var/lib/filebeat
-              subPath: filebeat/var/lib/filebeat
+              subPathExpr: $(POD_NAME)/var/lib/filebeat
           env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.name
             - name: ELASTICSEARCH_URL
               value: 'https://wazuh-elasticsearch-0.wazuh-elasticsearch:9200'
             - name: ELASTIC_USERNAME
@@ -176,14 +179,3 @@ spec:
               value: /etc/ssl/filebeat.pem
             - name: SSL_KEY
               value: /etc/ssl/filebeat.key
-  volumeClaimTemplates:
-    - metadata:
-        name: wazuh-manager-worker
-        namespace: wazuh
-      spec:
-        accessModes:
-          - ReadWriteMany
-        storageClassName: efs-sc
-        resources:
-          requests:
-            storage: 500Mi

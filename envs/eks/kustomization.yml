@@ -8,10 +8,9 @@
 bases:
   - ../../wazuh
 patches:
+  #- storage-class-nfs.yaml
   - storage-class.yaml
-  #- storage-class-nfs.yml
   - elastic-resources.yaml
   - kibana-resources.yaml
-  - wazuh-master-fb-resources.yaml
   - wazuh-master-resources.yaml
   - wazuh-worker-resources.yaml
