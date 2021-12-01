@@ -9,6 +9,7 @@ This guide describes the necessary steps to deploy Wazuh on Kubernetes.
     - Create Persistent Volumes on top of AWS EBS when using a volumeClaimTemplates
     - Create a record set in AWS Route 53 from a Kubernetes LoadBalancer.
 - Having at least two Kubernetes nodes in order to meet the *podAntiAffinity* policy.
+- EFS CSI Driver installed and EFS Filesystem created according to official documentation https://docs.aws.amazon.com/eks/latest/userguide/efs-csi.html
 
 
 ## Overview
@@ -25,11 +26,12 @@ Deployments are intended for stateless use and are quite lightweight and seem to
 
 #### Wazuh master
 
-This pod contains the master node of the Wazuh cluster. The master node centralizes and coordinates worker nodes, making sure the critical and required data is consistent across all nodes.
+This pod contains 2 containers: the master node of the Wazuh cluster and filebeat container. The master node centralizes and coordinates worker nodes, making sure the critical and required data is consistent across all nodes and filebeat container send alerts from master node to elasticsearch cluster.
 The management is performed only in this node, so the agent registration service (authd) and the API are placed here.
 
 Details:
-- Image: Docker Hub 'wazuh/wazuh-odfe'
+- Images: Docker Hub 'wazuh/wazuh-manager'
+          Docker Hub 'wazuh/wazuh-filebeat'
 - Controller: StatefulSet
 
 #### Wazuh worker 0 / 1
@@ -37,7 +39,8 @@ Details:
 These pods contain a worker node of the Wazuh cluster. They will receive the agent events.
 
 Details:
-- Image: Docker Hub 'wazuh/wazuh-odfe'
+- Images: Docker Hub 'wazuh/wazuh-manager'
+          Docker Hub 'wazuh/wazuh-filebeat'
 - Controller: StatefulSet
 
 
@@ -133,7 +136,13 @@ The required certificates are imported via secretGenerator on the `kustomization
         - certs/kibana_http/cert.pem
         - certs/kibana_http/key.pem
 
-### Step 3.2: Apply all manifests using kustomize
+### Step 3.2: Change EFS filesystem information
+
+You need to take the name of the filesystem in the AWS console (example: fs-035361f0eab2bcccf) and modify the Storageclass and Persistantolume build files. The files are as follows:
+- envs/eks/storage-class-nfs.yaml: you need to modify the fileSystemId parameter.
+- wazuh/wazuh-managers/wazuh-master-pv.yaml: you need to modify the volumeHandle parameter in the declaration of both PVs.
+
+### Step 3.3: Apply all manifests using kustomize
 
 We are using the overlay feature of kustomize to create two variants: `eks` and `local-env`, in this guide we're using `eks`. (For a deployment on a local environment check the guide on [local-environment.md](local-environment.md))
 
