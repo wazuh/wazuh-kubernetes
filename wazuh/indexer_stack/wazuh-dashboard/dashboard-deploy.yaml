@@ -5,66 +5,73 @@
 # License (version 2) as published by the FSF - Free Software
 # Foundation.
 
-# Kibana Deployment
+# Dashboard Deployment
 
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: wazuh-kibana
+  name: wazuh-dashboard
   namespace: wazuh
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: wazuh-kibana
+      app: wazuh-dashboard
   template:
     metadata:
       labels:
-        app: wazuh-kibana
-      name: wazuh-kibana
+        app: wazuh-dashboard
+      name: wazuh-dashboard
     spec:
       volumes:
-        - name: kibana-certs
+        - name: config
+          configMap:
+            name: dashboard-conf
+        - name: dashboard-certs
           secret:
-            secretName: kibana-certs
+            secretName: dashboard-certs
       containers:
-        - name: wazuh-kibana
-          image: 'wazuh/wazuh-kibana-odfe:4.3.0'
+        - name: wazuh-dashboard
+          image: 'wazuh/wazuh-dashboard:4.3.0-dev'
           resources:
             limits:
               cpu: 500m
               memory: 1Gi
           volumeMounts:
-            - name: kibana-certs
-              mountPath: /usr/share/kibana/config/cert.pem
+            - name: config
+              mountPath: /etc/wazuh-dashboard/dashboard.yml
+              subPath: dashboard.yml
+              readOnly: false
+            - name: dashboard-certs
+              mountPath: /etc/wazuh-dashboard/certs/cert.pem
               readOnly: true
               subPath: cert.pem
-            - name: kibana-certs
-              mountPath: /usr/share/kibana/config/key.pem
+            - name: dashboard-certs
+              mountPath: /etc/wazuh-dashboard/certs/key.pem
               readOnly: true
               subPath: key.pem
           ports:
             - containerPort: 5601
-              name: kibana
+              name: dashboard
           env:
             - name: ELASTICSEARCH_URL
-              value: 'https://wazuh-elasticsearch-0.wazuh-elasticsearch:9200'
+              value: 'https://wazuh-indexer-0.wazuh-indexer:9700'
             - name: ELASTICSEARCH_USERNAME
               valueFrom:
                 secretKeyRef:
-                  name: elastic-cred
+                  name: indexer-cred
                   key: username
             - name: ELASTICSEARCH_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: elastic-cred
+                  name: indexer-cred
                   key: password
             - name: SERVER_SSL_ENABLED
               value: "true"
             - name: SERVER_SSL_CERTIFICATE
-              value: /usr/share/kibana/config/cert.pem
+              value: /etc/wazuh-dashboard/certs/cert.pem
             - name: SERVER_SSL_KEY
-              value: /usr/share/kibana/config/key.pem
+              value: /etc/wazuh-dashboard/certs/key.pem
             - name: WAZUH_API_URL
               value: https://wazuh-manager-master-0.wazuh-cluster
             - name: API_USERNAME

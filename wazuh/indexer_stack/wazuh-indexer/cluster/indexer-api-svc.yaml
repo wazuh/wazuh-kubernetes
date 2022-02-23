@@ -5,12 +5,20 @@
 # License (version 2) as published by the FSF - Free Software
 # Foundation.
 
-# Wazuh API credentials secret
+# Indexer service: API
 
 apiVersion: v1
-kind: Secret
+kind: Service
 metadata:
-  name: elastic-cred
-data:
-  username: YWRtaW4=              # string "admin" base64 encoded
-  password: U2VjcmV0UGFzc3dvcmQ=  # string "SecretPassword" base64 encoded
+  name: indexer
+  namespace: wazuh
+  labels:
+    app: wazuh-indexer
+spec:
+  type: LoadBalancer
+  selector:
+    app: wazuh-indexer
+  ports:
+    - name: indexer-rest
+      port: 9700
+      targetPort: 9700

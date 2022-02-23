@@ -5,20 +5,20 @@
 # License (version 2) as published by the FSF - Free Software
 # Foundation.
 
-# Elasticsearch service: Communications
+# Indexer service: Communications
 
 apiVersion: v1
 kind: Service
 metadata:
-  name: wazuh-elasticsearch
+  name: wazuh-indexer
   namespace: wazuh
   labels:
-    app: wazuh-elasticsearch
+    app: wazuh-indexer
 spec:
   selector:
-    app: wazuh-elasticsearch
+    app: wazuh-indexer
   ports:
-    - name: es-nodes
-      port: 9300
-      targetPort: 9300
+    - name: indexer-nodes
+      port: 9800
+      targetPort: 9800
   clusterIP: None
