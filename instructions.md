@@ -17,9 +17,9 @@ This guide describes the necessary steps to deploy Wazuh on Kubernetes.
 
 Like a Deployment, a StatefulSet manages Pods that are based on an identical container specification, but it maintains an identity attached to each of its pods. These pods are created from the same specification, but they are not interchangeable: each one has a persistent identifier maintained across any rescheduling.
 
-It is useful for stateful applications like databases that save the data to a persistent storage. The states of each Wazuh manager as well as Elasticsearch are desirable to maintain, so we declare them using StatefulSet to ensure that they maintain their states in every startup.
+It is useful for stateful applications like databases that save the data to a persistent storage. The states of each Wazuh manager as well as Wazuh indexer are desirable to maintain, so we declare them using StatefulSet to ensure that they maintain their states in every startup.
 
-Deployments are intended for stateless use and are quite lightweight and seem to be appropriate for Kibana and Nginx, where it is not necessary to maintain the states.
+Deployments are intended for stateless use and are quite lightweight and seem to be appropriate for Wazuh dashboard and Nginx, where it is not necessary to maintain the states.
 
 ### Pods
 
@@ -29,7 +29,7 @@ This pod contains the master node of the Wazuh cluster. The master node centrali
 The management is performed only in this node, so the agent registration service (authd) and the API are placed here.
 
 Details:
-- Image: Docker Hub 'wazuh/wazuh-odfe'
+- Image: Docker Hub 'wazuh/wazuh-manager'
 - Controller: StatefulSet
 
 #### Wazuh worker 0 / 1
@@ -37,36 +37,36 @@ Details:
 These pods contain a worker node of the Wazuh cluster. They will receive the agent events.
 
 Details:
-- Image: Docker Hub 'wazuh/wazuh-odfe'
+- Image: Docker Hub 'wazuh/wazuh-manager'
 - Controller: StatefulSet
 
 
-#### Elasticsearch
+#### Wazuh Indexer
 
-Elasticsearch pod. Used to build an Elasticsearch cluster.
+Wazuh indexer pod. Used to build an Wazuh indexer cluster.
 
 Details:
-- Image: amazon/opendistro-for-elasticsearch
+- Image: eazuh/wazuh-indexer
 - Controller: StatefulSet
 
-#### Kibana
+#### Wazuh Dashboard
 
-Kibana pod. It lets you visualize your Elasticsearch data, along with other features as the Wazuh app.
+Wazuh dashboard pod. It lets you visualize your Wazuh Indexer data, along with other features as the Wazuh app.
 
 Details:
-- image: Docker Hub 'wazuh/wazuh-kibana-odfe'
+- image: Docker Hub 'wazuh/wazuh-dashboard'
 - Controller: Deployment
 
 ### Services
 
-#### Elastic stack
+#### Indexer stack
 
-- wazuh-elasticsearch:
-  - Communication for Elasticsearch nodes.
-- elasticsearch:
-  - Elasticsearch API. Used by Kibana to write/read alerts.
-- kibana:
-  - Kibana service. https://wazuh.your-domain.com:443
+- wazuh-indexer:
+  - Communication for Wazuh indexer nodes.
+- indexer:
+  - Wazuh indexer API. Used by Wazuh dashboard to write/read alerts.
+- dashboard:
+  - Wazuh dashboard service. https://wazuh.your-domain.com:443
 
 #### Wazuh
 
@@ -95,7 +95,7 @@ We recommend creating domains and certificates to access the services. Examples:
 
 - wazuh-master.your-domain.com: Wazuh API and authd registration service.
 - wazuh-manager.your-domain.com: Reporting service.
-- wazuh.your-domain.com: Kibana and Wazuh app.
+- wazuh.your-domain.com: Wazuh dashboard app.
 
 Note: You can skip this step and the services will be accessible using the Load balancer DNS from the VPC.
 
@@ -110,28 +110,28 @@ $ cd wazuh-kubernetes
 
 ### Step 3.1: Setup SSL certificates
 
-You can generate self-signed certificates for the ODFE cluster using the script at `wazuh/certs/odfe_cluster/generate_certs.sh` or provide your own.
+You can generate self-signed certificates for the Wazuh indexer cluster using the script at `wazuh/certs/indexer_cluster/generate_certs.sh` or provide your own.
 
-Since Kibana has HTTPS enabled it will require its own certificates, these may be generated with: `openssl req -x509 -batch -nodes -days 365 -newkey rsa:2048 -keyout key.pem -out cert.pem`, there is an utility script at `wazuh/certs/kibana_http/generate_certs.sh` to help with this.
+Since Wazuh dashboard has HTTPS enabled it will require its own certificates, these may be generated with: `openssl req -x509 -batch -nodes -days 365 -newkey rsa:2048 -keyout key.pem -out cert.pem`, there is an utility script at `wazuh/certs/dashboard_http/generate_certs.sh` to help with this.
 
 The required certificates are imported via secretGenerator on the `kustomization.yml` file:
 
     secretGenerator:
-    - name: odfe-ssl-certs
+    - name: indexer-certs
         files:
-        - certs/odfe_cluster/root-ca.pem
-        - certs/odfe_cluster/node.pem
-        - certs/odfe_cluster/node-key.pem
-        - certs/odfe_cluster/kibana.pem
-        - certs/odfe_cluster/kibana-key.pem
-        - certs/odfe_cluster/admin.pem
-        - certs/odfe_cluster/admin-key.pem
-        - certs/odfe_cluster/filebeat.pem
-        - certs/odfe_cluster/filebeat-key.pem
-    - name: kibana-certs
+        - certs/indexer_cluster/root-ca.pem
+        - certs/indexer_cluster/node.pem
+        - certs/indexer_cluster/node-key.pem
+        - certs/indexer_cluster/dashboard.pem
+        - certs/indexer_cluster/dashboard-key.pem
+        - certs/indexer_cluster/admin.pem
+        - certs/indexer_cluster/admin-key.pem
+        - certs/indexer_cluster/filebeat.pem
+        - certs/indexer_cluster/filebeat-key.pem
+    - name: dashboard-certs
         files:
-        - certs/kibana_http/cert.pem
-        - certs/kibana_http/key.pem
+        - certs/dashboard_http/cert.pem
+        - certs/dashboard_http/key.pem
 
 ### Step 3.2: Apply all manifests using kustomize
 
@@ -159,21 +159,21 @@ wazuh         Active    12m
 
 ```BASH
 $ kubectl get services -n wazuh
-NAME                  TYPE           CLUSTER-IP       EXTERNAL-IP        PORT(S)                          AGE
-elasticsearch         ClusterIP      xxx.yy.zzz.24    <none>             9200/TCP                         12m
-kibana                ClusterIP      xxx.yy.zzz.76    <none>             5601/TCP                         11m
-wazuh                 LoadBalancer   xxx.yy.zzz.209   internal-a7a8...   1515:32623/TCP,55000:30283/TCP   9m
-wazuh-cluster         ClusterIP      None             <none>             1516/TCP                         9m
-wazuh-elasticsearch   ClusterIP      None             <none>             9300/TCP                         12m
-wazuh-workers         LoadBalancer   xxx.yy.zzz.26    internal-a7f9...   1514:31593/TCP                   9m
+NAME            TYPE           CLUSTER-IP       EXTERNAL-IP             PORT(S)                          AGE
+dashboard       LoadBalancer   10.100.55.244    <entrypoint_assigned>   443:31670/TCP                    4h13m
+indexer         LoadBalancer   10.100.199.148   <entrypoint_assigned>   9700:32270/TCP                   4h13m
+wazuh           LoadBalancer   10.100.176.82    <entrypoint_assigned>   1515:32602/TCP,55000:32116/TCP   4h13m
+wazuh-cluster   ClusterIP      None             <none>                  1516/TCP                         4h13m
+wazuh-indexer   ClusterIP      None             <none>                  9800/TCP                         4h13m
+wazuh-workers   LoadBalancer   10.100.165.20    <entrypoint_assigned>   1514:30128/TCP                   4h13m
 ```
 
 #### Deployments
 
 ```BASH
 $ kubectl get deployments -n wazuh
-NAME             DESIRED   CURRENT   UP-TO-DATE   AVAILABLE   AGE
-wazuh-kibana     1         1         1            1           11m
+NAME              READY   UP-TO-DATE   AVAILABLE   AGE
+wazuh-dashboard   1/1     1            1           4h16m
 ```
 
 #### Statefulsets
@@ -181,33 +181,33 @@ wazuh-kibana     1         1         1            1           11m
 ```BASH
 $ kubectl get statefulsets -n wazuh
 NAME                   READY   AGE
-wazuh-elasticsearch    3/3     15m
-wazuh-manager-master   1/1     15m
-wazuh-manager-worker   2/2     15m
+wazuh-indexer          3/3     4h17m
+wazuh-manager-master   1/1     4h17m
+wazuh-manager-worker   2/2     4h17m
 ```
 
 #### Pods
 
 ```BASH
 $ kubectl get pods -n wazuh
-NAME                            READY   STATUS    RESTARTS   AGE
-wazuh-elasticsearch-0           1/1     Running   0          15m
-wazuh-elasticsearch-1           1/1     Running   0          15m
-wazuh-elasticsearch-2           1/1     Running   0          14m
-wazuh-kibana-7c9657f5c5-z95pt   1/1     Running   0          6m18s
-wazuh-manager-master-0          1/1     Running   0          6m10s
-wazuh-manager-worker-0          1/1     Running   0          8m18s
-wazuh-manager-worker-1          1/1     Running   0          8m38s
+NAME                               READY   STATUS    RESTARTS   AGE
+wazuh-dashboard-57d455f894-ffwsk   1/1     Running   0          4h17m
+wazuh-indexer-0                    1/1     Running   0          4h17m
+wazuh-indexer-1                    1/1     Running   0          4h17m
+wazuh-indexer-2                    1/1     Running   0          4h17m
+wazuh-manager-master-0             1/1     Running   0          4h17m
+wazuh-manager-worker-0             1/1     Running   0          4h17m
+wazuh-manager-worker-1             1/1     Running   0          4h17m
 ```
 
-#### Accessing Kibana
+#### Accessing Wazuh Dashboard
 
-In case you created domain names for the services, you should be able to access Kibana using the proposed domain name: https://wazuh.your-domain.com.
+In case you created domain names for the services, you should be able to access Wazuh dashboard using the proposed domain name: https://wazuh.your-domain.com.
 
 Also, you can access using the External-IP (from the VPC): https://internal-xxx-yyy.us-east-1.elb.amazonaws.com:443
 
 ```BASH
 $ kubectl get services -o wide -n wazuh
-NAME                  TYPE           CLUSTER-IP       EXTERNAL-IP                                                                       PORT(S)                          AGE       SELECTOR
-kibana                LoadBalancer   xxx.xx.xxx.xxx   internal-xxx-yyy.us-east-1.elb.amazonaws.com                                      80:31831/TCP,443:30974/TCP       15m       app=wazuh-kibana
+NAME        TYPE           CLUSTER-IP       EXTERNAL-IP                                                              PORT(S)        AGE     SELECTOR
+dashboard   LoadBalancer   10.100.55.244    a91dadfdf2d33493dad0a267eb85b352-1129724810.us-west-1.elb.amazonaws.com  443:31670/TCP  4h19m   app=wazuh-dashboard
 ```
