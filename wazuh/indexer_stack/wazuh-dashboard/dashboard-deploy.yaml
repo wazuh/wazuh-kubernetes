@@ -54,14 +54,14 @@ spec:
             - containerPort: 5601
               name: dashboard
           env:
-            - name: ELASTICSEARCH_URL
+            - name: INDEXER_URL
               value: 'https://wazuh-indexer-0.wazuh-indexer:9200'
-            - name: ELASTICSEARCH_USERNAME
+            - name: INDEXER_USERNAME
               valueFrom:
                 secretKeyRef:
                   name: indexer-cred
                   key: username
-            - name: ELASTICSEARCH_PASSWORD
+            - name: INDEXER_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: indexer-cred

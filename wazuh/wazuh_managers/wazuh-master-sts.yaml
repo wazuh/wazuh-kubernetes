@@ -109,14 +109,14 @@ spec:
             - containerPort: 55000
               name: api
           env:
-            - name: ELASTICSEARCH_URL
+            - name: INDEXER_URL
               value: 'https://wazuh-indexer-0.wazuh-indexer:9200'
-            - name: ELASTIC_USERNAME
+            - name: INDEXER_USERNAME
               valueFrom:
                 secretKeyRef:
                   name: indexer-cred
                   key: username
-            - name: ELASTIC_PASSWORD
+            - name: INDEXER_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: indexer-cred
