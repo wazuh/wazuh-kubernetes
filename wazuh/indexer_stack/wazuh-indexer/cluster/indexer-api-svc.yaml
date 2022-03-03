@@ -20,5 +20,5 @@ spec:
     app: wazuh-indexer
   ports:
     - name: indexer-rest
-      port: 9700
-      targetPort: 9700
+      port: 9200
+      targetPort: 9200

@@ -1,7 +1,7 @@
 
 server.host: 0.0.0.0
 server.port: 443
-opensearch.hosts: https://indexer:9700
+opensearch.hosts: https://indexer:9200
 opensearch.ssl.verificationMode: none
 opensearch.username: kibanaserver22
 opensearch.password: holamundo1

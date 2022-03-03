@@ -39,8 +39,8 @@ spec:
               memory: 1Gi
           volumeMounts:
             - name: config
-              mountPath: /etc/wazuh-dashboard/dashboard.yml
-              subPath: dashboard.yml
+              mountPath: /etc/wazuh-dashboard/opensearch_dashboards.yml
+              subPath: opensearch_dashboards.yml
               readOnly: false
             - name: dashboard-certs
               mountPath: /etc/wazuh-dashboard/certs/cert.pem
@@ -55,7 +55,7 @@ spec:
               name: dashboard
           env:
             - name: ELASTICSEARCH_URL
-              value: 'https://wazuh-indexer-0.wazuh-indexer:9700'
+              value: 'https://wazuh-indexer-0.wazuh-indexer:9200'
             - name: ELASTICSEARCH_USERNAME
               valueFrom:
                 secretKeyRef:

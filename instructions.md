@@ -161,10 +161,10 @@ wazuh         Active    12m
 $ kubectl get services -n wazuh
 NAME            TYPE           CLUSTER-IP       EXTERNAL-IP             PORT(S)                          AGE
 dashboard       LoadBalancer   10.100.55.244    <entrypoint_assigned>   443:31670/TCP                    4h13m
-indexer         LoadBalancer   10.100.199.148   <entrypoint_assigned>   9700:32270/TCP                   4h13m
+indexer         LoadBalancer   10.100.199.148   <entrypoint_assigned>   9200:32270/TCP                   4h13m
 wazuh           LoadBalancer   10.100.176.82    <entrypoint_assigned>   1515:32602/TCP,55000:32116/TCP   4h13m
 wazuh-cluster   ClusterIP      None             <none>                  1516/TCP                         4h13m
-wazuh-indexer   ClusterIP      None             <none>                  9800/TCP                         4h13m
+wazuh-indexer   ClusterIP      None             <none>                  9300/TCP                         4h13m
 wazuh-workers   LoadBalancer   10.100.165.20    <entrypoint_assigned>   1514:30128/TCP                   4h13m
 ```
 

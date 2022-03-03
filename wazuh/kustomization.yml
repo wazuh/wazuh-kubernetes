@@ -39,7 +39,7 @@ configMapGenerator:
       - wazuh_managers/wazuh_conf/worker.conf
   - name: dashboard-conf
     files:
-      - indexer_stack/wazuh-dashboard/dashboard_conf/dashboard.yml
+      - indexer_stack/wazuh-dashboard/dashboard_conf/opensearch_dashboards.yml
 
 resources:
   - base/wazuh-ns.yaml

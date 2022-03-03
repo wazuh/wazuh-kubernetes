@@ -118,9 +118,9 @@ spec:
               subPath: internal_users.yml
               readOnly: true
           ports:
-            - containerPort: 9700
+            - containerPort: 9200
               name: indexer-rest
-            - containerPort: 9800
+            - containerPort: 9300
               name: indexer-nodes
   volumeClaimTemplates:
     - metadata:

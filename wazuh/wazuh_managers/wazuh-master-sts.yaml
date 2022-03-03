@@ -110,7 +110,7 @@ spec:
               name: api
           env:
             - name: ELASTICSEARCH_URL
-              value: 'https://wazuh-indexer-0.wazuh-indexer:9700'
+              value: 'https://wazuh-indexer-0.wazuh-indexer:9200'
             - name: ELASTIC_USERNAME
               valueFrom:
                 secretKeyRef:

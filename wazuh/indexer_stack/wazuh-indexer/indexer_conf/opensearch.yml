@@ -5,8 +5,6 @@ discovery.seed_hosts: wazuh-indexer-0.wazuh-indexer
 cluster.initial_master_nodes:
   - wazuh-indexer-0
 
-http.port: 9700-9799
-transport.tcp.port: 9800-9899
 node.max_local_storage_nodes: "3"
 path.data: /var/lib/wazuh-indexer
 path.logs: /var/log/wazuh-indexer
