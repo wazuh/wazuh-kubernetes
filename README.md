@@ -52,7 +52,7 @@ The [instructions.md](instructions.md) file describes how to deploy Wazuh on Kub
     ├── indexer_stack
     │   ├── wazuh-dashboard
     │   │   ├── dashboard_conf
-    │   │   │   └── dashboard.yml
+    │   │   │   └── opensearch_dashboards.yml
     │   │   ├── dashboard-deploy.yaml
     │   │   └── dashboard-svc.yaml
     │   └── wazuh-indexer
