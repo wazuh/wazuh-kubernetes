@@ -122,7 +122,7 @@ spec:
                   name: indexer-cred
                   key: password
             - name: FILEBEAT_SSL_VERIFICATION_MODE
-              value: 'none'
+              value: 'full'
             - name: SSL_CERTIFICATE_AUTHORITIES
               value: /etc/ssl/root-ca.pem
             - name: SSL_CERTIFICATE

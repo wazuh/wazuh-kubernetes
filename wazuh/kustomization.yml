@@ -27,6 +27,7 @@ secretGenerator:
     files:
       - certs/dashboard_http/cert.pem
       - certs/dashboard_http/key.pem
+      - certs/indexer_cluster/root-ca.pem
 
 configMapGenerator:
   - name: indexer-conf
