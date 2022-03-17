@@ -39,15 +39,15 @@ spec:
               memory: 1Gi
           volumeMounts:
             - name: config
-              mountPath: /etc/wazuh-dashboard/opensearch_dashboards.yml
+              mountPath: /usr/share/wazuh-dashboard/opensearch_dashboards.yml
               subPath: opensearch_dashboards.yml
               readOnly: false
             - name: dashboard-certs
-              mountPath: /etc/wazuh-dashboard/certs/cert.pem
+              mountPath: /usr/share/wazuh-dashboard/certs/cert.pem
               readOnly: true
               subPath: cert.pem
             - name: dashboard-certs
-              mountPath: /etc/wazuh-dashboard/certs/key.pem
+              mountPath: /usr/share/wazuh-dashboard/certs/key.pem
               readOnly: true
               subPath: key.pem
           ports:
@@ -69,9 +69,9 @@ spec:
             - name: SERVER_SSL_ENABLED
               value: "true"
             - name: SERVER_SSL_CERTIFICATE
-              value: /etc/wazuh-dashboard/certs/cert.pem
+              value: /usr/share/wazuh-dashboard/certs/cert.pem
             - name: SERVER_SSL_KEY
-              value: /etc/wazuh-dashboard/certs/key.pem
+              value: /usr/share/wazuh-dashboard/certs/key.pem
             - name: WAZUH_API_URL
               value: https://wazuh-manager-master-0.wazuh-cluster
             - name: API_USERNAME
