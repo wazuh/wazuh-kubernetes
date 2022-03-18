@@ -41,7 +41,7 @@ Details:
 - Controller: StatefulSet
 
 
-#### Wazuh Indexer
+#### Wazuh indexer
 
 Wazuh indexer pod. Used to build an Wazuh indexer cluster.
 
@@ -49,7 +49,7 @@ Details:
 - Image: wazuh/wazuh-indexer
 - Controller: StatefulSet
 
-#### Wazuh Dashboard
+#### Wazuh dashboard
 
 Wazuh dashboard pod. It lets you visualize your Wazuh Indexer data, along with other features as the Wazuh app.
 
@@ -200,7 +200,7 @@ wazuh-manager-worker-0             1/1     Running   0          4h17m
 wazuh-manager-worker-1             1/1     Running   0          4h17m
 ```
 
-#### Accessing Wazuh Dashboard
+#### Accessing Wazuh dashboard
 
 In case you created domain names for the services, you should be able to access Wazuh dashboard using the proposed domain name: https://wazuh.your-domain.com.
 
