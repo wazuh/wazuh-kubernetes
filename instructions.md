@@ -51,7 +51,7 @@ Details:
 
 #### Wazuh dashboard
 
-Wazuh dashboard pod. It lets you visualize your Wazuh Indexer data, along with other features as the Wazuh app.
+Wazuh dashboard pod. It lets you visualize your Wazuh indexer data, along with other features as the Wazuh app.
 
 Details:
 - image: Docker Hub 'wazuh/wazuh-dashboard'
