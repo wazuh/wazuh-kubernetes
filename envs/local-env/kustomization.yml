@@ -9,5 +9,5 @@ bases:
   - ../../wazuh
 patches:
   - storage-class.yaml
-  - elastic-resources.yaml
+  - indexer-resources.yaml
   - wazuh-resources.yaml
