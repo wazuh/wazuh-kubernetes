@@ -19,6 +19,6 @@ spec:
     app: wazuh-indexer
   ports:
     - name: indexer-nodes
-      port: 9800
-      targetPort: 9800
+      port: 9300
+      targetPort: 9300
   clusterIP: None
