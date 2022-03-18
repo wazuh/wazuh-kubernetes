@@ -46,7 +46,7 @@ Details:
 Wazuh indexer pod. Used to build an Wazuh indexer cluster.
 
 Details:
-- Image: eazuh/wazuh-indexer
+- Image: wazuh/wazuh-indexer
 - Controller: StatefulSet
 
 #### Wazuh Dashboard
