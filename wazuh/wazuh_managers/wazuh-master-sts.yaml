@@ -39,7 +39,7 @@ spec:
             secretName: wazuh-authd-pass
       containers:
         - name: wazuh-manager
-          image: 'wazuh/wazuh-odfe:4.2.6'
+          image: 'wazuh/wazuh-odfe:4.4.0'
           resources:
             limits:
               cpu: 400m
