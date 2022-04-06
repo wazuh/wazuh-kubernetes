@@ -63,7 +63,7 @@ spec:
           resources:
             limits:
               cpu: 500m
-              memory: 1Gi
+              memory: 1564Mi
           env:
             - name: ES_JAVA_OPTS
               value: '-Xms1g -Xmx1g -Dlog4j2.formatMsgNoLookups=true'
