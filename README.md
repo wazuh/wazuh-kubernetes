@@ -19,65 +19,65 @@ The [instructions.md](instructions.md) file describes how to deploy Wazuh on Kub
 
 ## Directory structure
 
-├── CHANGELOG.md
-├── cleanup.md
-├── envs
-│   ├── eks
-│   │   ├── dashboard-resources.yaml
-│   │   ├── indexer-resources.yaml
-│   │   ├── kustomization.yml
-│   │   ├── storage-class.yaml
-│   │   ├── wazuh-master-resources.yaml
-│   │   └── wazuh-worker-resources.yaml
-│   └── local-env
-│       ├── indexer-resources.yaml
-│       ├── kustomization.yml
-│       ├── storage-class.yaml
-│       └── wazuh-resources.yaml
-├── instructions.md
-├── LICENSE
-├── local-environment.md
-├── README.md
-├── upgrade.md
-├── VERSION
-└── wazuh
-    ├── base
-    │   ├── storage-class.yaml
-    │   └── wazuh-ns.yaml
-    ├── certs
-    │   ├── dashboard_http
-    │   │   └── generate_certs.sh
-    │   └── indexer_cluster
-    │       └── generate_certs.sh
-    ├── indexer_stack
-    │   ├── wazuh-dashboard
-    │   │   ├── dashboard_conf
-    │   │   │   └── opensearch_dashboards.yml
-    │   │   ├── dashboard-deploy.yaml
-    │   │   └── dashboard-svc.yaml
-    │   └── wazuh-indexer
-    │       ├── cluster
-    │       │   ├── indexer-api-svc.yaml
-    │       │   └── indexer-sts.yaml
-    │       ├── indexer_conf
-    │       │   ├── internal_users.yml
-    │       │   └── opensearch.yml
-    │       └── indexer-svc.yaml
-    ├── kustomization.yml
-    ├── secrets
-    │   ├── indexer-cred-secret.yaml
-    │   ├── wazuh-api-cred-secret.yaml
-    │   ├── wazuh-authd-pass-secret.yaml
-    │   └── wazuh-cluster-key-secret.yaml
-    └── wazuh_managers
-        ├── wazuh-cluster-svc.yaml
-        ├── wazuh_conf
-        │   ├── master.conf
-        │   └── worker.conf
-        ├── wazuh-master-sts.yaml
-        ├── wazuh-master-svc.yaml
-        ├── wazuh-workers-svc.yaml
-        └── wazuh-worker-sts.yaml
+    ├── CHANGELOG.md
+    ├── cleanup.md
+    ├── envs
+    │   ├── eks
+    │   │   ├── dashboard-resources.yaml
+    │   │   ├── indexer-resources.yaml
+    │   │   ├── kustomization.yml
+    │   │   ├── storage-class.yaml
+    │   │   ├── wazuh-master-resources.yaml
+    │   │   └── wazuh-worker-resources.yaml
+    │   └── local-env
+    │       ├── indexer-resources.yaml
+    │       ├── kustomization.yml
+    │       ├── storage-class.yaml
+    │       └── wazuh-resources.yaml
+    ├── instructions.md
+    ├── LICENSE
+    ├── local-environment.md
+    ├── README.md
+    ├── upgrade.md
+    ├── VERSION
+    └── wazuh
+        ├── base
+        │   ├── storage-class.yaml
+        │   └── wazuh-ns.yaml
+        ├── certs
+        │   ├── dashboard_http
+        │   │   └── generate_certs.sh
+        │   └── indexer_cluster
+        │       └── generate_certs.sh
+        ├── indexer_stack
+        │   ├── wazuh-dashboard
+        │   │   ├── dashboard_conf
+        │   │   │   └── opensearch_dashboards.yml
+        │   │   ├── dashboard-deploy.yaml
+        │   │   └── dashboard-svc.yaml
+        │   └── wazuh-indexer
+        │       ├── cluster
+        │       │   ├── indexer-api-svc.yaml
+        │       │   └── indexer-sts.yaml
+        │       ├── indexer_conf
+        │       │   ├── internal_users.yml
+        │       │   └── opensearch.yml
+        │       └── indexer-svc.yaml
+        ├── kustomization.yml
+        ├── secrets
+        │   ├── indexer-cred-secret.yaml
+        │   ├── wazuh-api-cred-secret.yaml
+        │   ├── wazuh-authd-pass-secret.yaml
+        │   └── wazuh-cluster-key-secret.yaml
+        └── wazuh_managers
+            ├── wazuh-cluster-svc.yaml
+            ├── wazuh_conf
+            │   ├── master.conf
+            │   └── worker.conf
+            ├── wazuh-master-sts.yaml
+            ├── wazuh-master-svc.yaml
+            ├── wazuh-workers-svc.yaml
+            └── wazuh-worker-sts.yaml
 
 
 ## Branches
