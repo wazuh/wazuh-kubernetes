@@ -65,6 +65,7 @@ The [instructions.md](instructions.md) file describes how to deploy Wazuh on Kub
         │       └── indexer-svc.yaml
         ├── kustomization.yml
         ├── secrets
+        │   ├── dashboard-cred-secret.yaml
         │   ├── indexer-cred-secret.yaml
         │   ├── wazuh-api-cred-secret.yaml
         │   ├── wazuh-authd-pass-secret.yaml

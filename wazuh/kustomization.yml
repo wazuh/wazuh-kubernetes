@@ -49,6 +49,7 @@ resources:
   - secrets/wazuh-api-cred-secret.yaml
   - secrets/wazuh-authd-pass-secret.yaml
   - secrets/wazuh-cluster-key-secret.yaml
+  - secrets/dashboard-cred-secret.yaml
   - secrets/indexer-cred-secret.yaml
 
   - wazuh_managers/wazuh-cluster-svc.yaml
