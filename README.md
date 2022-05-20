@@ -5,7 +5,7 @@
 [![Documentation](https://img.shields.io/badge/docs-view-green.svg)](https://documentation.wazuh.com)
 [![Documentation](https://img.shields.io/badge/web-view-green.svg)](https://wazuh.com)
 
-Deploy a Wazuh cluster with a basic Elastic stack on Kubernetes .
+Deploy a Wazuh cluster with a basic indexer and dashboard stack on Kubernetes .
 
 ## Branches
 
@@ -21,48 +21,52 @@ The [instructions.md](instructions.md) file describes how to deploy Wazuh on Kub
 
     ├── CHANGELOG.md
     ├── cleanup.md
-    ├── instructions.md
-    ├── LICENSE
-    ├── README.md
-    ├── upgrade.md
-    ├── VERSION
     ├── envs
     │   ├── eks
-    │   │   ├── elastic-resources.yaml
-    │   │   ├── kibana-resources.yaml
+    │   │   ├── dashboard-resources.yaml
+    │   │   ├── indexer-resources.yaml
     │   │   ├── kustomization.yml
     │   │   ├── storage-class.yaml
     │   │   ├── wazuh-master-resources.yaml
     │   │   └── wazuh-worker-resources.yaml
     │   └── local-env
-    │       ├── elastic-resources.yaml
+    │       ├── indexer-resources.yaml
     │       ├── kustomization.yml
     │       ├── storage-class.yaml
     │       └── wazuh-resources.yaml
+    ├── instructions.md
+    ├── LICENSE
+    ├── local-environment.md
+    ├── README.md
+    ├── upgrade.md
+    ├── VERSION
     └── wazuh
         ├── base
         │   ├── storage-class.yaml
         │   └── wazuh-ns.yaml
         ├── certs
-        │   ├── kibana_http
-        │   │   ├── generate_certs.sh
-        │   └── odfe_cluster
-        │       ├── generate_certs.sh
-        ├── elastic_stack
-        │   ├── elasticsearch
-        │   │   ├── cluster
-        │   │   │   ├── elasticsearch-api-svc.yaml
-        │   │   │   └── elasticsearch-sts.yaml
-        │   │   ├── elastic_conf
-        │   │   │   ├── elasticsearch.yml
-        │   │   │   └── internal_users.yml
-        │   │   └── elasticsearch-svc.yaml
-        │   └── kibana
-        │       ├── kibana-deploy.yaml
-        │       └── kibana-svc.yaml
+        │   ├── dashboard_http
+        │   │   └── generate_certs.sh
+        │   └── indexer_cluster
+        │       └── generate_certs.sh
+        ├── indexer_stack
+        │   ├── wazuh-dashboard
+        │   │   ├── dashboard_conf
+        │   │   │   └── opensearch_dashboards.yml
+        │   │   ├── dashboard-deploy.yaml
+        │   │   └── dashboard-svc.yaml
+        │   └── wazuh-indexer
+        │       ├── cluster
+        │       │   ├── indexer-api-svc.yaml
+        │       │   └── indexer-sts.yaml
+        │       ├── indexer_conf
+        │       │   ├── internal_users.yml
+        │       │   └── opensearch.yml
+        │       └── indexer-svc.yaml
         ├── kustomization.yml
         ├── secrets
-        │   ├── elastic-cred-secret.yaml
+        │   ├── dashboard-cred-secret.yaml
+        │   ├── indexer-cred-secret.yaml
         │   ├── wazuh-api-cred-secret.yaml
         │   ├── wazuh-authd-pass-secret.yaml
         │   └── wazuh-cluster-key-secret.yaml
@@ -75,7 +79,6 @@ The [instructions.md](instructions.md) file describes how to deploy Wazuh on Kub
             ├── wazuh-master-svc.yaml
             ├── wazuh-workers-svc.yaml
             └── wazuh-worker-sts.yaml
-
 
 
 ## Branches

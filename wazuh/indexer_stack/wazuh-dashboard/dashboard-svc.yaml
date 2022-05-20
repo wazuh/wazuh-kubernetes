@@ -5,15 +5,15 @@
 # License (version 2) as published by the FSF - Free Software
 # Foundation.
 
-# Kibana service
+# Dashboard service
 
 apiVersion: v1
 kind: Service
 metadata:
-  name: kibana
+  name: dashboard
   namespace: wazuh
   labels:
-    app: wazuh-kibana
+    app: wazuh-dashboard
     # dns: route53
   annotations:
     # domainName: 'changeme'
@@ -23,8 +23,8 @@ metadata:
 spec:
   type: LoadBalancer
   selector:
-    app: wazuh-kibana
+    app: wazuh-dashboard
   ports:
-    - name: kibana
+    - name: dashboard
       port: 443
       targetPort: 5601

@@ -27,28 +27,29 @@ $ cd wazuh-kubernetes
 
 ### Setup SSL certificates
 
-You can generate self-signed certificates for the ODFE cluster using the script at `wazuh/certs/odfe_cluster/generate_certs.sh` or provide your own.
+You can generate self-signed certificates for the ODFE cluster using the script at `wazuh/certs/indexer_cluster/generate_certs.sh` or provide your own.
 
-Since Kibana has HTTPS enabled it will require its own certificates, these may be generated with: `openssl req -x509 -batch -nodes -days 365 -newkey rsa:2048 -keyout key.pem -out cert.pem`, there is an utility script at `wazuh/certs/kibana_http/generate_certs.sh` to help with this.
+Since Dashboard has HTTPS enabled it will require its own certificates, these may be generated with: `openssl req -x509 -batch -nodes -days 365 -newkey rsa:2048 -keyout key.pem -out cert.pem`, there is an utility script at `wazuh/certs/dashboard_http/generate_certs.sh` to help with this.
 
 The required certificates are imported via secretGenerator on the `kustomization.yml` file:
 
     secretGenerator:
-    - name: odfe-ssl-certs
+    - name: indexer-ssl-certs
         files:
-        - certs/odfe_cluster/root-ca.pem
-        - certs/odfe_cluster/node.pem
-        - certs/odfe_cluster/node-key.pem
-        - certs/odfe_cluster/kibana.pem
-        - certs/odfe_cluster/kibana-key.pem
-        - certs/odfe_cluster/admin.pem
-        - certs/odfe_cluster/admin-key.pem
-        - certs/odfe_cluster/filebeat.pem
-        - certs/odfe_cluster/filebeat-key.pem
-    - name: kibana-certs
+        - certs/indexer_cluster/root-ca.pem
+        - certs/indexer_cluster/root-ca-key.pem
+        - certs/indexer_cluster/node.pem
+        - certs/indexer_cluster/node-key.pem
+        - certs/indexer_cluster/dashboard.pem
+        - certs/indexer_cluster/dashboard-key.pem
+        - certs/indexer_cluster/admin.pem
+        - certs/indexer_cluster/admin-key.pem
+        - certs/indexer_cluster/filebeat.pem
+        - certs/indexer_cluster/filebeat-key.pem
+    - name: dashboard-certs
         files:
-        - certs/kibana_http/cert.pem
-        - certs/kibana_http/key.pem
+        - certs/dashboard_http/cert.pem
+        - certs/dashboard_http/key.pem
 
 ### Tune storage class with custom provisioner
 
@@ -79,12 +80,12 @@ By using the kustomization file on the `local-env` variant we can now deploy the
 $ kubectl apply -k envs/local-env/
 ```
 
-#### Accessing Kibana
+#### Accessing Dashboard
 
-To access the Kibana interface you can use port-forward:
+To access the Dashboard interface you can use port-forward:
 
 ```bash
-$ kubectl -n wazuh port-forward service/kibana 8443:443
+$ kubectl -n wazuh port-forward service/dashboard 8443:443
 ```
 
-Kibana will be accesible on ``https://localhost:8443``.
+Dashboard will be accesible on ``https://localhost:8443``.

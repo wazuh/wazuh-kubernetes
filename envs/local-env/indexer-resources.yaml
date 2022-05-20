@@ -8,13 +8,14 @@
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: wazuh-elasticsearch
+  name: wazuh-indexer
   namespace: wazuh
 spec:
+  replicas: 1
   template:
     spec:
       containers:
-        - name: wazuh-elasticsearch
+        - name: wazuh-indexer
           resources:
             requests:
               cpu: 500m
@@ -22,14 +23,3 @@ spec:
             limits:
               cpu: 1
               memory: 2Gi
-  volumeClaimTemplates:
-    - metadata:
-        name: wazuh-elasticsearch
-        namespace: es-cluster
-      spec:
-        accessModes:
-          - ReadWriteOnce
-        storageClassName: wazuh-storage
-        resources:
-          requests:
-            storage: 10Gi
