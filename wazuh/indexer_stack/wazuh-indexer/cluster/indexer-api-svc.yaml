@@ -5,10 +5,20 @@
 # License (version 2) as published by the FSF - Free Software
 # Foundation.
 
-apiVersion: apps/v1
-kind: StatefulSet
+# Indexer service: API
+
+apiVersion: v1
+kind: Service
 metadata:
-  name: wazuh-elasticsearch
+  name: indexer
   namespace: wazuh
+  labels:
+    app: wazuh-indexer
 spec:
-  replicas: 1
+  type: LoadBalancer
+  selector:
+    app: wazuh-indexer
+  ports:
+    - name: indexer-rest
+      port: 9200
+      targetPort: 9200

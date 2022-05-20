@@ -39,10 +39,10 @@ spec:
             name: wazuh-conf
         - name: filebeat-certs
           secret:
-            secretName: odfe-ssl-certs
+            secretName: indexer-certs
       containers:
         - name: wazuh-manager
-          image: 'wazuh/wazuh-odfe:4.2.6'
+          image: 'wazuh/wazuh-manager:4.3.1'
           resources:
             limits:
               cpu: 400m
@@ -106,20 +106,20 @@ spec:
             - containerPort: 1516
               name: cluster
           env:
-            - name: ELASTICSEARCH_URL
-              value: 'https://wazuh-elasticsearch-0.wazuh-elasticsearch:9200'
-            - name: ELASTIC_USERNAME
+            - name: INDEXER_URL
+              value: 'https://wazuh-indexer-0.wazuh-indexer:9200'
+            - name: INDEXER_USERNAME
               valueFrom:
                 secretKeyRef:
-                  name: elastic-cred
+                  name: indexer-cred
                   key: username
-            - name: ELASTIC_PASSWORD
+            - name: INDEXER_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: elastic-cred
+                  name: indexer-cred
                   key: password
             - name: FILEBEAT_SSL_VERIFICATION_MODE
-              value: 'none'
+              value: 'full'
             - name: SSL_CERTIFICATE_AUTHORITIES
               value: /etc/ssl/root-ca.pem
             - name: SSL_CERTIFICATE

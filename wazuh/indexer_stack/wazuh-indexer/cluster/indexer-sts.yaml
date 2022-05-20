@@ -5,33 +5,33 @@
 # License (version 2) as published by the FSF - Free Software
 # Foundation.
 
-# Elasticsearch StatefulSet: 3 master nodes.
+# Indexer StatefulSet: 3 master nodes.
 
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: wazuh-elasticsearch
+  name: wazuh-indexer
   namespace: wazuh
 spec:
   replicas: 3
   selector:
     matchLabels:
-      app: wazuh-elasticsearch
-  serviceName: wazuh-elasticsearch
+      app: wazuh-indexer
+  serviceName: wazuh-indexer
   template:
     metadata:
       labels:
-        app: wazuh-elasticsearch
-      name: wazuh-elasticsearch
+        app: wazuh-indexer
+      name: wazuh-indexer
     spec:
-      # Set the wazuh-elasticsearch volume permissions so the elasticsearch user can use it
+      # Set the wazuh-indexer volume permissions so the wazuh-indexer user can use it
       volumes:
-        - name: odfe-ssl-certs
+        - name: indexer-certs
           secret:
-            secretName: odfe-ssl-certs
-        - name: elastic-odfe-conf
+            secretName: indexer-certs
+        - name: indexer-conf
           configMap:
-            name: elastic-odfe-conf
+            name: indexer-conf
       initContainers:
         - name: volume-mount-hack
           image: busybox
@@ -45,10 +45,10 @@ spec:
           command:
             - sh
             - '-c'
-            - 'chown -R 1000:1000 /usr/share/elasticsearch/data'
+            - 'chown -R 1000:1000 /usr/share/wazuh-indexer/data'
           volumeMounts:
-            - name: wazuh-elasticsearch
-              mountPath: /usr/share/elasticsearch/data
+            - name: wazuh-indexer
+              mountPath: /usr/share/wazuh-indexer/data
         - name: increase-the-vm-max-map-count
           image: busybox
           command:
@@ -58,15 +58,15 @@ spec:
           securityContext:
             privileged: true
       containers:
-        - name: wazuh-elasticsearch
-          image: 'amazon/opendistro-for-elasticsearch:1.13.2'
+        - name: wazuh-indexer
+          image: 'wazuh/wazuh-indexer:4.3.1'
           resources:
             limits:
               cpu: 500m
-              memory: 1Gi
+              memory: 1564Mi
           env:
             - name: ES_JAVA_OPTS
-              value: '-Xms1g -Xmx1g'
+              value: '-Xms1g -Xmx1g -Dlog4j2.formatMsgNoLookups=true'
             - name: CLUSTER_NAME
               value: wazuh
             - name: NETWORK_HOST
@@ -76,7 +76,7 @@ spec:
                 fieldRef:
                   fieldPath: metadata.name
             - name: DISCOVERY_SERVICE
-              value: wazuh-elasticsearch
+              value: wazuh-indexer
             - name: KUBERNETES_NAMESPACE
               valueFrom:
                 fieldRef:
@@ -87,45 +87,45 @@ spec:
             capabilities:
               add: ["SYS_CHROOT"]
           volumeMounts:
-            - name: wazuh-elasticsearch
-              mountPath: /usr/share/elasticsearch/data
-            - name: odfe-ssl-certs
-              mountPath: /usr/share/elasticsearch/config/node-key.pem
+            - name: wazuh-indexer
+              mountPath: /usr/share/wazuh-indexer/data
+            - name: indexer-certs
+              mountPath: /usr/share/wazuh-indexer/config/certs/node-key.pem
               subPath: node-key.pem
               readOnly: true
-            - name: odfe-ssl-certs
-              mountPath: /usr/share/elasticsearch/config/node.pem
+            - name: indexer-certs
+              mountPath: /usr/share/wazuh-indexer/config/certs/node.pem
               subPath: node.pem
               readOnly: true
-            - name: odfe-ssl-certs
-              mountPath: /usr/share/elasticsearch/config/root-ca.pem
+            - name: indexer-certs
+              mountPath: /usr/share/wazuh-indexer/config/certs/root-ca.pem
               subPath: root-ca.pem
               readOnly: true
-            - name: odfe-ssl-certs
-              mountPath: /usr/share/elasticsearch/config/admin.pem
+            - name: indexer-certs
+              mountPath: /usr/share/wazuh-indexer/config/certs/admin.pem
               subPath: admin.pem
               readOnly: true
-            - name: odfe-ssl-certs
-              mountPath: /usr/share/elasticsearch/config/admin-key.pem
+            - name: indexer-certs
+              mountPath: /usr/share/wazuh-indexer/config/certs/admin-key.pem
               subPath: admin-key.pem
               readOnly: true
-            - name: elastic-odfe-conf
-              mountPath: /usr/share/elasticsearch/config/elasticsearch.yml
-              subPath: elasticsearch.yml
+            - name: indexer-conf
+              mountPath: /usr/share/wazuh-indexer/config/opensearch.yml
+              subPath: opensearch.yml
               readOnly: true
-            - name: elastic-odfe-conf
-              mountPath: /usr/share/elasticsearch/plugins/opendistro_security/securityconfig/internal_users.yml
+            - name: indexer-conf
+              mountPath: /usr/share/wazuh-indexer/plugins/opensearch-security/securityconfig/internal_users.yml
               subPath: internal_users.yml
               readOnly: true
           ports:
             - containerPort: 9200
-              name: es-rest
+              name: indexer-rest
             - containerPort: 9300
-              name: es-nodes
+              name: indexer-nodes
   volumeClaimTemplates:
     - metadata:
-        name: wazuh-elasticsearch
-        namespace: es-cluster
+        name: wazuh-indexer
+        namespace: indexer-cluster
       spec:
         accessModes:
           - ReadWriteOnce
