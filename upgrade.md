@@ -32,7 +32,7 @@ We have our newly created Kubernetes environment following our instructions. In 
 ```
 containers:
 - name: wazuh-manager
-  image: 'wazuh/wazuh:3.13.4_7.9.1'
+  image: 'wazuh/wazuh:3.13.4_7.9.2'
 ```
 
 Let's proceed by creating a set of rules in our `local_rules.xml` file at location `/var/ossec/etc/rules` in our wazuh manager master pod.
@@ -187,7 +187,7 @@ And now we're going to upgrade to the next version:
 ```
 containers:
 - name: wazuh-manager
-  image: 'wazuh/wazuh:3.13.4_7.9.1'
+  image: 'wazuh/wazuh:3.13.4_7.9.2'
 ```
 
 
