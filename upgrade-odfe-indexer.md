@@ -1,13 +1,13 @@
 1- Review reclaim-policy of the PV associated with opendistro, it has to be "Retain"
 ```
-$ kubectl get pvc -n wazuh
-NAME                                          STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS    AGE
-wazuh-elasticsearch-wazuh-elasticsearch-0     Bound    pvc-c12830dd-626c-4713-b7cf-fc078b178be3   10Gi       RWO            wazuh-storage   30m
-wazuh-elasticsearch-wazuh-elasticsearch-1     Bound    pvc-22edfa15-ef80-4130-8763-1ab6c28ce4a8   10Gi       RWO            wazuh-storage   29m
-wazuh-elasticsearch-wazuh-elasticsearch-2     Bound    pvc-0e2cf63d-ef72-4ab5-bf4a-c73ac01c0bd2   10Gi       RWO            wazuh-storage   29m
-wazuh-manager-master-wazuh-manager-master-0   Bound    pvc-9e8b31f7-e367-4986-957b-18017d21962b   50Gi       RWO            wazuh-storage   30m
-wazuh-manager-worker-wazuh-manager-worker-0   Bound    pvc-6fd06423-03c2-4374-bf03-7ec95d8711ab   50Gi       RWO            wazuh-storage   30m
-wazuh-manager-worker-wazuh-manager-worker-1   Bound    pvc-e10af5fc-de0d-4cbc-8899-e244905108b1   50Gi       RWO            wazuh-storage   30m
+$ kubectl get pv
+NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS     CLAIM                                               STORAGECLASS    REASON   AGE
+pvc-0e2cf63d-ef72-4ab5-bf4a-c73ac01c0bd2   10Gi       RWO            Retain           Bound   wazuh/wazuh-elasticsearch-wazuh-elasticsearch-2     wazuh-storage            39m
+pvc-22edfa15-ef80-4130-8763-1ab6c28ce4a8   10Gi       RWO            Retain           Bound   wazuh/wazuh-elasticsearch-wazuh-elasticsearch-1     wazuh-storage            39m
+pvc-6fd06423-03c2-4374-bf03-7ec95d8711ab   50Gi       RWO            Retain           Bound   wazuh/wazuh-manager-worker-wazuh-manager-worker-0   wazuh-storage            39m
+pvc-9e8b31f7-e367-4986-957b-18017d21962b   50Gi       RWO            Retain           Bound   wazuh/wazuh-manager-master-wazuh-manager-master-0   wazuh-storage            39m
+pvc-c12830dd-626c-4713-b7cf-fc078b178be3   10Gi       RWO            Retain           Bound   wazuh/wazuh-elasticsearch-wazuh-elasticsearch-0     wazuh-storage            40m
+pvc-e10af5fc-de0d-4cbc-8899-e244905108b1   50Gi       RWO            Retain           Bound   wazuh/wazuh-manager-worker-wazuh-manager-worker-1   wazuh-storage            39m
 ```
 
 Save the output data since we will use the names of the PVs
