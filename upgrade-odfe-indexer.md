@@ -12,7 +12,7 @@ wazuh-manager-worker-wazuh-manager-worker-1   Bound    pvc-e10af5fc-de0d-4cbc-88
 
 Save the output data since we will use the names of the PVs
 
-2- extract yaml metadata for all PVCs in the namespace
+2- Extract yaml metadata for all PVCs in the namespace
 ```
 kubectl get pvc wazuh-elasticsearch-wazuh-elasticsearch-0 -n wazuh -o yaml
 kubectl get pvc wazuh-elasticsearch-wazuh-elasticsearch-1 -n wazuh -o yaml
@@ -60,12 +60,12 @@ kubectl patch pv pvc-6fd06423-03c2-4374-bf03-7ec95d8711ab --type json -p '[{"op"
 kubectl patch pv pvc-e10af5fc-de0d-4cbc-8899-e244905108b1 --type json -p '[{"op": "remove", "path": "/spec/claimRef"}]'
 ```
 
-4- Create a new wazuh's namespace
+5- Create a new wazuh's namespace
 ```
 kubectl create ns wazuh
 ```
 
-5- Create yaml scripts for each pvc, you need to modify the annotations and volume name with the data from the scripts in point 3.
+6- Create yaml scripts for each pvc, you need to modify the annotations and volume name with the data from the scripts in point 3.
 
 The data correlation between the 4.2 PVCs and the new 4.3 PVCs is as follows:
 ```
@@ -249,7 +249,7 @@ kubectl apply -f pvc-worker-0.yml
 kubectl apply -f pvc-worker-1.yml
 ```
 
-6- Verify that the PVs and PVCs are created and correctly assigned
+7- Verify that the PVs and PVCs are created and correctly assigned
 ```
 $ kubectl get pv
 NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                                               STORAGECLASS    REASON   AGE
@@ -269,9 +269,9 @@ wazuh-manager-worker-wazuh-manager-worker-0   Bound    pvc-6fd06423-03c2-4374-bf
 wazuh-manager-worker-wazuh-manager-worker-1   Bound    pvc-e10af5fc-de0d-4cbc-8899-e244905108b1   50Gi       RWO            wazuh-storage   19s
 ```
 
-7- From the wazuh-kubernetes repository, in the new version (v4.3.4) perform the new deploy.
+8- From the wazuh-kubernetes repository, in the new version (v4.3.4) perform the new deploy.
 
-8- Check the status of the pods
+9- Check the status of the pods
 ```
 $ kubectl get pods -n wazuh
 NAME                               READY   STATUS    RESTARTS   AGE
@@ -284,7 +284,7 @@ wazuh-manager-worker-0             1/1     Running   0          4h20m
 wazuh-manager-worker-1             1/1     Running   0          4h20m
 ```
 
-9- Modify file permissions within Wazuh manager pods
+10- Modify file permissions within Wazuh manager pods
 ```
 $ kubectl exec -it wazuh-manager-master-0 -n wazuh bash
 root@wazuh-manager-master-0:/# find / -group 997 -exec chown :101 {} +
@@ -303,7 +303,7 @@ root@wazuh-manager-worker-1:/# exit
 command terminated with exit code 1
 ```
 
-10- Restart Wazuh manager pods
+11- Restart Wazuh manager pods
 ```
 kubectl delete pod -n wazuh wazuh-manager-master-0
 kubectl delete pod -n wazuh wazuh-manager-worker-0
