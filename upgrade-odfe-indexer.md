@@ -33,21 +33,7 @@ configmap "indexer-conf-765k99m7g8" deleted
 configmap "wazuh-conf-9hf9g2fgk8" deleted
 secret "dashboard-certs-5ccmm6hth4" deleted
 secret "dashboard-cred" deleted
-secret "indexer-certs-mkggcttfcf" deleted
-secret "indexer-cred" deleted
-service "dashboard" deleted
-service "indexer" deleted
-service "wazuh" deleted
-service "wazuh-workers" deleted
-Error from server (NotFound): error when deleting "envs/eks/": secrets "wazuh-api-cred" not found
-Error from server (NotFound): error when deleting "envs/eks/": secrets "wazuh-authd-pass" not found
-Error from server (NotFound): error when deleting "envs/eks/": secrets "wazuh-cluster-key" not found
-Error from server (NotFound): error when deleting "envs/eks/": services "wazuh-cluster" not found
-Error from server (NotFound): error when deleting "envs/eks/": services "wazuh-indexer" not found
-Error from server (NotFound): error when deleting "envs/eks/": deployments.apps "wazuh-dashboard" not found
-Error from server (NotFound): error when deleting "envs/eks/": statefulsets.apps "wazuh-indexer" not found
-Error from server (NotFound): error when deleting "envs/eks/": statefulsets.apps "wazuh-manager-master" not found
-Error from server (NotFound): error when deleting "envs/eks/": statefulsets.apps "wazuh-manager-worker" not found
+...
 ```
 
 4- Modify the metadata of the PVs associated with the opendistro PVCs so that they go from Released to Available
