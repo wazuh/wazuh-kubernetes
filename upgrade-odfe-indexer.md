@@ -51,19 +51,7 @@ kubectl patch pv pvc-e10af5fc-de0d-4cbc-8899-e244905108b1 --type json -p '[{"op"
 kubectl create ns wazuh
 ```
 
-6- Create yaml scripts for each pvc, you need to modify the annotations and volume name with the data from the scripts in point 3.
-
-The data correlation between the 4.2 PVCs and the new 4.3 PVCs is as follows:
-```
-wazuh-elasticsearch-wazuh-elasticsearch-0 --> wazuh-indexer-wazuh-indexer-0
-wazuh-elasticsearch-wazuh-elasticsearch-1 --> wazuh-indexer-wazuh-indexer-1
-wazuh-elasticsearch-wazuh-elasticsearch-2 --> wazuh-indexer-wazuh-indexer-2
-wazuh-manager-master-wazuh-manager-master-0 --> wazuh-manager-master-wazuh-manager-master-0
-wazuh-manager-worker-wazuh-manager-worker-0 --> wazuh-manager-worker-wazuh-manager-worker-0
-wazuh-manager-worker-wazuh-manager-worker-1 --> wazuh-manager-worker-wazuh-manager-worker-1
-```
-
-These are the scripts to create:
+6- Create yaml scripts for each pvc using the ones provided bellow
 
 pvc-indexer-0.yml
 ```
@@ -224,6 +212,20 @@ spec:
   volumeMode: Filesystem
   volumeName: pvc-e10af5fc-de0d-4cbc-8899-e244905108b1
 ```
+
+7- Modify the `annotations` and `volumeName` with the data from the scripts in point 3.
+
+The data correlation between the 4.2 PVCs and the new 4.3 PVCs is as follows:
+```
+wazuh-elasticsearch-wazuh-elasticsearch-0 --> wazuh-indexer-wazuh-indexer-0
+wazuh-elasticsearch-wazuh-elasticsearch-1 --> wazuh-indexer-wazuh-indexer-1
+wazuh-elasticsearch-wazuh-elasticsearch-2 --> wazuh-indexer-wazuh-indexer-2
+wazuh-manager-master-wazuh-manager-master-0 --> wazuh-manager-master-wazuh-manager-master-0
+wazuh-manager-worker-wazuh-manager-worker-0 --> wazuh-manager-worker-wazuh-manager-worker-0
+wazuh-manager-worker-wazuh-manager-worker-1 --> wazuh-manager-worker-wazuh-manager-worker-1
+```
+
+These are the scripts to create:
 
 apply these manifests on the wazuh namespace
 ```
