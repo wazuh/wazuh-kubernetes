@@ -59,10 +59,7 @@ apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   annotations:
-    pv.kubernetes.io/bind-completed: "yes"
-    pv.kubernetes.io/bound-by-controller: "yes"
-    volume.beta.kubernetes.io/storage-provisioner: kubernetes.io/aws-ebs
-    volume.kubernetes.io/selected-node: ip-192-168-2-187.us-west-1.compute.internal
+    <insert annotations here>
   finalizers:
   - kubernetes.io/pvc-protection
   labels:
@@ -77,7 +74,7 @@ spec:
       storage: 10Gi
   storageClassName: wazuh-storage
   volumeMode: Filesystem
-  volumeName: pvc-c12830dd-626c-4713-b7cf-fc078b178be3
+  volumeName: <insert volumeName here>
 ```
 pvc-indexer-1.yml
 ```
@@ -85,10 +82,7 @@ apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   annotations:
-    pv.kubernetes.io/bind-completed: "yes"
-    pv.kubernetes.io/bound-by-controller: "yes"
-    volume.beta.kubernetes.io/storage-provisioner: kubernetes.io/aws-ebs
-    volume.kubernetes.io/selected-node: ip-192-168-38-176.us-west-1.compute.internal
+    <insert annotations here>
   finalizers:
   - kubernetes.io/pvc-protection
   labels:
@@ -103,7 +97,7 @@ spec:
       storage: 10Gi
   storageClassName: wazuh-storage
   volumeMode: Filesystem
-  volumeName: pvc-22edfa15-ef80-4130-8763-1ab6c28ce4a8
+  volumeName: <insert volumeName here>
 ```
 pvc-indexer-2.yml
 ```
@@ -111,10 +105,7 @@ apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   annotations:
-    pv.kubernetes.io/bind-completed: "yes"
-    pv.kubernetes.io/bound-by-controller: "yes"
-    volume.beta.kubernetes.io/storage-provisioner: kubernetes.io/aws-ebs
-    volume.kubernetes.io/selected-node: ip-192-168-6-43.us-west-1.compute.internal
+    <insert annotations here>
   finalizers:
   - kubernetes.io/pvc-protection
   labels:
@@ -129,7 +120,7 @@ spec:
       storage: 10Gi
   storageClassName: wazuh-storage
   volumeMode: Filesystem
-  volumeName: pvc-0e2cf63d-ef72-4ab5-bf4a-c73ac01c0bd2
+  volumeName: <insert volumeName here>
 ```
 pvc-master-0.yml
 ```
@@ -137,10 +128,7 @@ apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   annotations:
-    pv.kubernetes.io/bind-completed: "yes"
-    pv.kubernetes.io/bound-by-controller: "yes"
-    volume.beta.kubernetes.io/storage-provisioner: kubernetes.io/aws-ebs
-    volume.kubernetes.io/selected-node: ip-192-168-38-176.us-west-1.compute.internal
+    <insert annotations here>
   finalizers:
   - kubernetes.io/pvc-protection
   labels:
@@ -156,7 +144,7 @@ spec:
       storage: 50Gi
   storageClassName: wazuh-storage
   volumeMode: Filesystem
-  volumeName: pvc-9e8b31f7-e367-4986-957b-18017d21962b
+  volumeName: <insert volumeName here>
 ```
 pvc-worker-0.yml
 ```
@@ -164,10 +152,7 @@ apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   annotations:
-    pv.kubernetes.io/bind-completed: "yes"
-    pv.kubernetes.io/bound-by-controller: "yes"
-    volume.beta.kubernetes.io/storage-provisioner: kubernetes.io/aws-ebs
-    volume.kubernetes.io/selected-node: ip-192-168-6-43.us-west-1.compute.internal
+    <insert annotations here>
   finalizers:
   - kubernetes.io/pvc-protection
   labels:
@@ -183,7 +168,7 @@ spec:
       storage: 50Gi
   storageClassName: wazuh-storage
   volumeMode: Filesystem
-  volumeName: pvc-6fd06423-03c2-4374-bf03-7ec95d8711ab
+  volumeName: <insert volumeName here>
 ```
 pvc-worker-1.yml
 ```
@@ -191,10 +176,7 @@ apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   annotations:
-    pv.kubernetes.io/bind-completed: "yes"
-    pv.kubernetes.io/bound-by-controller: "yes"
-    volume.beta.kubernetes.io/storage-provisioner: kubernetes.io/aws-ebs
-    volume.kubernetes.io/selected-node: ip-192-168-2-187.us-west-1.compute.internal
+    <insert annotations here>
   finalizers:
   - kubernetes.io/pvc-protection
   labels:
@@ -210,7 +192,7 @@ spec:
       storage: 50Gi
   storageClassName: wazuh-storage
   volumeMode: Filesystem
-  volumeName: pvc-e10af5fc-de0d-4cbc-8899-e244905108b1
+  volumeName: <insert volumeName here>
 ```
 
 7- Modify the `annotations` and `volumeName` with the data from the scripts in point 3.
