@@ -219,7 +219,7 @@ kubectl apply -f pvc-worker-0.yml
 kubectl apply -f pvc-worker-1.yml
 ```
 
-7- Verify that the PVs and PVCs are created and correctly assigned
+8- Verify that the PVs and PVCs are created and correctly assigned
 ```
 $ kubectl get pv
 NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                                               STORAGECLASS    REASON   AGE
@@ -239,9 +239,9 @@ wazuh-manager-worker-wazuh-manager-worker-0   Bound    pvc-6fd06423-03c2-4374-bf
 wazuh-manager-worker-wazuh-manager-worker-1   Bound    pvc-e10af5fc-de0d-4cbc-8899-e244905108b1   50Gi       RWO            wazuh-storage   19s
 ```
 
-8- From the wazuh-kubernetes repository, in the new version (v4.3.4) perform the new deploy.
+9- From the wazuh-kubernetes repository, in the new version (v4.3.4) perform the new deploy.
 
-9- Check the status of the pods
+10- Check the status of the pods
 ```
 $ kubectl get pods -n wazuh
 NAME                               READY   STATUS    RESTARTS   AGE
@@ -254,7 +254,7 @@ wazuh-manager-worker-0             1/1     Running   0          4h20m
 wazuh-manager-worker-1             1/1     Running   0          4h20m
 ```
 
-10- Modify file permissions within Wazuh manager pods
+11- Modify file permissions within Wazuh manager pods
 ```
 $ kubectl exec -it wazuh-manager-master-0 -n wazuh bash
 root@wazuh-manager-master-0:/# find / -group 997 -exec chown :101 {} +
@@ -273,9 +273,11 @@ root@wazuh-manager-worker-1:/# exit
 command terminated with exit code 1
 ```
 
-11- Restart Wazuh manager pods
+12- Restart Wazuh manager pods
 ```
 kubectl delete pod -n wazuh wazuh-manager-master-0
 kubectl delete pod -n wazuh wazuh-manager-worker-0
 kubectl delete pod -n wazuh wazuh-manager-worker-1
 ```
+
+13- Finally, reconfigure the server address in the ossec.conf of the agents, to use the new LB DNS and restart the agents.
