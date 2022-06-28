@@ -185,7 +185,7 @@ spec:
   volumeMode: Filesystem
   volumeName: pvc-6fd06423-03c2-4374-bf03-7ec95d8711ab
 ```
-pvc-worker-0.yml
+pvc-worker-1.yml
 ```
 apiVersion: v1
 kind: PersistentVolumeClaim
