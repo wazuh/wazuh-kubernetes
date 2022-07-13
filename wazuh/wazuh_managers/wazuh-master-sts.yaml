@@ -37,6 +37,16 @@ spec:
         - name: wazuh-authd-pass
           secret:
             secretName: wazuh-authd-pass
+      initContainers:
+        - name: config-permissions
+          image: 'busybox'
+          # change owner of `multigroups` to `root:wazuh` (wazuh uid: 101)
+          # and change permission to `770`, same as other directories in `/var/ossec/var`
+          command: ['sh', '-c', 'chown root:101 -R /var/ossec/var/multigroups && chmod 770 /var/ossec/var/multigroups']
+          volumeMounts:
+            - name: wazuh-manager-master
+              mountPath: /var/ossec/var/multigroups
+              subPath: wazuh/var/ossec/var/multigroups
       containers:
         - name: wazuh-manager
           image: 'wazuh/wazuh-manager:4.5.0'
