@@ -45,10 +45,10 @@ spec:
           command:
             - sh
             - '-c'
-            - 'chown -R 1000:1000 /usr/share/wazuh-indexer/data'
+            - 'chown -R 1000:1000 /var/lib/wazuh-indexer'
           volumeMounts:
             - name: wazuh-indexer
-              mountPath: /usr/share/wazuh-indexer/data
+              mountPath: /var/lib/wazuh-indexer
         - name: increase-the-vm-max-map-count
           image: busybox
           command:
@@ -59,7 +59,7 @@ spec:
             privileged: true
       containers:
         - name: wazuh-indexer
-          image: 'wazuh/wazuh-indexer:4.3.3'
+          image: 'wazuh/wazuh-indexer:4.3.6'
           resources:
             limits:
               cpu: 500m
@@ -88,7 +88,7 @@ spec:
               add: ["SYS_CHROOT"]
           volumeMounts:
             - name: wazuh-indexer
-              mountPath: /usr/share/wazuh-indexer/data
+              mountPath: /var/lib/wazuh-indexer
             - name: indexer-certs
               mountPath: /usr/share/wazuh-indexer/config/certs/node-key.pem
               subPath: node-key.pem
