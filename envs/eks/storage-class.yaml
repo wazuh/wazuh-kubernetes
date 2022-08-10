@@ -16,4 +16,4 @@ parameters:
   encrypted: 'true'
   type: gp2
 volumeBindingMode: WaitForFirstConsumer
-reclaimPolicy: Retain  # Useful in case you delete the PersistentVolumeClaim
+reclaimPolicy: Delete  # Change to retain, useful in case you delete the PersistentVolumeClaim
