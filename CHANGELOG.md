@@ -7,6 +7,7 @@ All notable changes to this project will be documented in this file.
 ### Added
 
 - Update to Wazuh version [4.3.6](https://github.com/wazuh/wazuh/blob/v4.3.6/CHANGELOG.md#v436)
+- Implement more environments for deployment.
 
 ## [4.3.5]
 
