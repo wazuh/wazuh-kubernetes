@@ -1,0 +1,23 @@
+# Copyright (C) 2019, Wazuh Inc.
+#
+# This program is a free software; you can redistribute it
+# and/or modify it under the terms of the GNU General Public
+# License (version 2) as published by the FSF - Free Software
+# Foundation.
+
+# Wazuh StorageClass
+
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: wazuh-storage
+  annotations:
+    cas.openebs.io/config:
+      - name: NFSServerType
+        value: kernel
+      - name: BackendStorageClass
+        value: do-block-storage
+provisioner: openebs.io/nfsrwx
+volumeBindingMode: WaitForFirstConsumer
+allowVolumeExpansion: true
+reclaimPolicy: Delete  # Change to retain, useful in case you delete the PersistentVolumeClaim
