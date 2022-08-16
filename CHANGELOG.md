@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [4.3.7]
+
+### Added
+
+- Update to Wazuh version [4.3.7](https://github.com/wazuh/wazuh/blob/v4.3.7/CHANGELOG.md#v437)
+
 ## [4.3.6]
 
 ### Added
