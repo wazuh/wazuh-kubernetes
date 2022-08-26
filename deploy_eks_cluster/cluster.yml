@@ -14,4 +14,3 @@ nodeGroups:
       publicKeyName: <keypair-name>
     desiredCapacity: 3
     privateNetworking: true #turn to false for public networks.
-
