@@ -8,13 +8,17 @@ Deploy an EKS Cluster for Wazuh.
 * `cluster_existing_vpc.yml` should be used if the VPC and subnets already exist.
 
 
-## Documentation
+## AWS Resources
 
 The goal of this section is to simplify the creation of an EKS cluster.
-The execution of this guide will create the following resources:
+The execution of this guide will create 2 Cloudformation stacks with the following resources:
 - VPC
-- Subnets
-- NodeGroups
+- Subnets (public and private)
+- Route Tables
+- IGW
+- NAT Gateway
+- EKS Cluster
+- NodeGroups (EC2 instances)
 - SecurityGroups
 
 ## Pre-requisites
