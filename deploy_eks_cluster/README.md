@@ -20,7 +20,7 @@ The execution of this guide will create the following resources:
 ## Pre-requisites
 
 To perform the following steps, you will need to:
-- Install and configure `AWS CLI`: https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html
+- Install `AWS CLI`: https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html
 - Configure `AWS CLI`: https://docs.aws.amazon.com/cli/latest/userguide/getting-started-quickstart.html
 - Install `eksctl`: https://docs.aws.amazon.com/eks/latest/userguide/eksctl.html
 - Install `kubectl`: https://kubernetes.io/docs/tasks/tools/#kubectl
