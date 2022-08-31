@@ -33,7 +33,7 @@ To perform the following steps, you will need to:
 
 To deploy an EKS cluster, you need to:
 
-1. Define whether you will use an existing VPN.
+1. Define whether you will use an existing VPC.
   a. If not: use `cluster.yml`
   b. If yes: use `cluster_existing_vpc.yml`
 2. Replace the values marked with `<>`.
