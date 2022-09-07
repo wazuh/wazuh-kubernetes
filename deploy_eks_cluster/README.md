@@ -1,25 +1,27 @@
 # EKS Cluster Deployment
 
-Deploy an EKS Cluster for Wazuh.
+These instructions describe how we create an EKS cluster to deploy Wazuh. The files and configurations presented here are what we use to test whether Wazuh works as it should in Kubernetes.
 
-## YAML files
+Because there are many ways to deploy applications and services on Kubernetes, you can take these instructions as a starting point, and adapt them to your environment.
 
-* `cluster.yml` should be used if the creation of the VPC and subnets is required.
-* `cluster_existing_vpc.yml` should be used if the VPC and subnets already exist.
-
+Here is a diagram of the EKS Cluster deployment:
+![](eks_diagram.png)
 
 ## AWS Resources
 
-The goal of this section is to simplify the creation of an EKS cluster.
 The execution of this guide will create 2 Cloudformation stacks with the following resources:
-- VPC
-- Subnets (public and private)
-- Route Tables
-- IGW
-- NAT Gateway
-- EKS Cluster
-- NodeGroups (EC2 instances)
-- SecurityGroups
+    **Cluster stack**
+        - VPC
+        - Subnets (public and private)
+        - Route Tables
+        - IGW
+        - NAT Gateway
+        - EKS Cluster
+        - Security groups
+    **Nodegroup stack**
+        - NodeGroups (EC2 instances)
+        - Security groups
+        - IAM role
 
 ## Pre-requisites
 
@@ -34,9 +36,11 @@ To perform the following steps, you will need to:
 To deploy an EKS cluster, you need to:
 
 1. Define whether you will use an existing VPN.
-  a. If not: use `cluster.yml`
-  b. If yes: use `cluster_existing_vpc.yml`
-2. Replace the values marked with `<>`.
+  a. cluster.yml If you need to create a VPC
+  b. cluster_existing_vpc.yml If you already have a VPC
+
+2. Configure the template replacing the values marked with '<>':
+
     **Common Values**
       - `metadata name`: the EKS cluster name.
       - `metadata region`: the region where the EKS cluster will be deployed.
@@ -51,7 +55,8 @@ To deploy an EKS cluster, you need to:
       - `vpc public public-subnet#-az`: the existing public subnet AZ.
       - `vpc public public-subnet#-az id`: the existing public subnet ID.
       - `vpc public public-subnet#-az cidr`: the existing public subnet CIDR.
-3. Run the following command:
+3. The deployment requires at least 7 CPU units. We sugest to use 3 `m5a.large` instances. Feel free to change the instance type according to the deployment requirements.
+4. Run the following command:
    a. Not existing VPC
     ```BASH
     eksctl create cluster -f cluster.yml
@@ -60,12 +65,11 @@ To deploy an EKS cluster, you need to:
     ```BASH
     eksctl create cluster -f cluster_existing_vpc.yml
     ```
-4. Wait until the EKS cluster creation finishes.
-5. Update `kubeconfig` (replace the values marked with `<>`):
+5. Wait until the EKS cluster creation finishes.
+6. Update `kubeconfig` (replace the values marked with `<>`):
     ```BASH
     aws eks update-kubeconfig --name <eks-cluster-name> --region <eks-cluster-region>
     ```
-
 
 ## License and copyright
 
