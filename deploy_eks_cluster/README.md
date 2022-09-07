@@ -10,18 +10,20 @@ Here is a diagram of the EKS Cluster deployment:
 ## AWS Resources
 
 The execution of this guide will create 2 Cloudformation stacks with the following resources:
-    **Cluster stack**
-        - VPC
-        - Subnets (public and private)
-        - Route Tables
-        - IGW
-        - NAT Gateway
-        - EKS Cluster
-        - Security groups
-    **Nodegroup stack**
-        - NodeGroups (EC2 instances)
-        - Security groups
-        - IAM role
+
+**Cluster stack**
+  - VPC
+  - Subnets (public and private)
+  - Route Tables
+  - IGW
+  - NAT Gateway
+  - EKS Cluster
+  - Security groups
+
+**Nodegroup stack**
+  - NodeGroups (EC2 instances)
+  - Security groups
+  - IAM role
 
 ## Pre-requisites
 
@@ -39,6 +41,7 @@ To deploy an EKS cluster, you will need to:
   a. cluster.yml If you need to create a VPC
   b. cluster_existing_vpc.yml If you already have a VPC
 2. Configure the template replacing the values marked with '<>':
+
     **Common Values**
       - `metadata name`: the EKS cluster name.
       - `metadata region`: the region where the EKS cluster will be deployed.
