@@ -58,6 +58,7 @@ To deploy an EKS cluster, you will need to:
       - `vpc public public-subnet#-az cidr`: the existing public subnet CIDR.
 3. The deployment requires at least 7 CPU units. We sugest to use 3 `m5a.large` instances. Feel free to change the instance type according to the deployment requirements.
 4. Run the following command:
+
    a. Not existing VPC
     ```BASH
     eksctl create cluster -f cluster.yml
