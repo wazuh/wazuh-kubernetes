@@ -5,7 +5,7 @@
 [![Documentation](https://img.shields.io/badge/docs-view-green.svg)](https://documentation.wazuh.com)
 [![Documentation](https://img.shields.io/badge/web-view-green.svg)](https://wazuh.com)
 
-Deploy a Wazuh cluster with a basic indexer and dashboard stack on Kubernetes .
+Deploy a Wazuh cluster with a basic indexer and dashboard stack on Kubernetes.
 
 ## Branches
 
