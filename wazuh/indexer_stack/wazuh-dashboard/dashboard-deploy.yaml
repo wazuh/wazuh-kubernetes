@@ -43,15 +43,15 @@ spec:
               subPath: opensearch_dashboards.yml
               readOnly: false
             - name: dashboard-certs
-              mountPath: /usr/share/wazuh-dashboard/config/certs/cert.pem
+              mountPath: /usr/share/wazuh-dashboard/certs/cert.pem
               readOnly: true
               subPath: cert.pem
             - name: dashboard-certs
-              mountPath: /usr/share/wazuh-dashboard/config/certs/key.pem
+              mountPath: /usr/share/wazuh-dashboard/certs/key.pem
               readOnly: true
               subPath: key.pem
             - name: dashboard-certs
-              mountPath: /usr/share/wazuh-dashboard/config/certs/root-ca.pem
+              mountPath: /usr/share/wazuh-dashboard/certs/root-ca.pem
               subPath: root-ca.pem
               readOnly: true
           ports:
@@ -83,9 +83,9 @@ spec:
             - name: SERVER_SSL_ENABLED
               value: "true"
             - name: SERVER_SSL_CERTIFICATE
-              value: /usr/share/wazuh-dashboard/config/certs/cert.pem
+              value: /usr/share/wazuh-dashboard/certs/cert.pem
             - name: SERVER_SSL_KEY
-              value: /usr/share/wazuh-dashboard/config/certs/key.pem
+              value: /usr/share/wazuh-dashboard/certs/key.pem
             - name: WAZUH_API_URL
               value: https://wazuh-manager-master-0.wazuh-cluster
             - name: API_USERNAME

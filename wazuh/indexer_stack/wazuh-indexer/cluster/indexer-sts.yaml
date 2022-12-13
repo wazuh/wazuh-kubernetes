@@ -90,27 +90,27 @@ spec:
             - name: wazuh-indexer
               mountPath: /var/lib/wazuh-indexer
             - name: indexer-certs
-              mountPath: /usr/share/wazuh-indexer/config/certs/node-key.pem
+              mountPath: /usr/share/wazuh-indexer/certs/node-key.pem
               subPath: node-key.pem
               readOnly: true
             - name: indexer-certs
-              mountPath: /usr/share/wazuh-indexer/config/certs/node.pem
+              mountPath: /usr/share/wazuh-indexer/certs/node.pem
               subPath: node.pem
               readOnly: true
             - name: indexer-certs
-              mountPath: /usr/share/wazuh-indexer/config/certs/root-ca.pem
+              mountPath: /usr/share/wazuh-indexer/certs/root-ca.pem
               subPath: root-ca.pem
               readOnly: true
             - name: indexer-certs
-              mountPath: /usr/share/wazuh-indexer/config/certs/admin.pem
+              mountPath: /usr/share/wazuh-indexer/certs/admin.pem
               subPath: admin.pem
               readOnly: true
             - name: indexer-certs
-              mountPath: /usr/share/wazuh-indexer/config/certs/admin-key.pem
+              mountPath: /usr/share/wazuh-indexer/certs/admin-key.pem
               subPath: admin-key.pem
               readOnly: true
             - name: indexer-conf
-              mountPath: /usr/share/wazuh-indexer/config/opensearch.yml
+              mountPath: /usr/share/wazuh-indexer/opensearch.yml
               subPath: opensearch.yml
               readOnly: true
             - name: indexer-conf
