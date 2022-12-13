@@ -65,7 +65,7 @@ spec:
               cpu: 500m
               memory: 1564Mi
           env:
-            - name: ES_JAVA_OPTS
+            - name: OPENSEARCH_JAVA_OPTS
               value: '-Xms1g -Xmx1g -Dlog4j2.formatMsgNoLookups=true'
             - name: CLUSTER_NAME
               value: wazuh
@@ -114,7 +114,7 @@ spec:
               subPath: opensearch.yml
               readOnly: true
             - name: indexer-conf
-              mountPath: /usr/share/wazuh-indexer/plugins/opensearch-security/securityconfig/internal_users.yml
+              mountPath: /usr/share/wazuh-indexer/opensearch-security/internal_users.yml
               subPath: internal_users.yml
               readOnly: true
           ports:
