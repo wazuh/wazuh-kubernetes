@@ -7,20 +7,16 @@ When upgrading our version of Wazuh installed in Kubernetes we must follow the f
 Our Kubernetes deployment uses our Wazuh images from Docker. If we look at the following code extracted from the Wazuh configuration using Docker we can see which directories and files are used in the upgrades.
 
 ```
-DATA_DIRS[((i++))]="api/configuration"
-DATA_DIRS[((i++))]="etc"
-DATA_DIRS[((i++))]="logs"
-DATA_DIRS[((i++))]="queue/db"
-DATA_DIRS[((i++))]="queue/rootcheck"
-DATA_DIRS[((i++))]="queue/agent-groups"
-DATA_DIRS[((i++))]="queue/agent-info"
-DATA_DIRS[((i++))]="queue/agents-timestamp"
-DATA_DIRS[((i++))]="queue/agentless"
-DATA_DIRS[((i++))]="queue/cluster"
-DATA_DIRS[((i++))]="queue/rids"
-DATA_DIRS[((i++))]="queue/fts"
-DATA_DIRS[((i++))]="var/multigroups"
-
+PERMANENT_DATA[((i++))]="/var/ossec/api/configuration"
+PERMANENT_DATA[((i++))]="/var/ossec/etc"
+PERMANENT_DATA[((i++))]="/var/ossec/logs"
+PERMANENT_DATA[((i++))]="/var/ossec/queue"
+PERMANENT_DATA[((i++))]="/var/ossec/agentless"
+PERMANENT_DATA[((i++))]="/var/ossec/var/multigroups"
+PERMANENT_DATA[((i++))]="/var/ossec/integrations"
+PERMANENT_DATA[((i++))]="/var/ossec/active-response/bin"
+PERMANENT_DATA[((i++))]="/var/ossec/wodles"
+PERMANENT_DATA[((i++))]="/etc/filebeat"
 ```
 
 Any file that we modify referring to the files previously mentioned, will be changed also the corresponding volume. When the corresponding Wazuh pod is created again, it will get the cited files from the volume, thus keeping the changes made previously.
