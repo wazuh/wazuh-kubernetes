@@ -11,9 +11,13 @@ apiVersion: storage.k8s.io/v1
 kind: StorageClass
 metadata:
   name: wazuh-storage
-provisioner: kubernetes.io/aws-ebs
-parameters:
-  encrypted: 'true'
-  type: gp2
+  annotations:
+    cas.openebs.io/config:
+      - name: NFSServerType
+        value: kernel
+      - name: BackendStorageClass
+        value: do-block-storage
+provisioner: openebs.io/nfsrwx
 volumeBindingMode: WaitForFirstConsumer
+allowVolumeExpansion: true
 reclaimPolicy: Delete  # Change to retain, useful in case you delete the PersistentVolumeClaim

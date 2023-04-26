@@ -140,11 +140,19 @@ We are using the overlay feature of kustomize to create two variants: `eks` and 
 You can adjust resources for the cluster on `envs/eks/`, you can tune cpu, memory as well as storage for persistent volumes of each of the cluster objects.
 
 
-By using the kustomization file on the `eks` variant we can now deploy the whole cluster with a single command:
+By using the kustomization file on the different variants we can now deploy the whole cluster, in case of AWS EKS:
 
 ```BASH
 $ kubectl apply -k envs/eks/
 ```
+
+In the other cases you have to generate the yaml file with `kustomize` yourself, you can use this oneliner:
+
+```BASH
+$ kustomize build envs/(eks,gke,aks,doks) | kubectl apply -f -
+```
+
+NOTE: In the case of Digital Ocean Kubernetes Service, you have to install from marketplace the `OpenEBS NFS Provisioner`, original DOKS block-storage doesn't allow sharing between pods
 
 ### Verifying the deployment
 

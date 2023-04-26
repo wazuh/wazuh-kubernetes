@@ -20,6 +20,9 @@ metadata:
     # service.beta.kubernetes.io/aws-load-balancer-ssl-cert: 'changeme'
     service.beta.kubernetes.io/aws-load-balancer-ssl-ports: '443'
     service.beta.kubernetes.io/aws-load-balancer-backend-protocol: https
+    cloud.google.com/app-protocols: '{"443":"HTTPS"}'
+
+
 spec:
   type: LoadBalancer
   selector:
