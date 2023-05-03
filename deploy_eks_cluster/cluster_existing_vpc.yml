@@ -1,0 +1,37 @@
+--- 
+apiVersion: eksctl.io/v1alpha5
+kind: ClusterConfig
+
+metadata:
+  name: <eks-cluster-name> # e.g. wazuh-eks-cluster
+  region: <aws-region> # e.g. us-east-1
+
+vpc:
+  id: <vpc-id>
+  cidr: <vpc-cidr>
+  subnets:
+    private:
+      <private-subnet1-az>:
+        id: <private-subnet1-id>
+        # az: us-west-2a # any unambiguous combination of these is allowed.
+        cidr: <private-subnet1-cidr>
+      <private-subnet2-az>:
+        id: <private-subnet2-id>
+        cidr: <private-subnet2-cidr>
+    public:
+      <public-subnet1-az>:
+        id: <public-subnet1-id>
+        cidr: <public-subnet1-cidr>
+      <public-subnet2-az>:
+        id: <public-subnet2-id>
+        cidr: <public-subnet2-cidr>
+
+nodeGroups:
+  - name: wazuh-ng-private
+    instanceType: m5a.large
+    ssh: # use existing EC2 key but don't allow SSH access to nodegroup (security group is not created to allow SSH access).
+      allow: false
+      publicKeyName: <keypair-name>
+    desiredCapacity: 3
+    privateNetworking: true #turn to false for public networks.
+
