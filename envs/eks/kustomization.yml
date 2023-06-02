@@ -7,7 +7,7 @@
 
 bases:
   - ../../wazuh
-patches:
+patchesStrategicMerge:
   - storage-class.yaml
   - indexer-resources.yaml
   - dashboard-resources.yaml
