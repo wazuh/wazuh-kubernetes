@@ -5,9 +5,11 @@
 # License (version 2) as published by the FSF - Free Software
 # Foundation.
 
-bases:
-  - ../../wazuh
-patchesStrategicMerge:
-  - storage-class.yaml
-  - indexer-resources.yaml
-  - wazuh-resources.yaml
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+- ../../wazuh
+patches:
+- path: storage-class.yaml
+- path: indexer-resources.yaml
+- path: wazuh-resources.yaml
