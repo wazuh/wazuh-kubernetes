@@ -15,7 +15,15 @@ Deploy a Wazuh cluster with a basic indexer and dashboard stack on Kubernetes.
 
 ## Documentation
 
-The [instructions.md](instructions.md) file describes how to deploy Wazuh on Kubernetes.
+## Amazon EKS development
+
+To deploy a cluster on Amazon EKS cluster read the instructions on [instructions.md](instructions.md).
+Note: For Kubernetes version 1.23 or higher, the assignment of an IAM Role is necessary for the CSI driver to function correctly. Within the AWS documentation you can find the instructions for the assignment: https://docs.aws.amazon.com/eks/latest/userguide/ebs-csi.html
+The installation of the CSI driver is mandatory for new and old deployments if you are going to use Kubernetes 1.23 for the first time or you need to upgrade the cluster.
+
+## Local development
+
+To deploy a cluster on your local environment (like Minikube, Kind or Microk8s) read the instructions on [local-environment.md](local-environment.md).
 
 ## Directory structure
 
@@ -85,12 +93,6 @@ The [instructions.md](instructions.md) file describes how to deploy Wazuh on Kub
 
 * `master` branch contains the latest code, be aware of possible bugs on this branch.
 * `stable` branch on correspond to the last Wazuh stable version.
-
-
-
-## Local development
-
-To deploy a cluster on your local environment (like Minikube, Kind or Microk8s) read the instructions on [local-environment.md](local-environment.md).
 
 ## Contribute
 
