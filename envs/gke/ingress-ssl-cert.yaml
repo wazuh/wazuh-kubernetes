@@ -1,0 +1,17 @@
+apiVersion: networking.gke.io/v1
+kind: ManagedCertificate
+metadata:
+  name: managed-cert
+spec:
+  domains:
+    - FQDN_1
+
+---
+apiVersion: networking.gke.io/v1beta1
+kind: FrontendConfig
+metadata:
+  name: dashboard-frontend
+spec:
+  sslPolicy: wazuh-dashboard-ssl-policy
+  redirectToHttps:
+    enabled: true

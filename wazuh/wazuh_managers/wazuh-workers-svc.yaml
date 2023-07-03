@@ -18,6 +18,7 @@ metadata:
   annotations:
     # domainName: 'wazuh-manager.some-domain.com'  # TODO: Change this for a Hosted Zone you configured in AWS Route 53
     service.beta.kubernetes.io/aws-load-balancer-internal: 0.0.0.0/0
+    cloud.google.com/l4-rbs: "enabled"
 spec:
   type: LoadBalancer
   selector:
