@@ -1,2 +1,6 @@
 VERSION="4.7.0"
+<<<<<<< HEAD
 REVISION="40700"
+=======
+REVISION="40600"
+>>>>>>> 3634829cb2da5518a1cd46ccf1af2f73f9e13ceb
