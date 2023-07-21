@@ -2,6 +2,48 @@
 
 All notable changes to this project will be documented in this file.
 
+## [4.7.0]
+
+### Added
+
+- Update to Wazuh version [4.7.0](https://github.com/wazuh/wazuh/blob/v4.7.0/CHANGELOG.md#v470)
+
+## [4.6.0]
+
+### Added
+
+- Update to Wazuh version [4.6.0](https://github.com/wazuh/wazuh/blob/v4.6.0/CHANGELOG.md#v460)
+
+## [4.5.2]
+
+### Added
+
+- Update to Wazuh version [4.5.2](https://github.com/wazuh/wazuh/blob/v4.5.2/CHANGELOG.md#v452)
+
+## [4.5.1]
+
+### Added
+
+- Update to Wazuh version [4.5.1](https://github.com/wazuh/wazuh/blob/v4.5.1/CHANGELOG.md#v451)
+
+## [4.5.0]
+
+### Added
+
+- Update to Wazuh version [4.5.0](https://github.com/wazuh/wazuh/blob/v4.5.0/CHANGELOG.md#v450)
+
+## [4.4.5]
+
+### Added
+
+- Update to Wazuh version [4.4.5](https://github.com/wazuh/wazuh/blob/v4.4.5/CHANGELOG.md#v445)
+
+## [4.4.4]
+
+### Added
+
+- Update to Wazuh version [4.4.4](https://github.com/wazuh/wazuh/blob/v4.4.4/CHANGELOG.md#v444)
+
 ## [4.4.3]
 
 ### Added
