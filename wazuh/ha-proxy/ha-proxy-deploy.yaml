@@ -1,0 +1,104 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: proxy
+spec:
+  progressDeadlineSeconds: 600
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: proxy
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: proxy
+      name: proxy
+    spec:
+      containers:
+      - env:
+        - name: HAPROXY_GENERAL_MAXCONN
+          value: "3000"
+        - name: HAPROXY_DEFAULT_MAXCONN
+          value: "3000"
+        - name: HAPROXY_STATS_PORT
+          value: "9000"
+        - name: HAPROXY_STATS_STATUS
+          value: enable
+        - name: HAPROXY_STATS_PATH
+          value: live-traffic-stats
+        - name: HAPROXY_REGISTRY_PORT
+          value: "15000"
+        - name: WAZUH_REGISTRY_HOST
+          value: wazuh-registry
+        - name: WAZUH_REGISTRY_PORT
+          value: "1515"
+        image: 242503654864.dkr.ecr.us-east-2.amazonaws.com/cloud-haproxy:v1.18.1_final
+        imagePullPolicy: IfNotPresent
+        livenessProbe:
+          exec:
+            command:
+            - /bin/bash
+            - -c
+            - echo "show stat" | 3socat stdio unix-connect:/var/lib/haproxy/stats &>/dev/null
+          failureThreshold: 5
+          periodSeconds: 5
+          successThreshold: 1
+          timeoutSeconds: 15
+        name: proxy
+        ports:
+        - containerPort: 443
+          protocol: TCP
+        - containerPort: 1514
+          protocol: TCP
+        - containerPort: 15000
+          protocol: TCP
+        - containerPort: 7777
+          protocol: TCP
+        readinessProbe:
+          exec:
+            command:
+            - /bin/bash
+            - -c
+            - echo "show stat" | socat stdio unix-connect:/var/lib/haproxy/stats &>/dev/null
+          failureThreshold: 5
+          initialDelaySeconds: 5
+          periodSeconds: 20
+          successThreshold: 1
+          timeoutSeconds: 15
+        resources:
+          limits:
+            cpu: 600m
+            memory: 600Mi
+          requests:
+            cpu: 1m
+            memory: 1m
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        volumeMounts:
+        - mountPath: /etc/haproxy/init-config/
+          name: haproxy-conf
+        - mountPath: /init-scripts/
+          name: haproxy-init-scripts
+      dnsPolicy: ClusterFirst
+      nodeSelector:
+        instance_category: wazuh
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 0
+      volumes:
+      - configMap:
+          defaultMode: 420
+          name: haproxy-configmap
+        name: haproxy-conf
+      - configMap:
+          defaultMode: 420
+          name: haproxy-init-scripts
+        name: haproxy-init-scripts

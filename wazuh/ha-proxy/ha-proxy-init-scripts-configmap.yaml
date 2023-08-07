@@ -1,0 +1,14 @@
+apiVersion: v1
+data:
+  create_cert.sh: |
+    echo "## Creating SSL certificate"
+    mkdir -p /etc/haproxy/ssl/
+    openssl req -nodes -batch -x509 -days 18250 -newkey rsa:2048 -subj "/C=US/ST=California/CN=Wazuh/" -keyout /etc/haproxy/ssl/haproxy.key -out /etc/haproxy/ssl/haproxy.pem
+    cat /etc/haproxy/ssl/haproxy.key >> /etc/haproxy/ssl/haproxy.pem
+  load_config.sh: |
+    echo "## Load init config"
+    rm -rf /etc/haproxy/conf.d/*
+    cp -L /etc/haproxy/init-config/* /etc/haproxy/conf.d/
+kind: ConfigMap
+metadata:
+  name: haproxy-init-scripts

@@ -1,0 +1,113 @@
+apiVersion: v1
+data:
+  haproxy.cfg: |
+    global
+        log         127.0.0.1 local2
+        chroot      /var/lib/haproxy
+        maxconn     3000
+        user        haproxy
+        group       haproxy
+        stats socket /var/lib/haproxy/stats level admin
+
+    defaults
+      mode http
+      maxconn 3000
+      log global
+      option redispatch
+      option dontlognull
+      timeout check 10s
+      timeout connect 10s
+      timeout client 1m
+      timeout queue 1m
+      timeout server 1m
+      retries 3
+
+    userlist haproxy-dataplaneapi
+        user haproxy insecure-password haproxy
+
+    frontend stats_front
+      bind *:9000
+      stats enable
+      stats uri /live-traffic-stats
+      stats hide-version
+      stats refresh 10s
+      stats admin if FALSE
+
+    frontend wazuh_register
+      mode tcp
+      bind :15000
+      default_backend wazuh_register
+
+    backend wazuh_register
+      mode tcp
+      balance leastconn
+      server service_wazuh_registry wazuh:1515 check
+
+    frontend wazuh_reporting_front
+      mode tcp
+      bind :1514 name :1514
+      acl MAIN_not_enough_capacity nbsrv(wazuh_reporting) eq 0
+      use_backend wazuh_reporting_default if MAIN_not_enough_capacity
+      default_backend wazuh_reporting
+
+    backend wazuh_reporting
+      mode tcp
+      balance leastconn
+
+    backend wazuh_reporting_default
+      mode tcp
+      balance leastconn
+      server wazuh_reporting_default wazuh-workers:1514 check
+  wazuh-cloud.cfg: |
+    frontend https_front
+      mode http
+      bind *:443 ssl crt  /etc/haproxy/ssl/haproxy.pem alpn h2,http/1.1
+      default_backend wazuh_dashboard
+
+      # In order to limit IP add them here:
+      ## APIs
+      acl api_network_allowed src 127.0.0.1
+      acl restricted_api path_beg /api/wazuh
+      acl restricted_api path_beg /api/elastic
+      http-request silent-drop if restricted_api !api_network_allowed
+      ## Limit GET method to Elastic API
+      acl restricted_api_elastic path_beg /api/elastic
+      http-request silent-drop if restricted_api_elastic !METH_GET
+
+      ## HAProxy Stats
+      acl haproxy_network_allowed src 127.0.0.1
+      acl restricted_stats path_beg /live-traffic-stats
+      http-request silent-drop if restricted_stats !haproxy_network_allowed
+
+      # Route to a backend based on path's prefix
+      use_backend wazuh_api if { path /api/wazuh } || { path_beg /api/wazuh/ }
+      use_backend wazuh_indexer_api if { path /api/elastic } || { path_beg /api/elastic/ }
+      use_backend haproxy_stats if { path /live-traffic-stats } || { path_beg /live-traffic-stats }
+
+    backend wazuh_dashboard
+      option forwardfor
+      http-request add-header Strict-Transport-Security "max-age=31536000; includeSubDomains"
+      http-request add-header X-Frame-Options "SAMEORIGIN"
+      http-request add-header X-Content-Type-Options "nosniff"
+      http-request add-header X-XSS-Protection "1; mode=block"
+      http-request add-header X-Robots-Tag "none"
+      server wazuh_dashboard dashboard:443 check maxconn 30 ssl verify none
+
+    backend wazuh_api
+      option forwardfor
+      # strip the prefix '/api/wazuh' off of the path
+      http-request replace-path /api/wazuh(/)?(.*) /\2
+      server wazuh_api wazuh:55000 check maxconn 30 ssl verify none
+
+    backend wazuh_indexer_api
+      option forwardfor
+      # strip the prefix '/api/elastic' off of the path
+      http-request replace-path /api/elastic(/)?(.*) /\2
+      server wazuh_indexer_api indexer:9200 check maxconn 30 ssl verify none
+
+    backend haproxy_stats
+      option forwardfor
+      server haproxy_stats localhost:9000 check maxconn 30
+kind: ConfigMap
+metadata:
+  name: haproxy-configmap
