@@ -88,12 +88,6 @@ To deploy a cluster on your local environment (like Minikube, Kind or Microk8s) 
             ├── wazuh-workers-svc.yaml
             └── wazuh-worker-sts.yaml
 
-
-## Branches
-
-* `master` branch contains the latest code, be aware of possible bugs on this branch.
-* `stable` branch on correspond to the last Wazuh stable version.
-
 ## Contribute
 
 If you want to contribute to our project please don't hesitate to send a pull request. You can also join our users [mailing list](https://groups.google.com/d/forum/wazuh) or the [Wazuh Slack community channel](https://wazuh.com/community/join-us-on-slack/) to ask questions and participate in discussions.
