@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: proxy-reporting
+spec:
+  ports:
+  - name: agents-events
+    nodePort: 31338
+    port: 1514
+    protocol: TCP
+    targetPort: 1514
+  selector:
+    app: proxy
+  sessionAffinity: None
+  type: NodePort

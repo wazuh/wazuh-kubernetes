@@ -9,7 +9,7 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
 # Adds wazuh namespace to all resources.
-namespace: wazuh
+namespace: security
 
 secretGenerator:
   - name: indexer-certs
@@ -64,3 +64,11 @@ resources:
 
   - indexer_stack/wazuh-dashboard/dashboard-svc.yaml
   - indexer_stack/wazuh-dashboard/dashboard-deploy.yaml
+
+  - ha-proxy/ha-proxy-reporting-svc.yaml
+  - ha-proxy/ha-proxy-registry-svc.yaml
+  - ha-proxy/ha-proxy-https-svc.yaml
+  - ha-proxy/ha-proxy-dataplaneapi-svc.yaml
+  - ha-proxy/ha-proxy-init-scripts-configmap.yaml
+  - ha-proxy/ha-proxy-configmap.yaml
+  - ha-proxy/ha-proxy-deploy.yaml

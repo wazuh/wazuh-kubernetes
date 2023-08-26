@@ -11,15 +11,11 @@ apiVersion: v1
 kind: Service
 metadata:
   name: wazuh  # Don't change, unless you update the Wazuh dashboard app config
-  namespace: wazuh
   labels:
     app: wazuh-manager
     # dns: route53
-  annotations:
-    # domainName: 'changeme'
-    service.beta.kubernetes.io/aws-load-balancer-backend-protocol: tcp
 spec:
-  type: LoadBalancer
+  type: ClusterIP
   selector:
     app: wazuh-manager
     node-type: master

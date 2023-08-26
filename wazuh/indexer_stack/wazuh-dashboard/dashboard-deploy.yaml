@@ -11,7 +11,6 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: wazuh-dashboard
-  namespace: wazuh
 spec:
   replicas: 1
   selector:
@@ -32,7 +31,7 @@ spec:
             secretName: dashboard-certs
       containers:
         - name: wazuh-dashboard
-          image: 'wazuh/wazuh-dashboard:4.8.0'
+          image: 'wazuh/wazuh-dashboard:4.4.4'
           resources:
             limits:
               cpu: 500m

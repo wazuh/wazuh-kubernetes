@@ -11,7 +11,6 @@ apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: wazuh-manager-master
-  namespace: wazuh
 spec:
   replicas: 1
   selector:
@@ -41,7 +40,7 @@ spec:
         fsGroup: 101
       containers:
         - name: wazuh-manager
-          image: 'wazuh/wazuh-manager:4.8.0'
+          image: 'wazuh/wazuh-manager:4.4.4'
           resources:
             limits:
               cpu: 400m
