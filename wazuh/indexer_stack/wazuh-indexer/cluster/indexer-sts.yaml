@@ -83,6 +83,11 @@ spec:
                   fieldPath: metadata.namespace
             - name: DISABLE_INSTALL_DEMO_CONFIG
               value: 'true'
+            - name: INDEXER_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: indexer-cred
+                  key: password
           securityContext:
             capabilities:
               add: ["SYS_CHROOT"]
