@@ -57,6 +57,10 @@ spec:
               mountPath: /wazuh-config-mount/etc/ossec.conf
               subPath: worker.conf
               readOnly: true
+            - name: config
+              mountPath: /filebeat-config-mount/wazuh-template.json
+              subPath: wazuh-template.json
+              readOnly: true
             - name: filebeat-certs
               mountPath: /etc/ssl/root-ca.pem
               readOnly: true
