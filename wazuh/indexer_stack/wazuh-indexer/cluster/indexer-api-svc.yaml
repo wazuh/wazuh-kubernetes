@@ -1,0 +1,24 @@
+# Copyright (C) 2019, Wazuh Inc.
+#
+# This program is a free software; you can redistribute it
+# and/or modify it under the terms of the GNU General Public
+# License (version 2) as published by the FSF - Free Software
+# Foundation.
+
+# Indexer service: API
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: indexer
+  namespace: wazuh
+  labels:
+    app: wazuh-indexer
+spec:
+  type: LoadBalancer
+  selector:
+    app: wazuh-indexer
+  ports:
+    - name: indexer-rest
+      port: 9200
+      targetPort: 9200

@@ -1,0 +1,32 @@
+# Copyright (C) 2019, Wazuh Inc.
+#
+# This program is a free software; you can redistribute it
+# and/or modify it under the terms of the GNU General Public
+# License (version 2) as published by the FSF - Free Software
+# Foundation.
+
+# Wazuh master Service: API and registration (authd)
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: wazuh  # Don't change, unless you update the Wazuh dashboard app config
+  namespace: wazuh
+  labels:
+    app: wazuh-manager
+    # dns: route53
+  annotations:
+    # domainName: 'changeme'
+    service.beta.kubernetes.io/aws-load-balancer-backend-protocol: tcp
+spec:
+  type: LoadBalancer
+  selector:
+    app: wazuh-manager
+    node-type: master
+  ports:
+    - name: registration
+      port: 1515
+      targetPort: 1515
+    - name: api
+      port: 55000
+      targetPort: 55000

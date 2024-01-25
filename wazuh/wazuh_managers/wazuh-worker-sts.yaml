@@ -18,7 +18,6 @@ spec:
     matchLabels:
       app: wazuh-manager
       node-type: worker
-      lbtype: external
   serviceName: wazuh-cluster
   podManagementPolicy: Parallel
   template:
@@ -26,7 +25,6 @@ spec:
       labels:
         app: wazuh-manager
         node-type: worker
-        lbtype: external
       name: wazuh-manager-worker
     spec:
       affinity:
@@ -108,10 +106,10 @@ spec:
             - containerPort: 1514
               name: agents-events
             - containerPort: 1516
-              name: cluster-port
+              name: cluster
           env:
             - name: INDEXER_URL
-              value: 'https://wazuh-internal-lb:9200'
+              value: 'https://wazuh-indexer-0.wazuh-indexer:9200'
             - name: INDEXER_USERNAME
               valueFrom:
                 secretKeyRef:
