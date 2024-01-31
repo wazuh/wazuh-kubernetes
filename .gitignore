@@ -3,8 +3,10 @@ wazuh/certs/dashboard_http/*.key
 wazuh/certs/indexer_cluster/*.pem
 wazuh/certs/indexer_cluster/*.key
 wazuh/certs/indexer_cluster/*.csr
+wazuh/certs/indexer_cluster/*.slr
 wazuh-eks/certs/dashboard_http/*.pem
 wazuh-eks/certs/dashboard_http/*.key
 wazuh-eks/certs/indexer_cluster/*.pem
 wazuh-eks/certs/indexer_cluster/*.key
 wazuh-eks/certs/indexer_cluster/*.csr
+wazuh-eks/certs/indexer_cluster/*.slr
