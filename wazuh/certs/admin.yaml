@@ -1,0 +1,29 @@
+---
+# Source: api/templates/virtual_service.yaml
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: admin
+  namespace: wazuh
+spec:
+  issuerRef:
+    group: cert-manager.io
+    kind: Issuer
+    name: wazuh-issuer
+  secretName: admin-tls
+  commonName: admin
+  dnsNames:
+    - "admin"
+  usages:
+    - "signing"
+    - "key encipherment"
+    - "server auth"
+    - "client auth"
+  duration: 2160h
+  renewBefore: 360h
+  isCA: false
+  privateKey:
+    algorithm: RSA
+    encoding: PKCS1
+    size: 2048
+    rotationPolicy: Always

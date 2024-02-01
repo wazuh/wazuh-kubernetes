@@ -1,0 +1,30 @@
+---
+# Source: api/templates/virtual_service.yaml
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: dashboard
+  namespace: wazuh
+spec:
+  issuerRef:
+    group: cert-manager.io
+    kind: Issuer
+    name: wazuh-issuer
+  secretName: dashboard-tls
+  commonName: dashboard
+  dnsNames:
+    - "dashboard"
+  usages:
+    - "signing"
+    - "key encipherment"
+    - "server auth"
+    - "client auth"
+    - digital signature
+  duration: 2160h
+  renewBefore: 360h
+  isCA: false
+  privateKey:
+    algorithm: RSA
+    encoding: PKCS1
+    size: 2048
+    rotationPolicy: Always
