@@ -1,7 +1,7 @@
 cluster.name: ${CLUSTER_NAME}
 node.name: ${NODE_NAME}
 network.host: ${NETWORK_HOST}
-discovery.seed_hosts: wazuh-indexer-0.wazuh-indexer
+discovery.seed_hosts: wazuh-indexer-0.wazuhindexer
 cluster.initial_master_nodes:
   - wazuh-indexer-0
 

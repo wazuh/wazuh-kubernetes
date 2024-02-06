@@ -59,7 +59,7 @@ spec:
               name: dashboard
           env:
             - name: INDEXER_URL
-              value: 'https://wazuh-indexer-0.wazuh-indexer:9200'
+              value: 'https://wazuh-indexer-0.wazuhindexer:9200'
             - name: INDEXER_USERNAME
               valueFrom:
                 secretKeyRef:
