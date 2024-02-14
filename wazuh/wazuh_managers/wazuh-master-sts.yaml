@@ -41,7 +41,7 @@ spec:
         fsGroup: 101
       containers:
         - name: wazuh-manager
-          image: 'wazuh/wazuh-manager:4.8.0'
+          image: 'merecu/wazuh-manager:4.8.0-beta1'
           resources:
             limits:
               cpu: 400m
@@ -112,7 +112,7 @@ spec:
               name: api
           env:
             - name: INDEXER_URL
-              value: 'https://wazuh-indexer-0.wazuh-indexer:9200'
+              value: 'https://indexer:9200'
             - name: INDEXER_USERNAME
               valueFrom:
                 secretKeyRef:
