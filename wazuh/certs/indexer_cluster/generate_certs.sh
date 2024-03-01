@@ -40,7 +40,7 @@ openssl pkcs8 -inform PEM -outform PEM -in node-key-temp.pem -topk8 -nocrypt -v1
 
 echo "create: node.csr"
 
-openssl req -days 3650 -new -key node-key.pem -out node.csr -subj "/C=US/L=California/O=Company/CN=*.wazuh-indexer"
+openssl req -days 3650 -new -key node-key.pem -out node.csr -subj "/C=US/L=California/O=Company/CN=indexer"
 
 echo "create: node.pem"
 
