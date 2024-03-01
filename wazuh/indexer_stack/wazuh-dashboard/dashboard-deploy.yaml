@@ -32,7 +32,7 @@ spec:
             secretName: dashboard-certs
       containers:
         - name: wazuh-dashboard
-          image: 'wazuh/wazuh-dashboard:4.7.3'
+          image: 'wazuh/wazuh-dashboard:4.8.0'
           resources:
             limits:
               cpu: 500m
@@ -59,7 +59,7 @@ spec:
               name: dashboard
           env:
             - name: INDEXER_URL
-              value: 'https://wazuh-indexer-0.wazuh-indexer:9200'
+              value: 'https://indexer:9200'
             - name: INDEXER_USERNAME
               valueFrom:
                 secretKeyRef:
