@@ -11,4 +11,5 @@ apiVersion: storage.k8s.io/v1
 kind: StorageClass
 metadata:
   name: wazuh-storage
-# provisioner: k8s.io/minikube-hostpath
+# UPDATE THE STORAGE CLASS PROVISIONER HERE
+# provisioner: file.csi.azure.com   <- for example
