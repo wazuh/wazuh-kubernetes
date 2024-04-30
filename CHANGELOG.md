@@ -32,6 +32,12 @@ All notable changes to this project will be documented in this file.
 
 - Update to Wazuh version [4.8.0](https://github.com/wazuh/wazuh/blob/v4.8.0/CHANGELOG.md#v480)
 
+## [4.7.4]
+
+### Added
+
+- Update to Wazuh version [4.7.4](https://github.com/wazuh/wazuh/blob/v4.7.4/CHANGELOG.md#v474)
+
 ## [4.7.3]
 
 ### Added
