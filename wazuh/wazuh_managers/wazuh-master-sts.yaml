@@ -41,7 +41,7 @@ spec:
         fsGroup: 101
       containers:
         - name: wazuh-manager
-          image: 'wazuh/wazuh-manager:4.7.5-rc2'
+          image: 'wazuh/wazuh-manager:4.7.5'
           resources:
             limits:
               cpu: 400m
