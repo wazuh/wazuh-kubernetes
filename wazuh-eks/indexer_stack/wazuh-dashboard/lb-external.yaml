@@ -7,7 +7,9 @@ metadata:
     #service.beta.kubernetes.io/aws-load-balancer-type: external
     #service.beta.kubernetes.io/aws-load-balancer-scheme: internet-facing
     #service.beta.kubernetes.io/aws-load-balancer-nlb-target-type: instance
+    service.beta.kubernetes.io/aws-load-balancer-ssl-cert: 'arn:aws:acm:us-east-1:590183765660:certificate/5f672393-38e9-4ee0-b3c6-a2d02e8d5133'
     service.beta.kubernetes.io/aws-load-balancer-name: wazuh-external-lb
+
 spec:
   type: LoadBalancer
   ports:
