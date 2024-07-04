@@ -4,9 +4,9 @@ metadata:
   name: wazuh-external-lb
   namespace: wazuh
   annotations:
-    service.beta.kubernetes.io/aws-load-balancer-type: external
-    service.beta.kubernetes.io/aws-load-balancer-scheme: internet-facing
-    service.beta.kubernetes.io/aws-load-balancer-nlb-target-type: instance
+    #service.beta.kubernetes.io/aws-load-balancer-type: external
+    #service.beta.kubernetes.io/aws-load-balancer-scheme: internet-facing
+    #service.beta.kubernetes.io/aws-load-balancer-nlb-target-type: instance
     service.beta.kubernetes.io/aws-load-balancer-name: wazuh-external-lb
 spec:
   type: LoadBalancer
