@@ -7,6 +7,10 @@ metadata:
     #service.beta.kubernetes.io/aws-load-balancer-type: external
     #service.beta.kubernetes.io/aws-load-balancer-scheme: internet-facing
     #service.beta.kubernetes.io/aws-load-balancer-nlb-target-type: instance
+    #domainName: 'soc.siem-marvelad.com'
+    #service.beta.kubernetes.io/aws-load-balancer-backend-protocol: https
+    #service.beta.kubernetes.io/aws-load-balancer-ssl-cert: 'arn:aws:acm:us-east-1:590183765660:certificate/bd2636cc-66f1-485f-b832-c60d71e58abc'
+    #service.beta.kubernetes.io/aws-load-balancer-ssl-ports: '443'
     service.beta.kubernetes.io/aws-load-balancer-name: wazuh-external-lb
 spec:
   type: LoadBalancer
