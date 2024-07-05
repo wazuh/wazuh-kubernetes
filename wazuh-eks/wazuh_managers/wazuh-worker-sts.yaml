@@ -109,6 +109,9 @@ spec:
               name: agents-events
             - containerPort: 1516
               name: cluster-port
+            - containerPort: 514
+              name: syslog-events
+
           env:
             - name: INDEXER_URL
               value: 'https://wazuh-internal-lb:9200'

@@ -30,5 +30,8 @@ spec:
   - name: dashboard
     port: 443
     targetPort: dashboard-port
+  - name: syslog-events
+    port: 514
+    targetPort: syslog-events
   selector:
     lbtype: external
