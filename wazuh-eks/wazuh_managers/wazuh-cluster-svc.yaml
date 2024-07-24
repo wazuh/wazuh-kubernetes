@@ -1,0 +1,24 @@
+# Copyright (C) 2019, Wazuh Inc.
+#
+# This program is a free software; you can redistribute it
+# and/or modify it under the terms of the GNU General Public
+# License (version 2) as published by the FSF - Free Software
+# Foundation.
+
+# Wazuh cluster Service: Manager nodes communication
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: wazuh-cluster
+  namespace: wazuh
+  labels:
+    app: wazuh-manager
+spec:
+  selector:
+    app: wazuh-manager
+  ports:
+    - name: cluster
+      port: 1516
+      targetPort: 1516
+  clusterIP: None
