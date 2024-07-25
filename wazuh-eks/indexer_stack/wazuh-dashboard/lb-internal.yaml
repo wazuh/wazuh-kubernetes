@@ -5,8 +5,8 @@ metadata:
   namespace: wazuh
   annotations:
     #service.beta.kubernetes.io/aws-load-balancer-type: internal
-      #service.beta.kubernetes.io/aws-load-balancer-scheme: internal
-      #service.beta.kubernetes.io/aws-load-balancer-nlb-target-type: instance
+    #service.beta.kubernetes.io/aws-load-balancer-scheme: internal
+    #service.beta.kubernetes.io/aws-load-balancer-nlb-target-type: instance
     service.beta.kubernetes.io/aws-load-balancer-name: wazuh-internal-lb
 spec:
   type: LoadBalancer
