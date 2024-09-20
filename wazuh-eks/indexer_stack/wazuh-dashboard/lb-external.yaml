@@ -13,6 +13,7 @@ metadata:
     #service.beta.kubernetes.io/aws-load-balancer-ssl-ports: '443'
     service.beta.kubernetes.io/aws-load-balancer-name: wazuh-external-lb
     service.beta.kubernetes.io/aws-load-balancer-eip-allocations: eipalloc-09da44be7717957ee, eipalloc-08f9bb7c3445c690e
+    service.beta.kubernetes.io/aws-load-balancer-subnets: subnet-05fbf4a6250fa2324, subnet-0c3fca6bec1072d2a
 spec:
   type: LoadBalancer
   ports:

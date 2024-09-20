@@ -1,0 +1,1020 @@
+<!-- Rules to detect SentinelOne events via syslog -->
+
+<!-- SentinelOne logs grouped -->
+<group name="sentinelone">
+  <rule id="105000" level="2">
+    <decoded_as>sentinelone</decoded_as>
+    <description>Logs from SentinelOne.</description>
+  </rule>
+
+  <!-- Rule to detect successfully mitigated threat -->
+  <rule id="105001" level="5">
+    <if_sid>105000</if_sid>
+    <field name="log_message2">Kill performed successfully</field>
+    <description>SentinelOne: Threat $(file_path) successfully mitigated on $(suser).</description>
+  </rule>
+  
+  <!-- Rule to detect active threat -->
+  <rule id="105002" level="10">
+    <if_sid>105000</if_sid>
+    <field name="log_message1">New active threat</field>
+    <description>SentinelOne: $(log_message1) $(file_path) detected on $(endpoint).</description>
+  </rule>
+  
+  <!-- Rule to detect active threat -->
+  <rule id="105003" level="10">
+    <if_sid>105000</if_sid>
+    <field name="log_message1">New Suspicious threat detected</field>
+    <description>SentinelOne: $(log_message1) $(file_path) detected on $(endpoint).</description>
+  </rule>
+  
+  
+  <!-- Rules to detect successful threat quarantine -->
+  <rule id="105004" level="5">
+    <if_sid>105000</if_sid>
+    <field name="log_message2">Quarantine performed successfully</field>
+    <description>SentinelOne: Threat file $(file_path) quarantined successfully on $(suser).</description>
+  </rule>
+  
+  <!-- Rule for hash identified as malicious by the cloud, indicates a confirmed threat -->
+  <rule id="105005" level="15">
+    <if_sid>105000</if_sid>
+    <field name="log_message1">Hash Defined as Malicious By Cloud</field>
+    <description>SentinelOne: $(log_message1) $(file_path) detected on $(endpoint).</description>
+  </rule>
+  
+  <!-- Critical threat that has not been addressed, needs immediate follow-up -->
+  <rule id="105006" level="15">
+    <if_sid>105000</if_sid>
+    <field name="log_message1">New Malicious Threat Not Mitigated</field>
+    <description>SentinelOne: $(log_message1) $(file_path) detected on $(endpoint).</description>
+  </rule>
+  
+  <!-- High importance event showing proactive threat prevention -->
+  <rule id="105007" level="14">
+    <if_sid>105000</if_sid>
+    <field name="log_message1">New Threat Preemptive Block</field>
+    <description>SentinelOne: $(log_message1) $(file_path) detected on $(endpoint).</description>
+  </rule>
+  
+  <!-- Indicates a serious threat that remains unresolved -->
+  <rule id="105008" level="14">
+    <if_sid>105000</if_sid>
+    <field name="log_message1">Threat Unresolved</field>
+    <description>SentinelOne: $(log_message1) $(file_path) detected on $(endpoint).</description>
+  </rule>
+  
+  <!-- A threat was neutralized by a policy -->
+  <rule id="105009" level="14">
+    <if_sid>105000</if_sid>
+    <field name="log_message1">Threat Killed By Policy</field>
+    <description>SentinelOne: $(log_message1) $(file_path) detected on $(endpoint).</description>
+  </rule>
+  
+  <!-- A failure in threat mitigation -->
+  <rule id="105010" level="14">
+    <if_sid>105000</if_sid>
+    <field name="log_message1">Threat Mitigation Report Kill Failed</field>
+    <description>SentinelOne: $(log_message1) $(file_path) detected on $(endpoint).</description>
+  </rule>
+  
+  <!-- Unusual and high importance error indicating system integrity issues -->
+  <rule id="105011" level="13">
+    <if_sid>105000</if_sid>
+    <field name="log_message1">Agent Disabled Because of Database Corruption</field>
+    <description>SentinelOne: $(log_message1) $(file_path) detected on $(endpoint).</description>
+  </rule>
+  
+  <!-- Significant change in threat assessment by the cloud -->
+  <rule id="105012" level="12">
+    <if_sid>105000</if_sid>
+    <field name="log_message1">Threat Confidence Level Changed By Cloud</field>
+    <description>SentinelOne: $(log_message1) $(file_path) detected on $(endpoint).</description>
+  </rule>
+  
+  <!-- Involves manual intervention against a threat -->
+  <rule id="105013" level="13">
+    <if_sid>105000</if_sid>
+    <field name="log_message1">User Issued Kill Command</field>
+    <description>SentinelOne: $(log_message1) $(file_path) detected on $(endpoint).</description>
+  </rule>
+  
+  <!-- Indicates a suspicious threat that hasn’t been addressed -->
+  <rule id="105014" level="12">
+    <if_sid>105000</if_sid>
+    <field name="log_message1">New Suspicious Threat Not Mitigated</field>
+    <description>SentinelOne: $(log_message1) $(file_path) detected on $(endpoint).</description>
+  </rule>
+  
+  <!-- Indicates a change in permissions that could be security relevant -->
+  <rule id="105015" level="8">
+    <if_sid>105000</if_sid>
+    <field name="log_message1">User Created RBAC Role</field>
+    <description>SentinelOne: $(log_message1) $(file_path) detected on $(endpoint).</description>
+  </rule>
+  
+  <!-- Involves token generation, potential access control issue -->
+  <rule id="105016" level="10">
+    <if_sid>105000</if_sid>
+    <field name="log_message1">API Token Generated</field>
+    <description>SentinelOne: $(log_message1) $(file_path) detected on $(endpoint).</description>
+  </rule>
+  
+  <!-- Significant change in macro mitigation, relevant for security -->
+  <rule id="105017" level="12">
+    <if_sid>105000</if_sid>
+    <field name="log_message1">Malicious Macros Mitigation Changed</field>
+    <description>SentinelOne: $(log_message1) $(file_path) detected on $(endpoint).</description>
+  </rule>
+  
+    <!-- Added a new user -->
+  <rule id="105018" level="8">
+    <if_sid>105000</if_sid>
+    <field name="log_message1">User Added</field>
+    <description>SentinelOne: $(log_message1) $(file_path) detected on $(endpoint).</description>
+  </rule>
+  
+  <!-- User modified -->
+  <rule id="105019" level="11">
+    <if_sid>105000</if_sid>
+    <field name="log_message1">User Modified</field>
+    <description>SentinelOne: $(log_message1) $(file_path) detected on $(endpoint).</description>
+  </rule>
+  
+  <!-- User logged in -->
+  <rule id="105020" level="3">
+    <if_sid>105000</if_sid>
+    <field name="log_message1">User Logged In</field>
+    <description>SentinelOne: $(log_message1) $(file_path) detected on $(endpoint).</description>
+  </rule>
+  
+  <!-- User logged out -->
+  <rule id="105021" level="3">
+    <if_sid>105000</if_sid>
+    <field name="log_message1">User Logged Out</field>
+    <description>SentinelOne: $(log_message1) $(file_path) detected on $(endpoint).</description>
+  </rule>
+  
+  <!-- Cloud Intelligence Settings Modified -->
+  <rule id="105022" level="11">
+    <if_sid>105000</if_sid>
+    <field name="log_message1">Cloud Intelligence Settings Modified</field>
+    <description>SentinelOne: $(log_message1) $(file_path) detected on $(endpoint).</description>
+  </rule> 
+ 
+  <!-- Agent Uninstalled -->
+  <rule id="105023" level="8">
+    <if_sid>105000</if_sid>
+    <field name="log_message1">Agent Uninstalled</field>
+    <description>SentinelOne: $(log_message1) $(file_path) detected on $(endpoint).</description>
+  </rule> 
+  
+  
+  <!-- Event Severity Level Modified -->
+  <rule id="105024" level="11">
+    <if_sid>105000</if_sid>
+    <field name="log_message1">Event Severity Level Modified</field>
+    <description>SentinelOne: $(log_message1) $(file_path) detected on $(endpoint).</description>
+  </rule>
+  
+  <!-- User Disconnected Agent From Network -->
+  <rule id="105025" level="11">
+    <if_sid>105000</if_sid>
+    <field name="log_message1">User Disconnected Agent From Network</field>
+    <description>SentinelOne: $(log_message1) $(file_path) detected on $(endpoint).</description>
+  </rule>
+  
+  <!-- User Shutdown Agent -->
+  <rule id="105026" level="11">
+    <if_sid>105000</if_sid>
+    <field name="log_message1">User Shutdown Agent</field>
+    <description>SentinelOne: $(log_message1) $(file_path) detected on $(endpoint).</description>
+  </rule>
+  
+  <!-- User Edited RBAC Role -->
+  <rule id="105027" level="11">
+    <if_sid>105000</if_sid>
+    <field name="log_message1">User Edited RBAC Role</field>
+    <description>SentinelOne: $(log_message1) $(file_path) detected on $(endpoint).</description>
+  </rule>
+  
+  <!-- User Deleted RBAC Role -->
+  <rule id="105028" level="11">
+    <if_sid>105000</if_sid>
+    <field name="log_message1">User Deleted RBAC Role</field>
+    <description>SentinelOne: $(log_message1) $(file_path) detected on $(endpoint).</description>
+  </rule>
+  
+  <!-- Enable API Token Generation -->
+  <rule id="105029" level="11">
+    <if_sid>105000</if_sid>
+    <field name="log_message1">Enable API Token Generation</field>
+    <description>SentinelOne: $(log_message1) $(file_path) detected on $(endpoint).</description>
+  </rule>
+  
+  <!-- API Token Revoked -->
+  <rule id="105030" level="11">
+    <if_sid>105000</if_sid>
+    <field name="log_message1">API Token Revoked</field>
+    <description>SentinelOne: $(log_message1) $(file_path) detected on $(endpoint).</description>
+  </rule>
+  
+  <!-- User Disabled Agent -->
+  <rule id="105031" level="11">
+    <if_sid>105000</if_sid>
+    <field name="log_message1">User Disabled Agent</field>
+    <description>SentinelOne: $(log_message1) $(file_path) detected on $(endpoint).</description>
+  </rule>
+  
+  <!-- Agent Disabled -->
+  <rule id="105032" level="11">
+    <if_sid>105000</if_sid>
+    <field name="log_message1">Agent Disabled</field>
+    <description>SentinelOne: $(log_message1) $(file_path) detected on $(endpoint).</description>
+  </rule>
+  
+  <!-- Agent Disabled Because of Database Corruption -->
+  <rule id="105033" level="8">
+    <if_sid>105000</if_sid>
+    <field name="log_message1">Agent Disabled Because of Database Corruption</field>
+    <description>SentinelOne: $(log_message1) $(file_path) detected on $(endpoint).</description>
+  </rule> 
+ 
+  <!-- Allowed Domains Settings Changed -->
+  <rule id="105034" level="8">
+    <if_sid>105000</if_sid>
+    <field name="log_message1">Allowed Domains Settings Changed</field>
+    <description>SentinelOne: $(log_message1) $(file_path) detected on $(endpoint).</description>
+  </rule> 
+  
+  <!-- Opt-in To EA program -->
+  <rule id="105035" level="8">
+    <if_sid>105000</if_sid>
+    <field name="log_message1">Opt-in To EA program</field>
+    <description>SentinelOne: $(log_message1) $(file_path) detected on $(endpoint).</description>
+  </rule>
+  
+    <!-- Multiple login failures were triggered by the same user  -->
+  <rule id="105036" level="10" timeframe="60">
+    <if_sid>105000</if_sid>
+    <field name="log_message1">Existing User Login Failure</field>
+    <description>SentinelOne: $(log_message1) $(file_path) detected on $(endpoint).</description>
+  </rule>
+  
+<!-- Unknown User Login -->
+<rule id="105037" level="8">
+  <if_sid>105000</if_sid>
+  <field name="log_message1">Unknown User Login</field>
+  <description>SentinelOne: $(log_message1) $(file_path) detected on $(endpoint).</description>
+</rule>
+
+<!-- Service User creation -->
+<rule id="105038" level="11">
+  <if_sid>105000</if_sid>
+  <field name="log_message1">Service User creation</field>
+  <description>SentinelOne: $(log_message1) $(file_path) detected on $(endpoint).</description>
+</rule>
+
+<!-- User Locked from Unrestricted Session -->
+<rule id="105039" level="8">
+  <if_sid>105000</if_sid>
+  <field name="log_message1">User Locked from Unrestricted Session</field>
+  <description>SentinelOne: $(log_message1) $(file_path) detected on $(endpoint).</description>
+</rule>
+
+<!-- User Temporarily Locked -->
+<rule id="105040" level="8">
+  <if_sid>105000</if_sid>
+  <field name="log_message1">User Temporarily Locked</field>
+  <description>SentinelOne: $(log_message1) $(file_path) detected on $(endpoint).</description>
+</rule>
+
+<!-- 2FA - Delete -->
+<rule id="105041" level="12">
+  <if_sid>105000</if_sid>
+  <field name="log_message1">2FA - Delete</field>
+  <description>SentinelOne: $(log_message1) $(file_path) detected on $(endpoint).</description>
+</rule>
+
+<!-- Live Updates Policy Modified -->
+<rule id="105042" level="11">
+  <if_sid>105000</if_sid>
+  <field name="log_message1">Live Updates Policy Modified</field>
+  <description>SentinelOne: $(log_message1) $(file_path) detected on $(endpoint).</description>
+</rule>
+
+<!-- File Upload Settings Modified -->
+<rule id="105043" level="11">
+  <if_sid>105000</if_sid>
+  <field name="log_message1">File Upload Settings Modified</field>
+  <description>SentinelOne: $(log_message1) $(file_path) detected on $(endpoint).</description>
+</rule>
+
+<!-- Suspicious Driver Blocking Changed -->
+<rule id="105043" level="8">
+  <if_sid>105000</if_sid>
+  <field name="log_message1">Suspicious Driver Blocking Changed</field>
+  <description>SentinelOne: $(log_message1) $(file_path) detected on $(endpoint).</description>
+</rule>
+
+<!-- Windows Signed Drivers Blocking Changed -->
+<rule id="105044" level="11">
+  <if_sid>105000</if_sid>
+  <field name="log_message1">Windows Signed Drivers Blocking Changed</field>
+  <description>SentinelOne: $(log_message1) $(file_path) detected on $(endpoint).</description>
+</rule>
+
+<!-- Windows Unsigned Drivers Blocking Changed -->
+<rule id="105045" level="11">
+  <if_sid>105000</if_sid>
+  <field name="log_message1">Windows Unsigned Drivers Blocking Changed</field>
+  <description>SentinelOne: $(log_message1) $(file_path) detected on $(endpoint).</description>
+</rule>
+
+<!-- Malicious Macros Mitigation Changed -->
+<rule id="105046" level="11">
+  <if_sid>105000</if_sid>
+  <field name="log_message1">Malicious Macros Mitigation Changed</field>
+  <description>SentinelOne: $(log_message1) $(file_path) detected on $(endpoint).</description>
+</rule>
+
+<!-- Agent Disconnected From Network -->
+<rule id="105047" level="9">
+  <if_sid>105000</if_sid>
+  <field name="log_message1">Agent Disconnected From Network</field>
+  <description>SentinelOne: $(log_message1) $(file_path) detected on $(endpoint).</description>
+</rule>
+
+  <!-- Multiple login failures were triggered by the same user  -->
+  <rule id="105048" level="10" timeframe="60">
+    <if_sid>105000</if_sid>
+    <field name="log_message1">SSO Login Failed</field>
+    <description>SentinelOne: $(log_message1) $(file_path) detected on $(endpoint).</description>
+  </rule>
+  
+<!-- SSO User Added -->
+  <rule id="105049" level="8">
+    <if_sid>105000</if_sid>
+    <field name="log_message1">SSO User Added</field>
+    <description>SentinelOne: $(log_message1) $(file_path) detected on $(endpoint).</description>
+  </rule>
+
+  <!-- User Network Quarantine Container -->
+  <rule id="105050" level="8">
+    <if_sid>105000</if_sid>
+    <field name="log_message1">User Network Quarantine Container</field>
+    <description>SentinelOne: $(log_message1) $(file_path) detected on $(endpoint).</description>
+  </rule>
+
+  <!-- User Network Unquarantine Container -->
+  <rule id="105051" level="8">
+    <if_sid>105000</if_sid>
+    <field name="log_message1">User Network Unquarantine Container</field>
+    <description>SentinelOne: $(log_message1) $(file_path) detected on $(endpoint).</description>
+  </rule>
+
+  <!-- Threat Mitigation Report Kill Failed -->
+  <rule id="105052" level="8">
+    <if_sid>105000</if_sid>
+    <field name="log_message1">Threat Mitigation Report Kill Failed</field>
+    <description>SentinelOne: $(log_message1) $(file_path) detected on $(endpoint).</description>
+  </rule>
+
+  <!-- Threat Mitigation Report Remediate Failed -->
+  <rule id="105053" level="8">
+    <if_sid>105000</if_sid>
+    <field name="log_message1">Threat Mitigation Report Remediate Failed</field>
+    <description>SentinelOne: $(log_message1) $(file_path) detected on $(endpoint).</description>
+  </rule>
+
+  <!-- Threat Mitigation Report Rollback Failed -->
+  <rule id="105054" level="7">
+    <if_sid>105000</if_sid>
+    <field name="log_message1">Threat Mitigation Report Rollback Failed</field>
+    <description>SentinelOne: $(log_message1) $(file_path) detected on $(endpoint).</description>
+  </rule>
+
+  <!-- Threat Mitigation Report Quarantine Failed -->
+  <rule id="105055" level="7">
+    <if_sid>105000</if_sid>
+    <field name="log_message1">Threat Mitigation Report Quarantine Failed</field>
+    <description>SentinelOne: $(log_message1) $(file_path) detected on $(endpoint).</description>
+  </rule>
+
+  <!-- Agent Mitigation Report Quarantine Network Failed -->
+  <rule id="105056" level="7">
+    <if_sid>105000</if_sid>
+    <field name="log_message1">Agent Mitigation Report Quarantine Network Failed</field>
+    <description>SentinelOne: $(log_message1) $(file_path) detected on $(endpoint).</description>
+  </rule>
+
+  <!-- User Marked Application As Threat -->
+  <rule id="105057" level="8">
+    <if_sid>105000</if_sid>
+    <field name="log_message1">User Marked Application As Threat</field>
+    <description>SentinelOne: $(log_message1) $(file_path) detected on $(endpoint).</description>
+  </rule>
+  
+<!-- Threat Quarantined By Policy -->
+<rule id="105058" level="7">
+  <if_sid>105000</if_sid>
+  <field name="log_message1">Threat Quarantined By Policy</field>
+  <description>SentinelOne: $(log_message1) detected on $(endpoint).</description>
+</rule>
+
+<!-- Agent Disconnected From Network Due to Threat Mitigation By Policy -->
+<rule id="105059" level="9">
+  <if_sid>105000</if_sid>
+  <field name="log_message1">Agent Disconnected From Network Due to Threat Mitigation By Policy</field>
+  <description>SentinelOne: $(log_message1) detected on $(endpoint).</description>
+</rule>
+
+<!-- Threat Mitigation Report Unquarantine Failed -->
+<rule id="105060" level="8">
+  <if_sid>105000</if_sid>
+  <field name="log_message1">Threat Mitigation Report Unquarantine Failed</field>
+  <description>SentinelOne: $(log_message1) detected on $(endpoint).</description>
+</rule>
+
+<!-- User Added Hash Exclusion -->
+<rule id="105061" level="9">
+  <if_sid>105000</if_sid>
+  <field name="log_message1">User Added Hash Exclusion</field>
+  <description>SentinelOne: $(log_message1) performed by user $(username).</description>
+</rule>
+
+<!-- Cloud Added Hash Exclusion -->
+<rule id="105062" level="9">
+  <if_sid>105000</if_sid>
+  <field name="log_message1">Cloud Added Hash Exclusion</field>
+  <description>SentinelOne: $(log_message1) added in the cloud for $(os_family).</description>
+</rule>
+
+<!-- New Path Exclusion -->
+<rule id="105063" level="8">
+  <if_sid>105000</if_sid>
+  <field name="log_message1">New Path Exclusion</field>
+  <description>SentinelOne: $(log_message1) added by user $(username) on $(os_family).</description>
+</rule>
+
+<!-- New Signer Identity Exclusion -->
+<rule id="105064" level="8">
+  <if_sid>105000</if_sid>
+  <field name="log_message1">New Signer Identity Exclusion</field>
+  <description>SentinelOne: $(log_message1) added by user $(username) on $(os_family).</description>
+</rule>
+
+<!-- New File Type Exclusion -->
+<rule id="105065" level="8">
+  <if_sid>105000</if_sid>
+  <field name="log_message1">New File Type Exclusion</field>
+  <description>SentinelOne: $(log_message1) added by user $(username) on $(os_family).</description>
+</rule>
+
+<!-- New Browser Type Exclusion -->
+<rule id="105066" level="8">
+  <if_sid>105000</if_sid>
+  <field name="log_message1">New Browser Type Exclusion</field>
+  <description>SentinelOne: $(log_message1) added by user $(username) on $(os_family).</description>
+</rule>
+
+<!-- Path Exclusion Modified -->
+<rule id="105067" level="9">
+  <if_sid>105000</if_sid>
+  <field name="log_message1">Path Exclusion Modified</field>
+  <description>SentinelOne: $(log_message1) modified by user $(username) on $(os_family).</description>
+</rule>
+
+<!-- Signer Identity Exclusion Modified -->
+<rule id="105068" level="9">
+  <if_sid>105000</if_sid>
+  <field name="log_message1">Signer Identity Exclusion Modified</field>
+  <description>SentinelOne: $(log_message1) modified by user $(username) on $(os_family).</description>
+</rule>
+
+<!-- File Type Exclusion Modified -->
+<rule id="105069" level="9">
+  <if_sid>105000</if_sid>
+  <field name="log_message1">File Type Exclusion Modified</field>
+  <description>SentinelOne: $(log_message1) modified by user $(username) on $(os_family).</description>
+</rule>
+
+<!-- Browser Type Exclusion Modified -->
+<rule id="105070" level="9">
+  <if_sid>105000</if_sid>
+  <field name="log_message1">Browser Type Exclusion Modified</field>
+  <description>SentinelOne: $(log_message1) modified by user $(username) on $(os_family).</description>
+</rule>
+
+<!-- Identity Exclusion Created -->
+<rule id="105071" level="8">
+  <if_sid>105000</if_sid>
+  <field name="log_message1">Identity Exclusion Created</field>
+  <description>SentinelOne: $(log_message1) created by user $(username) for $(os_family).</description>
+</rule>
+
+<!-- Identity Exclusion Updated -->
+<rule id="105072" level="8">
+  <if_sid>105000</if_sid>
+  <field name="log_message1">Identity Exclusion Updated</field>
+  <description>SentinelOne: $(log_message1) updated by user $(username) for $(os_family).</description>
+</rule>
+
+
+<!-- User Started Remote Shell -->
+<rule id="105072" level="8">
+  <if_sid>105000</if_sid>
+  <field name="log_message1">User Started Remote Shell</field>
+  <description>SentinelOne: $(log_message1) detected on $(endpoint).</description>
+</rule>
+
+<!-- Remote Shell Created -->
+<rule id="105073" level="8">
+  <if_sid>105000</if_sid>
+  <field name="log_message1">Remote Shell Created</field>
+  <description>SentinelOne: $(log_message1) detected on $(endpoint).</description>
+</rule>
+
+<!-- Network Discovery Settings Modified -->
+<rule id="105074" level="7">
+  <if_sid>105000</if_sid>
+  <field name="log_message1">Network Discovery Settings Modified</field>
+  <description>SentinelOne: $(log_message1) detected on $(endpoint).</description>
+</rule>
+
+<!-- Discovered Networks Settings Modified -->
+<rule id="105075" level="7">
+  <if_sid>105000</if_sid>
+  <field name="log_message1">Discovered Networks Settings Modified</field>
+  <description>SentinelOne: $(log_message1) detected on $(endpoint).</description>
+</rule>
+
+<!-- Network Discovery - Devices Discovered -->
+<rule id="105076" level="6">
+  <if_sid>105000</if_sid>
+  <field name="log_message1">Network Discovery - Devices Discovered</field>
+  <description>SentinelOne: $(log_message1) detected on $(endpoint).</description>
+</rule>
+
+<!-- Sentinel Deploy - Master passphrase -->
+<rule id="105077" level="9">
+  <if_sid>105000</if_sid>
+  <field name="log_message1">Sentinel Deploy - Master passphrase</field>
+  <description>SentinelOne: $(log_message1) detected on $(endpoint).</description>
+</rule>
+
+<!-- Sentinel Deploy - Credential Group Created -->
+<rule id="105078" level="8">
+  <if_sid>105000</if_sid>
+  <field name="log_message1">Sentinel Deploy - Credential Group Created</field>
+  <description>SentinelOne: $(log_message1) detected on $(endpoint).</description>
+</rule>
+
+<!-- Sentinel Deploy - Credential Group Edited -->
+<rule id="105079" level="7">
+  <if_sid>105000</if_sid>
+  <field name="log_message1">Sentinel Deploy - Credential Group Edited</field>
+  <description>SentinelOne: $(log_message1) detected on $(endpoint).</description>
+</rule>
+
+<!-- Sentinel Deploy - Credential Group Deleted -->
+<rule id="105080" level="8">
+  <if_sid>105000</if_sid>
+  <field name="log_message1">Sentinel Deploy - Credential Group Deleted</field>
+  <description>SentinelOne: $(log_message1) detected on $(endpoint).</description>
+</rule>
+
+<!-- Sentinel Deploy - Credential Created -->
+<rule id="105081" level="8">
+  <if_sid>105000</if_sid>
+  <field name="log_message1">Sentinel Deploy - Credential Created</field>
+  <description>SentinelOne: $(log_message1) detected on $(endpoint).</description>
+</rule>
+
+<!-- Sentinel Deploy - Credential Deleted -->
+<rule id="105082" level="8">
+  <if_sid>105000</if_sid>
+  <field name="log_message1">Sentinel Deploy - Credential Deleted</field>
+  <description>SentinelOne: $(log_message1) detected on $(endpoint).</description>
+</rule>
+
+<!-- Sentinel Deploy - Credential Overridden -->
+<rule id="105083" level="8">
+  <if_sid>105000</if_sid>
+  <field name="log_message1">Sentinel Deploy - Credential Overridden</field>
+  <description>SentinelOne: $(log_message1) detected on $(endpoint).</description>
+</rule>
+
+<!-- Sentinel Deploy - Trusted Hosts -->
+<rule id="105084" level="7">
+  <if_sid>105000</if_sid>
+  <field name="log_message1">Sentinel Deploy - Trusted Hosts</field>
+  <description>SentinelOne: $(log_message1) detected on $(endpoint).</description>
+</rule>
+
+<!-- Custom Rules - User Created A Rule -->
+<rule id="105085" level="7">
+  <if_sid>105000</if_sid>
+  <field name="log_message1">Custom Rules - User Created A Rule</field>
+  <description>SentinelOne: $(log_message1) detected on $(endpoint).</description>
+</rule>
+
+<!-- Custom Rules - User Changed A Rule -->
+<rule id="105086" level="7">
+  <if_sid>105000</if_sid>
+  <field name="log_message1">Custom Rules - User Changed A Rule</field>
+  <description>SentinelOne: $(log_message1) detected on $(endpoint).</description>
+</rule>
+
+<!-- Custom Rules - User Deleted A Rule -->
+<rule id="105087" level="7">
+  <if_sid>105000</if_sid>
+  <field name="log_message1">Custom Rules - User Deleted A Rule</field>
+  <description>SentinelOne: $(log_message1) detected on $(endpoint).</description>
+</rule>
+
+<!-- Custom Rules - Rule Status Changed -->
+<rule id="105088" level="7">
+  <if_sid>105000</if_sid>
+  <field name="log_message1">Custom Rules - Rule Status Changed</field>
+  <description>SentinelOne: $(log_message1) detected on $(endpoint).</description>
+</rule>
+
+<!-- Custom Rules - Rule Expired -->
+<rule id="105089" level="6">
+  <if_sid>105000</if_sid>
+  <field name="log_message1">Custom Rules - Rule Expired</field>
+  <description>SentinelOne: $(log_message1) detected on $(endpoint).</description>
+</rule>
+
+<!-- Custom Rules - Rule Reached Alert Limit -->
+<rule id="105090" level="7">
+  <if_sid>105000</if_sid>
+  <field name="log_message1">Custom Rules - Rule Reached Alert Limit</field>
+  <description>SentinelOne: $(log_message1) detected on $(endpoint).</description>
+</rule>
+
+<!-- Account Uninstall Password Viewed -->
+<rule id="105091" level="8">
+  <if_sid>105000</if_sid>
+  <field name="log_message1">Account Uninstall Password Viewed</field>
+  <description>SentinelOne: $(log_message1) detected on $(endpoint).</description>
+</rule>
+
+<!-- Account Uninstall Password Generated -->
+<rule id="105092" level="8">
+  <if_sid>105000</if_sid>
+  <field name="log_message1">Account Uninstall Password Generated</field>
+  <description>SentinelOne: $(log_message1) detected on $(endpoint).</description>
+</rule>
+
+<!-- Account Uninstall Password Regenerated -->
+<rule id="105093" level="8">
+  <if_sid>105000</if_sid>
+  <field name="log_message1">Account Uninstall Password Regenerated</field>
+  <description>SentinelOne: $(log_message1) detected on $(endpoint).</description>
+</rule>
+
+<!-- Account Uninstall Password Revoked -->
+<rule id="105094" level="8">
+  <if_sid>105000</if_sid>
+  <field name="log_message1">Account Uninstall Password Revoked</field>
+  <description>SentinelOne: $(log_message1) detected on $(endpoint).</description>
+</rule>
+
+<!-- New Script Created -->
+<rule id="105095" level="7">
+  <if_sid>105000</if_sid>
+  <field name="log_message1">New Script Created</field>
+  <description>SentinelOne: $(log_message1) detected on $(endpoint).</description>
+</rule>
+
+<!-- Script Action Initiated -->
+<rule id="105096" level="7">
+  <if_sid>105000</if_sid>
+  <field name="log_message1">Script Action Initiated</field>
+  <description>SentinelOne: $(log_message1) detected on $(endpoint).</description>
+</rule>
+
+<!-- Script Deleted -->
+<rule id="105097" level="7">
+  <if_sid>105000</if_sid>
+  <field name="log_message1">Script Deleted</field>
+  <description>SentinelOne: $(log_message1) detected on $(endpoint).</description>
+</rule>
+
+<!-- User 2FA Verification Failed -->
+<rule id="105098" level="8">
+  <if_sid>105000</if_sid>
+  <field name="log_message1">User 2FA Verification Failed</field>
+  <description>SentinelOne: $(log_message1) detected on $(endpoint).</description>
+</rule>
+
+<!-- User 2FA Email Verification Changed -->
+<rule id="105099" level="8">
+  <if_sid>105000</if_sid>
+  <field name="log_message1">User 2FA Email Verification Changed</field>
+  <description>SentinelOne: $(log_message1) detected on $(endpoint).</description>
+</rule>
+
+<!-- Login Using Saved 2FA Recovery Code -->
+<rule id="105100" level="9">
+  <if_sid>105000</if_sid>
+  <field name="log_message1">Login Using Saved 2FA Recovery Code</field>
+  <description>SentinelOne: $(log_message1) detected on $(endpoint).</description>
+</rule>
+
+
+  <!-- Marketplace - App Disabled -->
+  <rule id="105101" level="3">
+    <if_sid>105000</if_sid>
+    <field name="log_message1">Marketplace - App Disabled</field>
+    <description>SentinelOne: $(log_message1) action performed on $(endpoint).</description>
+  </rule>
+
+  <!-- Network Discovery Self Provisioning Default Features Modified -->
+  <rule id="105102" level="4">
+    <if_sid>105000</if_sid>
+    <field name="log_message1">Network Discovery Self Provisioning Default Features Modified</field>
+    <description>SentinelOne: $(log_message1) on $(endpoint).</description>
+  </rule>
+
+  <!-- User Disabled Extensive Scan -->
+  <rule id="105103" level="7">
+    <if_sid>105000</if_sid>
+    <field name="log_message1">User Disabled Extensive Scan</field>
+    <description>SentinelOne: $(log_message1) on $(endpoint).</description>
+  </rule>
+
+  <!-- Platform Rules - Rule Deleted -->
+  <rule id="105104" level="5">
+    <if_sid>105000</if_sid>
+    <field name="log_message1">Platform Rules - Rule Deleted</field>
+    <description>SentinelOne: $(log_message1) performed by $(user_name) on $(endpoint).</description>
+  </rule>
+
+  <!-- Platform Rules - Rule Status Change Failed -->
+  <rule id="105105" level="5">
+    <if_sid>105000</if_sid>
+    <field name="log_message1">Platform Rules - Rule Status Change Failed</field>
+    <description>SentinelOne: $(log_message1) performed on $(endpoint) due to $(reason).</description>
+  </rule>
+
+  <!-- Custom Rules - Rule Expired -->
+  <rule id="105106" level="3">
+    <if_sid>105000</if_sid>
+    <field name="log_message1">Custom Rules - Rule Expired</field>
+    <description>SentinelOne: $(log_message1) on $(endpoint).</description>
+  </rule>
+
+  <!-- Platform Rules - Rule Reached Alert Limit -->
+  <rule id="105107" level="4">
+    <if_sid>105000</if_sid>
+    <field name="log_message1">Platform Rules - Rule Reached Alert Limit</field>
+    <description>SentinelOne: $(log_message1) on $(endpoint).</description>
+  </rule>
+
+  <!-- Suspicious Threat Was Marked As Threat -->
+  <rule id="105108" level="9">
+    <if_sid>105000</if_sid>
+    <field name="log_message1">Suspicious Threat Was Marked As Threat</field>
+    <description>SentinelOne: $(log_message1) performed by $(user_name) on $(endpoint).</description>
+  </rule>
+
+  <!-- New Suspicious Threat Not Mitigated -->
+  <rule id="105109" level="9">
+    <if_sid>105000</if_sid>
+    <field name="log_message1">New Suspicious Threat Not Mitigated</field>
+    <description>SentinelOne: $(log_message1) detected on $(endpoint).</description>
+  </rule>
+
+  <!-- Process Was Marked As Threat -->
+  <rule id="105110" level="8">
+    <if_sid>105000</if_sid>
+    <field name="log_message1">Process Was Marked As Threat</field>
+    <description>SentinelOne: $(log_message1) performed on $(endpoint).</description>
+  </rule>
+
+  <!-- Suspicious Threat Was Unresolved -->
+  <rule id="105111" level="10">
+    <if_sid>105000</if_sid>
+    <field name="log_message1">Suspicious Threat Was Unresolved</field>
+    <description>SentinelOne: $(log_message1) detected on $(endpoint).</description>
+  </rule>
+
+  <!-- Policy Setting - Show Suspicious Activities Configuration Disabled -->
+  <rule id="105112" level="5">
+    <if_sid>105000</if_sid>
+    <field name="log_message1">Policy Setting - Show Suspicious Activities Configuration Disabled</field>
+    <description>SentinelOne: $(log_message1) changed by $(user_name) on $(endpoint).</description>
+  </rule>
+
+  <!-- Password Expiration Modified -->
+  <rule id="105113" level="4">
+    <if_sid>105000</if_sid>
+    <field name="log_message1">Password Expiration Modified</field>
+    <description>SentinelOne: $(log_message1) performed by $(user_name) on $(endpoint).</description>
+  </rule>
+
+  <!-- User Marked Deep Visibility Event As Threat -->
+  <rule id="105114" level="8">
+    <if_sid>105000</if_sid>
+    <field name="log_message1">User Marked Deep Visibility Event As Threat</field>
+    <description>SentinelOne: $(log_message1) performed on $(endpoint).</description>
+  </rule>
+
+  <!-- User Marked Deep Visibility Event As Suspicious -->
+  <rule id="105115" level="8">
+    <if_sid>105000</if_sid>
+    <field name="log_message1">User Marked Deep Visibility Event As Suspicious</field>
+    <description>SentinelOne: $(log_message1) performed on $(endpoint).</description>
+  </rule>
+
+  <!-- STAR Manual Response Marked Event As Malicious -->
+  <rule id="105116" level="8">
+    <if_sid>105000</if_sid>
+    <field name="log_message1">STAR Manual Response Marked Event As Malicious</field>
+    <description>SentinelOne: $(log_message1) action performed on $(endpoint).</description>
+  </rule>
+
+  <!-- STAR Manual Response Marked Event As Suspicious -->
+  <rule id="105117" level="8">
+    <if_sid>105000</if_sid>
+    <field name="log_message1">STAR Manual Response Marked Event As Suspicious</field>
+    <description>SentinelOne: $(log_message1) action performed on $(endpoint).</description>
+  </rule>
+
+  <!-- Watchtower Cloud Detection Engine Marked Event As Threat -->
+  <rule id="105118" level="8">
+    <if_sid>105000</if_sid>
+    <field name="log_message1">Watchtower Cloud Detection Engine Marked Event As Threat</field>
+    <description>SentinelOne: $(log_message1) detected on $(endpoint).</description>
+  </rule>
+
+  <!-- Watchtower Cloud Detection Engine Marked Event As Suspicious -->
+  <rule id="105119" level="8">
+    <if_sid>105000</if_sid>
+    <field name="log_message1">Watchtower Cloud Detection Engine Marked Event As Suspicious</field>
+    <description>SentinelOne: $(log_message1) detected on $(endpoint).</description>
+  </rule>
+
+  <!-- Singularity Threat Intelligence Engine Marked Event As Suspicious -->
+  <rule id="105120" level="6">
+    <if_sid>105000</if_sid>
+    <field name="log_message1">Singularity Threat Intelligence Engine Marked Event As Suspicious</field>
+    <description>SentinelOne: $(log_message1) detected on $(endpoint).</description>
+  </rule>
+
+  <!-- Site Deleted -->
+  <rule id="105121" level="5">
+    <if_sid>105000</if_sid>
+    <field name="log_message1">Site Deleted</field>
+    <description>SentinelOne: $(log_message1) action performed by $(user_name).</description>
+  </rule>
+
+  <!-- Site Modified -->
+  <rule id="105122" level="4">
+    <if_sid>105000</if_sid>
+    <field name="log_message1">Site Modified</field>
+    <description>SentinelOne: $(log_message1) performed by $(user_name).</description>
+  </rule>
+
+  <!-- Site Token Regenerated -->
+  <rule id="105123" level="4">
+    <if_sid>105000</if_sid>
+    <field name="log_message1">Site Token Regenerated</field>
+    <description>SentinelOne: $(log_message1) action performed by $(user_name) for $(site_name).</description>
+  </rule>
+  
+  <!-- Account Deleted -->
+  <rule id="105124" level="5">
+    <if_sid>105000</if_sid>
+    <field name="log_message1">Account Deleted</field>
+    <description>SentinelOne: $(log_message1) performed by $(user_name).</description>
+  </rule>
+
+  <!-- Device Rule Modified -->
+  <rule id="105125" level="4">
+    <if_sid>105000</if_sid>
+    <field name="log_message1">Device Rule Modified</field>
+    <description>SentinelOne: $(log_message1) performed by $(user_name).</description>
+  </rule>
+
+  <!-- Device Rule Deleted -->
+  <rule id="105126" level="5">
+    <if_sid>105000</if_sid>
+    <field name="log_message1">Device Rule Deleted</field>
+    <description>SentinelOne: $(log_message1) performed by $(user_name).</description>
+  </rule>
+
+  <!-- Firewall Rule Modified -->
+  <rule id="105127" level="8">
+    <if_sid>105000</if_sid>
+    <field name="log_message1">Firewall Rule Modified</field>
+    <description>SentinelOne: $(log_message1) performed by $(user_name).</description>
+  </rule>
+
+  <!-- Firewall Rule Deleted -->
+  <rule id="105128" level="10">
+    <if_sid>105000</if_sid>
+    <field name="log_message1">Firewall Rule Deleted</field>
+    <description>SentinelOne: $(log_message1) performed by $(user_name).</description>
+  </rule>
+
+  <!-- User Requested Firewall Logging -->
+  <rule id="105129" level="3">
+    <if_sid>105000</if_sid>
+    <field name="log_message1">User Requested Firewall Logging</field>
+    <description>SentinelOne: $(log_message1) performed by $(user_name).</description>
+  </rule>
+
+  <!-- Network Quarantine Rule Modified -->
+  <rule id="105130" level="4">
+    <if_sid>105000</if_sid>
+    <field name="log_message1">Network Quarantine Rule Modified</field>
+    <description>SentinelOne: $(log_message1) performed by $(user_name).</description>
+  </rule>
+
+  <!-- Network Quarantine Rule Deleted -->
+  <rule id="105131" level="5">
+    <if_sid>105000</if_sid>
+    <field name="log_message1">Network Quarantine Rule Deleted</field>
+    <description>SentinelOne: $(log_message1) performed by $(user_name).</description>
+  </rule>
+
+  <!-- Mobile Incident Detected -->
+  <rule id="105132" level="12">
+    <if_sid>105000</if_sid>
+    <field name="log_message1">Mobile Incident Detected</field>
+    <description>SentinelOne: $(log_message1) detected by $(user_name).</description>
+  </rule>
+
+  <!-- Disable and Purge Cloud (AKA Delete) -->
+  <rule id="105133" level="5">
+    <if_sid>105000</if_sid>
+    <field name="log_message1">Disable and Purge Cloud</field>
+    <description>SentinelOne: $(log_message1) action performed by $(user_name).</description>
+  </rule>
+
+  <!-- Forensics Profile Executed -->
+  <rule id="105134" level="4">
+    <if_sid>105000</if_sid>
+    <field name="log_message1">Forensics Profile Executed</field>
+    <description>SentinelOne: $(log_message1) executed by $(user_name).</description>
+  </rule>
+
+  <!-- User Approved Script Execution -->
+  <rule id="105135" level="3">
+    <if_sid>105000</if_sid>
+    <field name="log_message1">User Approved Script Execution</field>
+    <description>SentinelOne: $(log_message1) approved by $(user_name).</description>
+  </rule>
+
+  <!-- Unknown Mobile Activity -->
+  <rule id="105136" level="7">
+    <if_sid>105000</if_sid>
+    <field name="log_message1">Unknown Mobile Activity</field>
+    <description>SentinelOne: $(log_message1) detected.</description>
+  </rule>
+
+  <!-- AD Assessment Detected New Exposure -->
+  <rule id="105137" level="5">
+    <if_sid>105000</if_sid>
+    <field name="log_message1">AD Assessment Detected New Exposure</field>
+    <description>SentinelOne: $(log_message1) on $(domain_name) affecting $(affected_object_count) objects.</description>
+  </rule>
+
+  <!-- User Ran Mitigation Script -->
+  <rule id="105138" level="4">
+    <if_sid>105000</if_sid>
+    <field name="log_message1">User Ran Mitigation Script</field>
+    <description>SentinelOne: $(log_message1) executed by $(user_name).</description>
+  </rule>
+
+  <!-- Vigilance Response Policy Modified -->
+  <rule id="105139" level="3">
+    <if_sid>105000</if_sid>
+    <field name="log_message1">Vigilance Response Policy Modified</field>
+    <description>SentinelOne: $(log_message1) modified by $(user_name).</description>
+  </rule>
+
+  <!-- Sign SAML Request - Enabled / Disabled -->
+  <rule id="105140" level="4">
+    <if_sid>105000</if_sid>
+    <field name="log_message1">Sign SAML Request</field>
+    <description>SentinelOne: $(log_message1) $(sign_request).</description>
+  </rule>
+
+  <!-- Accessing Protected Actions Configuration -->
+  <rule id="105141" level="4">
+    <if_sid>105000</if_sid>
+    <field name="log_message1">Accessing Protected Actions Configuration</field>
+    <description>SentinelOne: $(log_message1) modified by $(user_name).</description>
+  </rule>
+
+
+
+
+
+</group>
+

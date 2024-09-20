@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postfix
+  namespace: wazuh
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postfix
+  template:
+    metadata:
+      labels:
+        app: postfix
+    spec:
+      containers:
+      - name: postfix
+        image: mwader/postfix-relay
+        securityContext:
+          readOnlyRootFilesystem: false
+        ports:
+        - containerPort: 25
+        volumeMounts:
+        - name: postfix-config
+          mountPath: /etc/postfix/main.cf
+          subPath: main.cf
+        - name: postfix-sasl
+          mountPath: /etc/postfix/sasl_passwd
+          subPath: sasl_passwd
+          readOnly: false
+#        - name: postfix-sasl-db
+#          mountPath: /etc/postfix/sasl_passwd.db
+#          subPath: sasl_passwd.db
+        - name: init-script
+          mountPath: /docker-entrypoint.sh
+          subPath: init.sh
+        command: ["/bin/sh", "/docker-entrypoint.sh"]
+      volumes:
+      - name: postfix-config
+        configMap:
+          name: postfix-config-map
+      - name: postfix-sasl
+        secret:
+          secretName: postfix-sasl
+          defaultMode: 420  # Permisos adecuados para lectura/escritura
+      - name: postfix-sasl-db
+        emptyDir: {}
+      - name: init-script
+        configMap:
+          name: postfix-config-map

@@ -32,6 +32,8 @@ spec:
         - name: dashboard-certs
           secret:
             secretName: dashboard-certs
+      securityContext:
+        fsGroup: 101
       containers:
         - name: wazuh-dashboard
           image: 'wazuh/wazuh-dashboard:4.8.0'
@@ -39,6 +41,9 @@ spec:
             limits:
               cpu: 500m
               memory: 1Gi
+          securityContext:
+            capabilities:
+              add: ["SYS_CHROOT"]    
           volumeMounts:
             - name: config
               mountPath: /usr/share/wazuh-dashboard/config/opensearch_dashboards.yml
