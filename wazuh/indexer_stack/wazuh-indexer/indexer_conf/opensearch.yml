@@ -1,10 +1,14 @@
 cluster.name: ${CLUSTER_NAME}
 node.name: ${NODE_NAME}
 network.host: ${NETWORK_HOST}
-discovery.seed_hosts: wazuh-indexer-0.wazuh-indexer
+discovery.seed_hosts: 
+  - wazuh-indexer-0.wazuh-indexer
+  - wazuh-indexer-1.wazuh-indexer
+  - wazuh-indexer-2.wazuh-indexer
 cluster.initial_master_nodes:
   - wazuh-indexer-0
-
+  - wazuh-indexer-1
+  - wazuh-indexer-2
 node.max_local_storage_nodes: "3"
 path.data: /var/lib/wazuh-indexer
 path.logs: /var/log/wazuh-indexer
