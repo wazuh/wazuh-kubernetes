@@ -36,6 +36,18 @@ spec:
               podAffinityTerm:
                 topologyKey: kubernetes.io/hostname
       volumes:
+        - name: custom-w2thive-script  ###### START MY CONFIG######
+          configMap:
+            name: custom-w2thive-script
+        - name: custom-w2thive-bash
+          configMap:
+            name: custom-w2thive-bash 
+        - name: sentinelone-rules
+          configMap:
+            name: sentinelone-rules-configmap 
+        - name: sentinelone-decoders
+          configMap:
+            name: sentinelone-decoders-configmap ########ENDS MY CONFIG######
         - name: config
           configMap:
             name: wazuh-conf
@@ -44,6 +56,15 @@ spec:
             secretName: indexer-certs
       securityContext:
         fsGroup: 101
+   #   initContainers:   ######################### START MY CONFIG############################
+    #    - name: init-permissions
+     #     image: busybox
+      #    command: ['sh', '-c', 'chmod 755 /var/ossec/integrations/custom-w2thive.py /var/ossec/integrations/custom-w2thive && chown root:wazuh /var/ossec/integrations/custom-w2thive.py /var/ossec/integrations/custom-w2thive']
+       #   volumeMounts:
+        #    - name: custom-w2thive-script
+         #     mountPath: /var/ossec/integrations/custom-w2thive.py
+          #  - name: custom-w2thive-bash
+           #   mountPath: /var/ossec/integrations/custom-w2thive       ###########ENDS MY CONFIG############        
       containers:
         - name: wazuh-manager
           image: 'wazuh/wazuh-manager:4.8.0'
@@ -55,6 +76,22 @@ spec:
             capabilities:
               add: ["SYS_CHROOT"]
           volumeMounts:
+            - name: custom-w2thive-script ############START MY CONFIG############################
+              mountPath: /var/ossec/integrations/custom-w2thive.py 
+              subPath: custom-w2thive.py
+              readOnly: true
+            - name: custom-w2thive-bash
+              mountPath: /var/ossec/integrations/custom-w2thive
+              subPath: custom-w2thive
+              readOnly: true
+            - name: sentinelone-rules
+              mountPath: /var/ossec/etc/rules/sentinelone_rules.xml
+              subPath: sentinelone_rules.xml
+              readOnly: true
+            - name: sentinelone-decoders
+              mountPath: /var/ossec/etc/decoders/sentinelone_decoders.xml
+              subPath: sentinelone_decoders.xml
+              readOnly: true              #######ENDS MY CONFIG###############
             - name: config
               mountPath: /wazuh-config-mount/etc/ossec.conf
               subPath: worker.conf

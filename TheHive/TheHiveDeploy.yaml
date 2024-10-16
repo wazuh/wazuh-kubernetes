@@ -298,7 +298,7 @@ spec:
       serviceAccountName: thehive
       containers:
         - name: thehive
-          image: strangebee/thehive:5.4
+          image: strangebee/thehive:5.3
           command:
             - "/opt/thehive/entrypoint"
             - "--secret"
@@ -335,6 +335,15 @@ spec:
             requests:
               cpu: "500m"
               memory: 512Mi
+     #     volumeMounts:  # Agregar esta sección
+      #      - name: config-volume
+       #       mountPath: /etc/thehive/application.conf
+        #      subPath: application.conf
+
+    #  volumes:  # Agregar esta sección
+     #   - name: config-volume
+      #    configMap:
+       #     name: thehive-config  # Asegúrate de que este nombre coincida con el ConfigMap creado
 
 #          startupProbe:
 #            httpGet:

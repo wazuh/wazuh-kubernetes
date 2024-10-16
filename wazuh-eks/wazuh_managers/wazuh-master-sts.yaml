@@ -30,6 +30,18 @@ spec:
       name: wazuh-manager-master
     spec:
       volumes:
+        - name: custom-w2thive-script  ###### START MY CONFIG######
+          configMap:
+            name: custom-w2thive-script
+        - name: custom-w2thive-bash
+          configMap:
+            name: custom-w2thive-bash
+        - name: sentinelone-rules
+          configMap:
+            name: sentinelone-rules-configmap 
+        - name: sentinelone-decoders
+          configMap:
+            name: sentinelone-decoders-configmap ########ENDS MY CONFIG######
         - name: config
           configMap:
             name: wazuh-conf
@@ -39,6 +51,15 @@ spec:
         - name: wazuh-authd-pass
           secret:
             secretName: wazuh-authd-pass
+   #   initContainers:   ######################### START MY CONFIG############################
+    #    - name: init-permissions
+     #     image: busybox
+      #    command: ['sh', '-c', 'chmod 755 /var/ossec/integrations/custom-w2thive.py /var/ossec/integrations/custom-w2thive && chown root:wazuh /var/ossec/integrations/custom-w2thive.py /var/ossec/integrations/custom-w2thive']
+       #   volumeMounts:
+        #    - name: custom-w2thive-script
+         #     mountPath: /var/ossec/integrations/custom-w2thive.py
+          #  - name: custom-w2thive-bash
+           #   mountPath: /var/ossec/integrations/custom-w2thive       ###########ENDS MY CONFIG############
       securityContext:
         fsGroup: 101
       containers:
@@ -56,9 +77,25 @@ spec:
               mountPath: /wazuh-config-mount/etc/ossec.conf
               subPath: master.conf
               readOnly: true
-            - name: config
-              mountPath: /etc/filebeat/filebeat.yml
+            - name: config   #########START MY CONFIG##############
+              mountPath: /etc/filebeat/filebeat.yml 
               subPath: filebeat.yml
+            - name: custom-w2thive-script
+              mountPath: /var/ossec/integrations/custom-w2thive.py 
+              subPath: custom-w2thive.py
+              readOnly: true
+            - name: custom-w2thive-bash
+              mountPath: /var/ossec/integrations/custom-w2thive
+              subPath: custom-w2thive
+              readOnly: true 
+            - name: sentinelone-rules
+              mountPath: /var/ossec/etc/rules/sentinelone_rules.xml
+              subPath: sentinelone_rules.xml
+              readOnly: true
+            - name: sentinelone-decoders
+              mountPath: /var/ossec/etc/decoders/sentinelone_decoders.xml
+              subPath: sentinelone_decoders.xml
+              readOnly: true  #######ENDS MY CONFIG###############
             - name: filebeat-certs
               mountPath: /etc/ssl/root-ca.pem
               readOnly: true
