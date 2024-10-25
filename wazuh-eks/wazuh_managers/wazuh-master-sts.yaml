@@ -29,19 +29,23 @@ spec:
         lbtype: external
       name: wazuh-manager-master
     spec:
-      volumes:
-        - name: custom-w2thive-script  ###### START MY CONFIG######
+      securityContext:  # <---- Aquí agregas la sección securityContext a nivel de pod
+        fsGroup: 0
+      volumes:               
+        - name: custom-scripts              #########START MY CONFIG##############
           configMap:
             name: custom-w2thive-script
-        - name: custom-w2thive-bash
+        - name: custom-scripts-bash
           configMap:
             name: custom-w2thive-bash
+        - name: temp-storage
+          emptyDir: {}
         - name: sentinelone-rules
           configMap:
             name: sentinelone-rules-configmap 
         - name: sentinelone-decoders
           configMap:
-            name: sentinelone-decoders-configmap ########ENDS MY CONFIG######
+            name: sentinelone-decoders-configmap   ########ENDS MY CONFIG######
         - name: config
           configMap:
             name: wazuh-conf
@@ -51,20 +55,89 @@ spec:
         - name: wazuh-authd-pass
           secret:
             secretName: wazuh-authd-pass
-   #   initContainers:   ######################### START MY CONFIG############################
-    #    - name: init-permissions
-     #     image: busybox
-      #    command: ['sh', '-c', 'chmod 755 /var/ossec/integrations/custom-w2thive.py /var/ossec/integrations/custom-w2thive && chown root:wazuh /var/ossec/integrations/custom-w2thive.py /var/ossec/integrations/custom-w2thive']
-       #   volumeMounts:
-        #    - name: custom-w2thive-script
-         #     mountPath: /var/ossec/integrations/custom-w2thive.py
-          #  - name: custom-w2thive-bash
-           #   mountPath: /var/ossec/integrations/custom-w2thive       ###########ENDS MY CONFIG############
-      securityContext:
-        fsGroup: 101
-      containers:
+      initContainers:
+        - name: init-permissions
+          image: 'wazuh/wazuh-manager:4.9.1'
+          resources:
+            requests:
+              cpu: 50m
+              memory: 128Mi
+            limits:
+              cpu: 100m
+              memory: 256Mi
+          securityContext:
+            runAsUser: 0
+            runAsGroup: 0    
+          command: 
+            - 'sh'
+            - '-c'
+            - |
+              echo "Copiando scripts desde ConfigMap a directorio temporal..."
+              cp /temp-config-w2thive/custom-w2thive.py /temp-storage/ || echo "Error copiando custom-w2thive.py"
+              cp /temp-config-w2thive/custom-w2thive /temp-storage/ || echo "Error copiando custom-w2thive"
+
+              echo "Cambiando permisos y propietario en /temp-storage"
+              chmod 755 /temp-storage/custom-w2thive.py /temp-storage/custom-w2thive || echo "Error cambiando permisos"
+              chown root:wazuh /temp-storage/custom-w2thive.py /temp-storage/custom-w2thive || echo "Error cambiando propietario"
+
+          ##    echo "Copiando archivos a /var/ossec/integrations"
+          #    cp /temp-storage/custom-w2thive.py /var/ossec/integrations/ && echo "Copiado custom-w2thive.py" || echo "Error copiando custom-w2thive.py"
+          ##    cp /temp-storage/custom-w2thive /var/ossec/integrations/ && echo "Copiado custom-w2thive" || echo "Error copiando custom-w2thive"              
+
+          #    echo "Borrando los archivos originales en /temp-storage"
+          #    rm -f /temp-storage/custom-w2thive.py /temp-storage/custom-w2thive || echo "Error borrando archivos"
+               
+          # echo "Verificando archivos en /temp-storage"
+          # ls -l /temp-storage/custom-w2thive.py /temp-storage/custom-w2thive || echo "Error verificando archivos en /temp-storage"              
+
+          # echo "Moviendo archivos de /temp-storage a /config-thive"
+          # mv /temp-storage/custom-w2thive.py /config-thive/custom-w2thive.py  || echo "Error moviendo custom-w2thive.py a /config-thive"
+          # mv /temp-storage/custom-w2thive /config-thive/custom-w2thive || echo "Error moviendo custom-w2thive a /config-thive"
+
+          # echo "Verificando archivos en /config-thive"
+          # ls -l /config-thive/custom-w2thive.py /config-thive/custom-w2thive || echo "Error verificando archivos en /config-thive"
+
+              
+              
+          # # Asegúrate de que el directorio existe
+          # echo "Creando directorio /var/ossec/integrations si no existe..."
+          # mkdir -p /var/ossec/integrations || echo "Error creando /var/ossec/integrations"
+              
+          # echo "Verificando existencia de /var/ossec/integrations:"
+          # ls -ld /var/ossec/integrations              
+
+          # echo "Archivos en /temp-storage antes de mover:"
+          # ls -l /temp-storage/
+
+
+
+
+
+          volumeMounts:
+            - name: temp-storage
+              mountPath: /temp-storage
+              readOnly: false
+            - name: custom-scripts
+              mountPath: /temp-config-w2thive/custom-w2thive.py
+              subPath: custom-w2thive.py
+              #readOnly: true
+            - name: custom-scripts-bash
+              mountPath: /temp-config-w2thive/custom-w2thive
+              subPath: custom-w2thive
+              #readOnly: true
+      containers: 
         - name: wazuh-manager
-          image: 'wazuh/wazuh-manager:4.8.0'
+          image: 'wazuh/wazuh-manager:4.9.1'
+          # command: 
+          #   - 'sh'
+          #   - '-c'
+          #   - |
+          #     echo "Moviendo archivos desde / a /var/ossec/integrations/"
+          #     mv /custom-w2thive.py /var/ossec/integrations/ || echo "Error moviendo custom-w2thive.py"
+          #     mv /custom-w2thive /var/ossec/integrations/ || echo "Error moviendo custom-w2thive"
+
+          #     echo "Verificando archivos en /var/ossec/integrations/"
+          #     ls -l /var/ossec/integrations/custom-w2thive.py /var/ossec/integrations/custom-w2thive || echo "Error verificando archivos en /var/ossec/integrations/"
           resources:
             limits:
               cpu: 400m
@@ -80,14 +153,17 @@ spec:
             - name: config   #########START MY CONFIG##############
               mountPath: /etc/filebeat/filebeat.yml 
               subPath: filebeat.yml
-            - name: custom-w2thive-script
-              mountPath: /var/ossec/integrations/custom-w2thive.py 
+            - name: temp-storage
+              mountPath: /temp-storage # Aquí se monta el volumen temporal
+              readOnly: false
+            - name: custom-scripts
+              mountPath: /temp-config-w2thive/custom-w2thive.py
               subPath: custom-w2thive.py
               readOnly: true
-            - name: custom-w2thive-bash
-              mountPath: /var/ossec/integrations/custom-w2thive
+            - name: custom-scripts-bash
+              mountPath: /temp-config-w2thive/custom-w2thive
               subPath: custom-w2thive
-              readOnly: true 
+              readOnly: true ############################################                
             - name: sentinelone-rules
               mountPath: /var/ossec/etc/rules/sentinelone_rules.xml
               subPath: sentinelone_rules.xml

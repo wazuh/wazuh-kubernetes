@@ -103,7 +103,7 @@ metadata:
   namespace: thehive
 spec:
   ports:
-    - port: 9200
+    - port: 9201 #Por default usa el 9200, lo cambie al 9201 porque Wazuh tambien usa ese puerto, lo que crea conflictos y rompe ambas aplicaciones
   selector:
     app: elasticsearch
 ---
@@ -140,7 +140,7 @@ spec:
         - name: elasticsearch
           image: docker.elastic.co/elasticsearch/elasticsearch:7.17.12
           ports:
-            - containerPort: 9200
+            - containerPort: 9201
               name: http
           resources:
             limits:

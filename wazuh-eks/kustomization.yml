@@ -38,7 +38,7 @@ configMapGenerator:
     files:
       - wazuh_managers/wazuh_conf/master.conf
       - wazuh_managers/wazuh_conf/worker.conf
-      - wazuh_managers/wazuh_conf/filebeat.yml
+      - wazuh_managers/wazuh_conf/filebeat.yml  #My config
   - name: dashboard-conf
     files:
       - indexer_stack/wazuh-dashboard/dashboard_conf/opensearch_dashboards.yml
@@ -57,6 +57,7 @@ resources:
   - wazuh_managers/wazuh-master-sts.yaml
   - wazuh_managers/wazuh-worker-sts.yaml
   - wazuh_managers/wazuh-cluster-svc.yaml
+  - wazuh_managers/thive-pvc.yaml
 
   - indexer_stack/wazuh-indexer/cluster/indexer-sts.yaml
   - indexer_stack/wazuh-indexer/indexer-svc.yaml
