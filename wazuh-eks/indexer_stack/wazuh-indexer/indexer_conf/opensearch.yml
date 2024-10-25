@@ -22,7 +22,11 @@ plugins.security.authcz.admin_dn:
 plugins.security.check_snapshot_restore_write_privileges: true
 plugins.security.enable_snapshot_restore_privilege: true
 plugins.security.nodes_dn:
+<<<<<<< HEAD:wazuh-eks/indexer_stack/wazuh-indexer/indexer_conf/opensearch.yml
   - CN=wazuh-internal-lb,O=Company,L=California,C=US
+=======
+  - CN=indexer,O=Company,L=California,C=US
+>>>>>>> 2130b57e18895793314076b9d9601db52c313e8c:wazuh/indexer_stack/wazuh-indexer/indexer_conf/opensearch.yml
 plugins.security.restapi.roles_enabled:
 - "all_access"
 - "security_rest_api_access"

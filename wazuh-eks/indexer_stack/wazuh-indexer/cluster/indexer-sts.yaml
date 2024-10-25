@@ -61,7 +61,11 @@ spec:
             privileged: true
       containers:
         - name: wazuh-indexer
+<<<<<<< HEAD:wazuh-eks/indexer_stack/wazuh-indexer/cluster/indexer-sts.yaml
           image: 'wazuh/wazuh-indexer:4.9.1'
+=======
+          image: 'wazuh/wazuh-indexer:5.0.0'
+>>>>>>> 2130b57e18895793314076b9d9601db52c313e8c:wazuh/indexer_stack/wazuh-indexer/cluster/indexer-sts.yaml
           resources:
             limits:
               cpu: 500m
@@ -85,11 +89,6 @@ spec:
                   fieldPath: metadata.namespace
             - name: DISABLE_INSTALL_DEMO_CONFIG
               value: 'true'
-            - name: INDEXER_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: indexer-cred
-                  key: password
           securityContext:
             capabilities:
               add: ["SYS_CHROOT"]

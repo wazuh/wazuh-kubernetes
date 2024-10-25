@@ -40,7 +40,11 @@ openssl pkcs8 -inform PEM -outform PEM -in node-key-temp.pem -topk8 -nocrypt -v1
 
 echo "create: node.csr"
 
+<<<<<<< HEAD:wazuh-eks/certs/indexer_cluster/generate_certs.sh
 openssl req -days 3650 -new -key node-key.pem -out node.csr -subj "/C=US/L=California/O=Company/CN=wazuh-internal-lb"
+=======
+openssl req -days 3650 -new -key node-key.pem -out node.csr -subj "/C=US/L=California/O=Company/CN=indexer"
+>>>>>>> 2130b57e18895793314076b9d9601db52c313e8c:wazuh/certs/indexer_cluster/generate_certs.sh
 
 echo "create: node.pem"
 

@@ -36,7 +36,11 @@ spec:
         fsGroup: 101
       containers:
         - name: wazuh-dashboard
+<<<<<<< HEAD:wazuh-eks/indexer_stack/wazuh-dashboard/dashboard-deploy.yaml
           image: 'wazuh/wazuh-dashboard:4.9.1'
+=======
+          image: 'wazuh/wazuh-dashboard:5.0.0'
+>>>>>>> 2130b57e18895793314076b9d9601db52c313e8c:wazuh/indexer_stack/wazuh-dashboard/dashboard-deploy.yaml
           resources:
             limits:
               cpu: 500m
@@ -66,7 +70,11 @@ spec:
               name: dashboard-port
           env:
             - name: INDEXER_URL
+<<<<<<< HEAD:wazuh-eks/indexer_stack/wazuh-dashboard/dashboard-deploy.yaml
               value: 'https://wazuh-internal-lb:9200'
+=======
+              value: 'https://indexer:9200'
+>>>>>>> 2130b57e18895793314076b9d9601db52c313e8c:wazuh/indexer_stack/wazuh-dashboard/dashboard-deploy.yaml
             - name: INDEXER_USERNAME
               valueFrom:
                 secretKeyRef:
