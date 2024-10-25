@@ -14,7 +14,7 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
-- None
+- Add labelSelector ([#872](https://github.com/wazuh/wazuh-kubernetes/pull/872)) \- (Wazuh worker STS)
 
 ### Deleted
 
