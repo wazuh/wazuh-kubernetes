@@ -53,6 +53,9 @@ spec:
             capabilities:
               add: ["SYS_CHROOT"]
           volumeMounts:
+     #       - name: config   #########START MY CONFIG##############
+     #         mountPath: /etc/filebeat/filebeat.yml 
+     #         subPath: filebeat.yml   ######       
             - name: config
               mountPath: /wazuh-config-mount/etc/ossec.conf
               subPath: worker.conf
@@ -107,6 +110,8 @@ spec:
               name: agents-events
             - containerPort: 1516
               name: cluster
+            - containerPort: 514
+              name: syslog-events              
           env:
             - name: INDEXER_URL
               value: 'https://indexer:9200'
