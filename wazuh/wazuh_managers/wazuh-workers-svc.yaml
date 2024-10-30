@@ -20,7 +20,7 @@ metadata:
     #service.beta.kubernetes.io/aws-load-balancer-internal: 0.0.0.0/0
     service.beta.kubernetes.io/aws-load-balancer-internal: "true"
 spec:
-  type: LoadBalancer
+  type: ClusterIP
   selector:
     app: wazuh-manager
     node-type: worker
@@ -28,6 +28,4 @@ spec:
     - name: agents-events
       port: 1514
       targetPort: 1514
-    - name: syslog-events
-      port: 514
-      targetPort: syslog-events           
+     

@@ -34,6 +34,12 @@ spec:
               podAffinityTerm:
                 topologyKey: kubernetes.io/hostname
       volumes:
+        - name: sentinelone-rules #########START MY CONFIG##############
+          configMap:
+            name: sentinelone-rules-configmap 
+        - name: sentinelone-decoders
+          configMap:
+            name: sentinelone-decoders-configmap   ########ENDS MY CONFIG######      
         - name: config
           configMap:
             name: wazuh-conf
@@ -53,9 +59,17 @@ spec:
             capabilities:
               add: ["SYS_CHROOT"]
           volumeMounts:
-     #       - name: config   #########START MY CONFIG##############
-     #         mountPath: /etc/filebeat/filebeat.yml 
-     #         subPath: filebeat.yml   ######       
+            - name: config   #########START MY CONFIG##############
+              mountPath: /etc/filebeat/filebeat.yml 
+              subPath: filebeat.yml
+            - name: sentinelone-rules
+              mountPath: /var/ossec/etc/rules/sentinelone_rules.xml
+              subPath: sentinelone_rules.xml
+              readOnly: true
+            - name: sentinelone-decoders
+              mountPath: /var/ossec/etc/decoders/sentinelone_decoders.xml
+              subPath: sentinelone_decoders.xml
+              readOnly: true  #######ENDS MY CONFIG###############                    
             - name: config
               mountPath: /wazuh-config-mount/etc/ossec.conf
               subPath: worker.conf

@@ -1,0 +1,33 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postfix-config-map
+  namespace: wazuh
+data:
+  main.cf: |
+    relayhost = [smtp.gmail.com]:587
+    smtp_sasl_auth_enable = yes
+    smtp_sasl_password_maps = hash:/etc/postfix/sasl_passwd
+    smtp_sasl_security_options = noanonymous
+    smtp_tls_CAfile = /etc/ssl/certs/thawte_Primary_Root_CA.pem
+    smtp_use_tls = yes
+    compatibility_level = 2
+    inet_protocols = ipv4
+    inet_interfaces = all
+    mynetworks = 127.0.0.0/8 10.0.0.0/16
+    smtp_tls_session_cache_timeout = 3600s
+  init.sh: |
+    #!/bin/sh
+    # Configuración de DNS y hosts
+    echo "nameserver 8.8.8.8" >> /etc/resolv.conf
+    echo "142.251.16.109 smtp.gmail.com" >> /etc/hosts
+    cp /etc/resolv.conf /var/spool/postfix/etc/resolv.conf
+
+    # Configuración de permisos para sasl_passwd
+    postmap /etc/postfix/sasl_passwd
+    chmod 400 /etc/postfix/sasl_passwd
+    chown root:root /etc/postfix/sasl_passwd /etc/postfix/sasl_passwd.db
+    chmod 0600 /etc/postfix/sasl_passwd /etc/postfix/sasl_passwd.db
+
+    # Iniciar Postfix en modo foreground
+    exec /usr/sbin/postfix start-fg
