@@ -58,9 +58,11 @@ resources:
   - wazuh_managers/wazuh-workers-svc.yaml
   - wazuh_managers/wazuh-master-sts.yaml
   - wazuh_managers/wazuh-worker-sts.yaml
-  - wazuh_managers/syslog-svc.yaml  #MyConfig
+  - wazuh_managers/syslog-svc.yaml  ###################STARTS MY  CONFIG###########################33
   - wazuh_managers/wazuh_conf/sentinelone-decoders-configmap.yaml
-  - wazuh_managers/wazuh_conf/sentinelone-rules-configmap.yaml  ########
+  - wazuh_managers/wazuh_conf/sentinelone-rules-configmap.yaml 
+  - wazuh_managers/wazuh-integrations/custom-w2thive-bash-configmap.yaml
+  - wazuh_managers/wazuh-integrations/custom-w2thive-script-configmap.yaml   ########ENDS MY  CONFIG ################
 
   - indexer_stack/wazuh-indexer/indexer-svc.yaml
   - indexer_stack/wazuh-indexer/cluster/indexer-api-svc.yaml
