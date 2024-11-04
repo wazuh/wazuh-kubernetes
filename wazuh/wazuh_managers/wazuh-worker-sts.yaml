@@ -33,6 +33,10 @@ spec:
             - weight: 100
               podAffinityTerm:
                 topologyKey: kubernetes.io/hostname
+                labelSelector:
+                  matchLabels:
+                    app: wazuh-manager
+                    node-type: worker
       volumes:
         - name: config
           configMap:
