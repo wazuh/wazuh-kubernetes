@@ -13,7 +13,7 @@ metadata:
   name: wazuh-manager-worker
   namespace: wazuh
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: wazuh-manager
@@ -78,11 +78,11 @@ spec:
               cp /temp-config-w2thive/custom-w2thive /temp-storage/ || echo "Error copiando custom-w2thive"
 
               echo "Cambiando permisos y propietario en /temp-storage"
-              chmod 755 /temp-storage/custom-w2thive.py /temp-storage/custom-w2thive || echo "Error cambiando permisos"
+              chmod 750 /temp-storage/custom-w2thive.py /temp-storage/custom-w2thive || echo "Error cambiando permisos"
               chown root:wazuh /temp-storage/custom-w2thive.py /temp-storage/custom-w2thive || echo "Error cambiando propietario"
 
-              echo "Instalando thehive4py versión 1.8.1 en el entorno de Wazuh..."
-              /var/ossec/framework/python/bin/pip3 install thehive4py==1.8.1 || echo "Error instalando thehive4py"
+              echo "Instalando thehive4py versión en el entorno de Wazuh..."
+              /var/ossec/framework/python/bin/pip3 install thehive4py || echo "Error instalando thehive4py"
           #    echo "Copiando archivos a /var/ossec/integrations"
           #    cp /temp-storage/custom-w2thive.py /var/ossec/integrations/ && echo "Copiado custom-w2thive.py" || echo "Error copiando custom-w2thive.py"
           #    cp /temp-storage/custom-w2thive /var/ossec/integrations/ && echo "Copiado custom-w2thive" || echo "Error copiando custom-w2thive" 
