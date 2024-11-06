@@ -115,4 +115,4 @@ jobs:
         run: wazuh/certs/dashboard_http/generate_certs.sh
 
       - name: Deploy Wazuh stack
-        run: minikube kubectl apply -k envs/local/
+        run: kubectl apply -k envs/local/
