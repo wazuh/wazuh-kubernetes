@@ -2,6 +2,7 @@ run-name: Kubernetes deployment test - Branch ${{ inputs.BRANCH_VERSION }} - Lau
 name: Test Wazuh deployment on Kubernetes
 
 on:
+  pull_request:
   workflow_dispatch:
     inputs:
       BRANCH_VERSION:
@@ -25,7 +26,7 @@ jobs:
       - name: Configure aws credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: ${{ secrets.AWS_IAM_KUBERNETES_ROLE }}
+          role-to-assume: ${{ secrets.AWS_IAM_ROLE }}
           aws-region: "${{ secrets.AWS_REGION }}"
 
       - name: Install eksctl
