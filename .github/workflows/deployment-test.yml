@@ -44,7 +44,7 @@ jobs:
       - name: Deploy eks cluster
         run: |
           eksctl create cluster \
-          --name test-eks-deploy-${{ github.event.number }}-a\
+          --name test-eks-deploy-${{ github.event.number }}-a \
           --with-oidc \
           --region ${{ env.AWS_REGION }} \
           --nodes-min 6 \
@@ -91,6 +91,7 @@ jobs:
         run: kubectl get all -n wazuh -o wide
 
       - name: Delete eks cluster
+        if: always()
         run: |
           eksctl delete cluster \
           --name test-eks-deploy-${{ github.event.number }}-a \
@@ -125,6 +126,10 @@ jobs:
 
       - name: Create Wazuh dashboard certificates
         run: wazuh/certs/dashboard_http/generate_certs.sh
+
+      - name: Change provisioner for minikube
+        run: |
+          sed -i 's/provisioner: microk8s.io\/hostpath/# provisioner: microk8s.io\/hostpath/; s/# provisioner: k8s.io\/minikube-hostpath/provisioner: k8s.io\/minikube-hostpath/' envs/local-env/storage-class.yaml
 
       - name: Deploy Wazuh stack
         run: kubectl apply -k envs/local-env/
