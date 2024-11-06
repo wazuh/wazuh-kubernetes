@@ -84,6 +84,12 @@ jobs:
       - name: Deploy Wazuh stack
         run: kubectl apply -k envs/eks/
 
+      - name: Wait 5 minutes for Wazuh stack startup
+        run: sleep 5m
+
+      - name: View stack status
+        run: kubectl get all -n wazuh -o wide
+
       - name: Delete eks cluster
         run: |
           eksctl delete cluster \
@@ -122,3 +128,9 @@ jobs:
 
       - name: Deploy Wazuh stack
         run: kubectl apply -k envs/local-env/
+
+      - name: Wait 5 minutes for Wazuh stack startup
+        run: sleep 5m
+
+      - name: View stack status
+        run: kubectl get all -n wazuh -o wide
