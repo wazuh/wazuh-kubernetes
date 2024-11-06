@@ -2,7 +2,6 @@ run-name: Kubernetes deployment test - Branch ${{ inputs.BRANCH_VERSION }} - Lau
 name: Test Wazuh deployment on Kubernetes
 
 on:
-  pull_request:
   workflow_dispatch:
     inputs:
       BRANCH_VERSION:
