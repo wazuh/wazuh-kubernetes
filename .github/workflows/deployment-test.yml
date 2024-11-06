@@ -1,0 +1,114 @@
+run-name: Kubernetes deployment test - Branch ${{ inputs.BRANCH_VERSION }} - Launched by @${{ github.actor }}
+name: Test Wazuh deployment on Kubernetes
+
+on:
+  workflow_dispatch:
+    inputs:
+      BRANCH_VERSION:
+        description: 'Branch version to deploy'
+        required: true
+        default: '5.0.0'
+
+permissions:
+  id-token: write   # This is required for requesting the JWT
+  contents: read    # This is required for actions/checkout
+
+jobs:
+  EKS_deployment_test:
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.BRANCH_VERSION }}
+
+      - name: Configure aws credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_IAM_KUBERNETES_ROLE }}
+          aws-region: "${{ secrets.AWS_REGION }}"
+
+      - name: Install eksctl
+        run: |
+          ARCH=amd64
+          PLATFORM=$(uname -s)_$ARCH
+          curl -sLO "https://github.com/eksctl-io/eksctl/releases/latest/download/eksctl_$PLATFORM.tar.gz"
+          curl -sL "https://github.com/eksctl-io/eksctl/releases/latest/download/eksctl_checksums.txt" | grep $PLATFORM | sha256sum --check
+          tar -xzf eksctl_$PLATFORM.tar.gz -C /tmp && rm eksctl_$PLATFORM.tar.gz
+          sudo mv /tmp/eksctl /usr/local/bin
+
+      - name: Deploy eks cluster
+        run: |
+          eksctl create cluster && \
+          --name test-eks-deploy-${{ github.event.number }} && \
+          --with-oidc && \
+          --region us-east-1 && \
+          --nodes-min 6 && \
+          --nodes-max 6 && \
+          --managed && \
+          --spot && \
+          -t t3a.medium && \
+          --tags "issue=https://github.com/wazuh/wazuh-kubernetes/pull/${{ github.event.number }},team=devops,termination_date=2030-01-01 21:00:00"
+
+      - name: Create sa for ebs-csi-controller
+        run: |
+          eksctl create iamserviceaccount && \
+          --name ebs-csi-controller-sa && \
+          --region us-east-1 && \
+          --namespace kube-system && \
+          --cluster test-eks-deploy-${{ github.event.number }} && \
+          --role-name AmazonEKS_EBS_CSI_DriverRole_test-eks-deploy-${{ github.event.number }} && \
+          --role-only && \
+          --attach-policy-arn arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy && \
+          --approve
+
+      - name: Install addon aws-ebs-csi-driver into a eks cluster deployed
+        run: |
+          eksctl create addon && \
+          --name aws-ebs-csi-driver && \
+          --cluster test-eks-deploy-${{ github.event.number }} && \
+          --region ${{ secrets.AWS_REGION }} && \
+          --service-account-role-arn arn:aws:iam::567970947422:role/AmazonEKS_EBS_CSI_DriverRole_test-eks-deploy-${{ github.event.number }} && \
+          --force
+
+      - name: Create Wazuh indexer certificates
+        run: wazuh/certs/indexer_cluster/generate_certs.sh
+
+      - name: Create Wazuh dashboard certificates
+        run: wazuh/certs/dashboard_http/generate_certs.sh
+
+      - name: Deploy Wazuh stack
+        run: kubectl apply -k envs/eks/
+
+  Local_deployment_test:
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.BRANCH_VERSION }}
+
+      - name: free disk space
+        run: |
+          sudo swapoff -a
+          sudo rm -f /swapfile
+          sudo apt clean
+          docker rmi $(docker image ls -aq)
+          df -h
+
+      - name: Install Minikube cluster
+        run: |
+          curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
+          sudo install minikube-linux-amd64 /usr/local/bin/minikube && rm minikube-linux-amd64
+
+      - name: Start Minikube cluster
+        run: minikube start
+
+      - name: Create Wazuh indexer certificates
+        run: wazuh/certs/indexer_cluster/generate_certs.sh
+
+      - name: Create Wazuh dashboard certificates
+        run: wazuh/certs/dashboard_http/generate_certs.sh
+
+      - name: Deploy Wazuh stack
+        run: minikube kubectl apply -k envs/local/
