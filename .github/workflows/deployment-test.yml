@@ -43,36 +43,36 @@ jobs:
 
       - name: Deploy eks cluster
         run: |
-          eksctl create cluster && \
+          eksctl create cluster \
           --name test-eks-deploy-${{ github.event.number }} && \
-          --with-oidc && \
-          --region us-east-1 && \
-          --nodes-min 6 && \
-          --nodes-max 6 && \
-          --managed && \
-          --spot && \
-          -t t3a.medium && \
+          --with-oidc \
+          --region ${{ env.AWS_REGION }} \
+          --nodes-min 6 \
+          --nodes-max 6 \
+          --managed \
+          --spot \
+          -t t3a.medium \
           --tags "issue=https://github.com/wazuh/wazuh-kubernetes/pull/${{ github.event.number }},team=devops,termination_date=2030-01-01 21:00:00"
 
       - name: Create sa for ebs-csi-controller
         run: |
-          eksctl create iamserviceaccount && \
-          --name ebs-csi-controller-sa && \
-          --region us-east-1 && \
-          --namespace kube-system && \
+          eksctl create iamserviceaccount \
+          --name ebs-csi-controller-sa \
+          --region ${{ env.AWS_REGION }}  \
+          --namespace kube-system \
           --cluster test-eks-deploy-${{ github.event.number }} && \
-          --role-name AmazonEKS_EBS_CSI_DriverRole_test-eks-deploy-${{ github.event.number }} && \
-          --role-only && \
-          --attach-policy-arn arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy && \
+          --role-name AmazonEKS_EBS_CSI_DriverRole_test-eks-deploy-${{ github.event.number }} \
+          --role-only \
+          --attach-policy-arn arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy \
           --approve
 
       - name: Install addon aws-ebs-csi-driver into a eks cluster deployed
         run: |
-          eksctl create addon && \
-          --name aws-ebs-csi-driver && \
-          --cluster test-eks-deploy-${{ github.event.number }} && \
-          --region ${{ secrets.AWS_REGION }} && \
-          --service-account-role-arn arn:aws:iam::567970947422:role/AmazonEKS_EBS_CSI_DriverRole_test-eks-deploy-${{ github.event.number }} && \
+          eksctl create addon \
+          --name aws-ebs-csi-driver \
+          --cluster test-eks-deploy-${{ github.event.number }} \
+          --region ${{ env.AWS_REGION }} \
+          --service-account-role-arn arn:aws:iam::567970947422:role/AmazonEKS_EBS_CSI_DriverRole_test-eks-deploy-${{ github.event.number }} \
           --force
 
       - name: Create Wazuh indexer certificates
@@ -83,6 +83,12 @@ jobs:
 
       - name: Deploy Wazuh stack
         run: kubectl apply -k envs/eks/
+
+      - name: Delete eks cluster
+        run: |
+          eksctl delete cluster \
+          --name test-eks-deploy-${{ github.event.number }} \
+          --region ${{ env.AWS_REGION }}
 
   Local_deployment_test:
     runs-on: ubuntu-20.04
@@ -115,4 +121,4 @@ jobs:
         run: wazuh/certs/dashboard_http/generate_certs.sh
 
       - name: Deploy Wazuh stack
-        run: kubectl apply -k envs/local/
+        run: kubectl apply -k envs/local-env/
