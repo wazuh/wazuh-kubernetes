@@ -113,9 +113,9 @@ jobs:
 
       - name: Save URLs for each component
         run: |
-          echo "DASHBOARD_URL=$(kubectl get service dashboard -n wazuh -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')" >> $GITHUB_ENV
-          echo "INDEXER_URL=$(kubectl get service indexer -n wazuh -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')" >> $GITHUB_ENV
-          echo "MANAGER_URL=$(kubectl get service wazuh -n wazuh -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')" >> $GITHUB_ENV
+          echo 'DASHBOARD_URL=https://"$(kubectl get service dashboard -n wazuh -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')"' >> $GITHUB_ENV
+          echo 'INDEXER_URL=https://"$(kubectl get service indexer -n wazuh -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')":9200' >> $GITHUB_ENV
+          echo 'MANAGER_URL=https://"$(kubectl get service wazuh -n wazuh -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')":55000' >> $GITHUB_ENV
 
       - name: Check Wazuh indexer start
         run: |
