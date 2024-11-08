@@ -90,6 +90,109 @@ jobs:
       - name: View stack status
         run: kubectl get all -n wazuh -o wide
 
+      - name: View Wazuh dashboard logs
+        run: kubectl logs $(kubectl get pods -n wazuh | grep wazuh-dashboard | awk '{print $1;}') -n wazuh
+
+      - name: View Wazuh indexer 0 logs
+        run: kubectl logs wazuh-indexer-0 -n wazuh
+
+      - name: View Wazuh indexer 1 logs
+        run: kubectl logs wazuh-indexer-1 -n wazuh
+
+      - name: View Wazuh indexer 2 logs
+        run: kubectl logs wazuh-indexer-2 -n wazuh
+
+      - name: View Wazuh manager master logs
+        run: kubectl logs wazuh-manager-master-0 -n wazuh
+
+      - name: View Wazuh manager worker 0 logs
+        run: kubectl logs wazuh-manager-worker-0 -n wazuh
+
+      - name: View Wazuh manager worker 1 logs
+        run: kubectl logs wazuh-manager-worker-1 -n wazuh
+
+      - name: Save URLs for each component
+        run: |
+          echo "DASHBOARD_URL=$(kubectl get service dashboard -n wazuh -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')" >> $GITHUB_ENV
+          echo "INDEXER_URL=$(kubectl get service indexer -n wazuh -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')" >> $GITHUB_ENV
+          echo "MANAGER_URL=$(kubectl get service wazuh -n wazuh -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')" >> $GITHUB_ENV
+
+      - name: Check Wazuh indexer start
+        run: |
+          status_green="`curl -XGET "{{ env.INDEXER_URL }}/_cluster/health" -u admin:SecretPassword -k -s | grep green | wc -l`"
+          if [[ $status_green -eq 1 ]]; then
+          curl -XGET "{{ env.INDEXER_URL }}/_cluster/health" -u admin:SecretPassword -k -s
+          else
+          curl -XGET "{{ env.INDEXER_URL }}/_cluster/health" -u admin:SecretPassword -k -s
+          exit 1
+          fi
+          status_index="`curl -XGET "{{ env.INDEXER_URL }}/_cat/indices" -u admin:SecretPassword -k -s | wc -l`"
+          status_index_green="`curl -XGET "{{ env.INDEXER_URL }}/_cat/indices" -u admin:SecretPassword -k -s | grep "green" | wc -l`"
+          if [[ $status_index_green -eq $status_index ]]; then
+          curl -XGET "{{ env.INDEXER_URL }}/_cat/indices" -u admin:SecretPassword -k -s
+          else
+          curl -XGET "{{ env.INDEXER_URL }}/_cat/indices" -u admin:SecretPassword -k -s
+          exit 1
+          fi
+
+      - name: Check Wazuh indexer nodes
+        run: |
+          nodes="`curl -XGET "{{ env.INDEXER_URL }}/_cat/nodes" -u admin:SecretPassword -k -s | grep -E "indexer" | wc -l`"
+          if [[ $nodes -eq 1 ]]; then
+          echo "Wazuh indexer nodes: ${nodes}"
+          else
+          echo "Wazuh indexer nodes: ${nodes}"
+          exit 1
+          fi
+
+      - name: Check documents into wazuh-alerts index
+        run: |
+          sleep 120
+          docs="`curl -XGET "{{ env.INDEXER_URL }}/wazuh-alerts*/_count" -u admin:SecretPassword -k -s | jq -r ".count"`"
+          if [[ $docs -gt 0 ]]; then
+          echo "wazuh-alerts index documents: ${docs}"
+          else
+          echo "wazuh-alerts index documents: ${docs}"
+          exit 1
+          fi
+
+      - name: Check Wazuh templates
+        run: |
+          qty_templates="`curl -XGET "{{ env.INDEXER_URL }}/_cat/templates" -u admin:SecretPassword -k -s | grep -P "wazuh|wazuh-agent|wazuh-statistics" | wc -l`"
+          templates="`curl -XGET "{{ env.INDEXER_URL }}/_cat/templates" -u admin:SecretPassword -k -s | grep -P "wazuh|wazuh-agent|wazuh-statistics"`"
+          if [[ $qty_templates -gt 3 ]]; then
+          echo "wazuh templates:"
+          echo "${templates}"
+          else
+          echo "wazuh templates:"
+          echo "${templates}"
+          exit 1
+          fi
+
+      - name: Check Wazuh manager start
+        run: |
+          services="`curl -k -s -X GET "{{ env.MANAGER_URL }}/manager/status?pretty=true" -H  "Authorization: Bearer ${{env.TOKEN}}" | jq -r .data.affected_items | grep running | wc -l`"
+          if [[ $services -gt 9 ]]; then
+            echo "Wazuh Manager Services: ${services}"
+            echo "OK"
+          else
+            echo "Wazuh indexer nodes: ${nodes}"
+            curl -k -X GET "{{ env.MANAGER_URL }}/manager/status?pretty=true" -H  "Authorization: Bearer ${{env.TOKEN}}" | jq -r .data.affected_items
+            exit 1
+          fi
+        env:
+          TOKEN: $(curl -s -u wazuh-wui:MyS3cr37P450r.*- -k -X GET "{{ env.MANAGER_URL }}/security/user/authenticate?raw=true")
+
+      - name: Check Wazuh dashboard service URL
+        run: |
+          status=$(curl -XGET --silent  {{ env.DASHBOARD_URL }}/app/status -k -u admin:SecretPassword -I -s | grep -E "^HTTP" | awk  '{print $2}')
+          if [[ $status -eq 200 ]]; then
+          echo "Wazuh dashboard status: ${status}"
+          else
+          echo "Wazuh dashboard status: ${status}"
+          exit 1
+          fi
+
       - name: Delete eks cluster
         if: always()
         run: |
@@ -139,3 +242,97 @@ jobs:
 
       - name: View stack status
         run: kubectl get all -n wazuh -o wide
+
+      - name: View Wazuh dashboard logs
+        run: kubectl logs $(kubectl get pods -n wazuh | grep wazuh-dashboard | awk '{print $1;}') -n wazuh
+
+      - name: View Wazuh indexer 0 logs
+        run: kubectl logs wazuh-indexer-0 -n wazuh
+
+      - name: View Wazuh manager master logs
+        run: kubectl logs wazuh-manager-master-0 -n wazuh
+
+      - name: View Wazuh manager worker 0 logs
+        run: kubectl logs wazuh-manager-worker-0 -n wazuh
+
+      - name: Save URLs for each component
+        run: |
+          echo "DASHBOARD_URL=$(minikube service dashboard -n wazuh --url | sed 's|^http://|https://|')" >> $GITHUB_ENV
+          echo "INDEXER_URL=$(minikube service indexer -n wazuh --url | sed 's|^http://|https://|')" >> $GITHUB_ENV
+          echo "MANAGER_URL=$(minikube service wazuh -n wazuh | grep '^api/55000' | awk '{print $2}' | sed 's|^http://|https://|')" >> $GITHUB_ENV
+
+      - name: Check Wazuh indexer start
+        run: |
+          status_green="`curl -XGET "{{ env.INDEXER_URL }}/_cluster/health" -u admin:SecretPassword -k -s | grep green | wc -l`"
+          if [[ $status_green -eq 1 ]]; then
+          curl -XGET "{{ env.INDEXER_URL }}/_cluster/health" -u admin:SecretPassword -k -s
+          else
+          curl -XGET "{{ env.INDEXER_URL }}/_cluster/health" -u admin:SecretPassword -k -s
+          exit 1
+          fi
+          status_index="`curl -XGET "{{ env.INDEXER_URL }}/_cat/indices" -u admin:SecretPassword -k -s | wc -l`"
+          status_index_green="`curl -XGET "{{ env.INDEXER_URL }}/_cat/indices" -u admin:SecretPassword -k -s | grep "green" | wc -l`"
+          if [[ $status_index_green -eq $status_index ]]; then
+          curl -XGET "{{ env.INDEXER_URL }}/_cat/indices" -u admin:SecretPassword -k -s
+          else
+          curl -XGET "{{ env.INDEXER_URL }}/_cat/indices" -u admin:SecretPassword -k -s
+          exit 1
+          fi
+
+      - name: Check Wazuh indexer nodes
+        run: |
+          nodes="`curl -XGET "{{ env.INDEXER_URL }}/_cat/nodes" -u admin:SecretPassword -k -s | grep -E "indexer" | wc -l`"
+          if [[ $nodes -eq 1 ]]; then
+          echo "Wazuh indexer nodes: ${nodes}"
+          else
+          echo "Wazuh indexer nodes: ${nodes}"
+          exit 1
+          fi
+
+      - name: Check documents into wazuh-alerts index
+        run: |
+          sleep 120
+          docs="`curl -XGET "{{ env.INDEXER_URL }}/wazuh-alerts*/_count" -u admin:SecretPassword -k -s | jq -r ".count"`"
+          if [[ $docs -gt 0 ]]; then
+          echo "wazuh-alerts index documents: ${docs}"
+          else
+          echo "wazuh-alerts index documents: ${docs}"
+          exit 1
+          fi
+
+      - name: Check Wazuh templates
+        run: |
+          qty_templates="`curl -XGET "{{ env.INDEXER_URL }}/_cat/templates" -u admin:SecretPassword -k -s | grep -P "wazuh|wazuh-agent|wazuh-statistics" | wc -l`"
+          templates="`curl -XGET "{{ env.INDEXER_URL }}/_cat/templates" -u admin:SecretPassword -k -s | grep -P "wazuh|wazuh-agent|wazuh-statistics"`"
+          if [[ $qty_templates -gt 3 ]]; then
+          echo "wazuh templates:"
+          echo "${templates}"
+          else
+          echo "wazuh templates:"
+          echo "${templates}"
+          exit 1
+          fi
+
+      - name: Check Wazuh manager start
+        run: |
+          services="`curl -k -s -X GET "{{ env.MANAGER_URL }}/manager/status?pretty=true" -H  "Authorization: Bearer ${{env.TOKEN}}" | jq -r .data.affected_items | grep running | wc -l`"
+          if [[ $services -gt 9 ]]; then
+            echo "Wazuh Manager Services: ${services}"
+            echo "OK"
+          else
+            echo "Wazuh indexer nodes: ${nodes}"
+            curl -k -X GET "{{ env.MANAGER_URL }}/manager/status?pretty=true" -H  "Authorization: Bearer ${{env.TOKEN}}" | jq -r .data.affected_items
+            exit 1
+          fi
+        env:
+          TOKEN: $(curl -s -u wazuh-wui:MyS3cr37P450r.*- -k -X GET "{{ env.MANAGER_URL }}/security/user/authenticate?raw=true")
+
+      - name: Check Wazuh dashboard service URL
+        run: |
+          status=$(curl -XGET --silent  {{ env.DASHBOARD_URL }}/app/status -k -u admin:SecretPassword -I -s | grep -E "^HTTP" | awk  '{print $2}')
+          if [[ $status -eq 200 ]]; then
+          echo "Wazuh dashboard status: ${status}"
+          else
+          echo "Wazuh dashboard status: ${status}"
+          exit 1
+          fi
