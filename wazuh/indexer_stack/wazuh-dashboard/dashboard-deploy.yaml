@@ -30,6 +30,7 @@ spec:
         - name: dashboard-certs
           secret:
             secretName: dashboard-certs
+            #secretName: wazuh-dashboard-cert
       containers:
         - name: wazuh-dashboard
           image: 'wazuh/wazuh-dashboard:4.9.1'

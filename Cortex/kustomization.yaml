@@ -5,5 +5,4 @@ kind: Kustomization
 
 # Archivos de recursos que deseas aplicar
 resources:
-  #- configMap-TheHive.yaml
-  - TheHiveDeploy.yaml
+  - cortex-deploy.yaml

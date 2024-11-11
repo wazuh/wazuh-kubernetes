@@ -52,6 +52,7 @@ resources:
   - secrets/wazuh-cluster-key-secret.yaml
   - secrets/dashboard-cred-secret.yaml
   - secrets/indexer-cred-secret.yaml
+  - secrets/wazuh-dashboard-cert-secret.yaml #MyConfig
 
   - wazuh_managers/wazuh-cluster-svc.yaml
   - wazuh_managers/wazuh-master-svc.yaml
