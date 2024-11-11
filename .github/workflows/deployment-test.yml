@@ -19,7 +19,7 @@ env:
 
 jobs:
   EKS_deployment_test:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -138,7 +138,7 @@ jobs:
       - name: Check Wazuh indexer nodes
         run: |
           nodes="`curl -XGET "${{ env.INDEXER_URL }}/_cat/nodes" -u admin:SecretPassword -k -s | grep -E "indexer" | wc -l`"
-          if [[ $nodes -eq 1 ]]; then
+          if [[ $nodes -eq 3 ]]; then
           echo "Wazuh indexer nodes: ${nodes}"
           else
           echo "Wazuh indexer nodes: ${nodes}"
@@ -200,7 +200,7 @@ jobs:
           --region ${{ env.AWS_REGION }}
 
   Local_deployment_test:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
