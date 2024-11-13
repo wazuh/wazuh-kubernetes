@@ -112,11 +112,11 @@ jobs:
       - name: View Wazuh manager worker 1 logs
         run: kubectl logs wazuh-manager-worker-1 -n wazuh
 
-      - name: Save URLs for each component
+      - name: Set Wazuh service URLs
         run: |
-          echo 'DASHBOARD_URL=https://$(kubectl get service dashboard -n wazuh -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')' >> $GITHUB_ENV
-          echo 'INDEXER_URL=https://$(kubectl get service indexer -n wazuh -o jsonpath='{.status.loadBalancer.ingress[0].hostname}'):9200' >> $GITHUB_ENV
-          echo 'MANAGER_URL=https://$(kubectl get service wazuh -n wazuh -o jsonpath='{.status.loadBalancer.ingress[0].hostname}'):55000' >> $GITHUB_ENV
+          echo "MANAGER_URL=https://$(kubectl get service wazuh -n wazuh -o jsonpath='{.status.loadBalancer.ingress[0].hostname}'):$(kubectl get service wazuh -n wazuh -o jsonpath='{.spec.ports[?(@.port==55000)].port}')" >> $GITHUB_ENV
+          echo "INDEXER_URL=https://$(kubectl get service indexer -n wazuh -o jsonpath='{.status.loadBalancer.ingress[0].hostname}'):$(kubectl get service indexer -n wazuh -o jsonpath='{.spec.ports[?(@.port==9200)].port}')" >> $GITHUB_ENV
+          echo "DASHBOARD_URL=https://$(kubectl get service dashboard -n wazuh -o jsonpath='{.status.loadBalancer.ingress[0].hostname}'):$(kubectl get service dashboard -n wazuh -o jsonpath='{.spec.ports[?(@.port==443)].port}')" >> $GITHUB_ENV
 
       - name: Check Wazuh indexer start
         run: |
