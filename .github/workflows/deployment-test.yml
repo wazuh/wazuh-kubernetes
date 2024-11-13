@@ -239,6 +239,11 @@ jobs:
       - name: Wait 10 minutes for Wazuh stack startup
         run: sleep 10m
 
+      - name: Start minikube tunnel
+        run: |
+          minikube tunnel &> /dev/null &
+          sleep 30
+
       - name: View stack status
         run: kubectl get all -n wazuh -o wide
 
@@ -254,11 +259,11 @@ jobs:
       - name: View Wazuh manager worker 0 logs
         run: kubectl logs wazuh-manager-worker-0 -n wazuh
 
-      - name: Save URLs for each component
+      - name: Set Wazuh service URLs
         run: |
-          echo "DASHBOARD_URL=$(minikube service dashboard -n wazuh --url | sed 's|^http://|https://|')" >> $GITHUB_ENV
-          echo "INDEXER_URL=$(minikube service indexer -n wazuh --url | sed 's|^http://|https://|')" >> $GITHUB_ENV
-          echo "MANAGER_URL=$(minikube service wazuh -n wazuh | grep '^api/55000' | awk '{print $2}' | sed 's|^http://|https://|')" >> $GITHUB_ENV
+          echo "MANAGER_URL=https://$(kubectl get service wazuh -n wazuh -o jsonpath='{.status.loadBalancer.ingress[0].ip}'):$(kubectl get service wazuh -n wazuh -o jsonpath='{.spec.ports[?(@.port==55000)].port}')" >> $GITHUB_ENV
+          echo "INDEXER_URL=https://$(kubectl get service indexer -n wazuh -o jsonpath='{.status.loadBalancer.ingress[0].ip}'):$(kubectl get service indexer -n wazuh -o jsonpath='{.spec.ports[?(@.port==9200)].port}')" >> $GITHUB_ENV
+          echo "DASHBOARD_URL=https://$(kubectl get service dashboard -n wazuh -o jsonpath='{.status.loadBalancer.ingress[0].ip}'):$(kubectl get service dashboard -n wazuh -o jsonpath='{.spec.ports[?(@.port==443)].port}')" >> $GITHUB_ENV
 
       - name: Check Wazuh indexer start
         run: |
