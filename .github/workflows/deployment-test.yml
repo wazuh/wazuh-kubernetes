@@ -205,7 +205,7 @@ jobs:
         run: |
           for volume_id in $(aws ec2 describe-volumes \
                               --region ${{ env.AWS_REGION }} \
-                              --filters Name=tag:Name,Values="${{ env.CLUSTER_NAMME }}*" \
+                              --filters Name=tag:KubernetesCluster,Values="${{ env.CLUSTER_NAMME }}" \
                               --query "Volumes[].VolumeId" \
                               --output text); do
               echo "Eliminando volumen con ID: $volume_id"
