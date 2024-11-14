@@ -209,7 +209,7 @@ jobs:
                               --query "Volumes[].VolumeId" \
                               --output text); do
               echo "Eliminando volumen con ID: $volume_id"
-              ## aws ec2 delete-volume --region ${{ env.AWS_REGION }} --volume-id $volume_id
+              aws ec2 delete-volume --region ${{ env.AWS_REGION }} --volume-id $volume_id
           done
 
   Local_deployment_test:
