@@ -200,6 +200,18 @@ jobs:
           --name ${{ env.CLUSTER_NAMME }} \
           --region ${{ env.AWS_REGION }}
 
+      - name: Delete EBS dynamic volumes
+        if: always()
+        run: |
+          for volume_id in $(aws ec2 describe-volumes \
+                              --region ${{ env.AWS_REGION }} \
+                              --filters Name=tag:Name,Values="${{ env.CLUSTER_NAMME }}" \
+                              --query "Volumes[].VolumeId" \
+                              --output text); do
+              echo "Eliminando volumen con ID: $volume_id"
+              ## aws ec2 delete-volume --region ${{ env.AWS_REGION }} --volume-id $volume_id
+          done
+
   Local_deployment_test:
     runs-on: ubuntu-24.04
     steps:
