@@ -89,3 +89,5 @@ $ kubectl -n wazuh port-forward service/dashboard 8443:443
 ```
 
 Dashboard will be accesible on ``https://localhost:8443``.
+
+The dashboard password is available here ``wazuh-kubernetes\wazuh\secrets\dashboard-cred-secret.yaml``. Make sure to use the plain text one, not the base64 encoded.
