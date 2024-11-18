@@ -1,0 +1,12 @@
+wazuh/certs/dashboard_http/*.pem
+wazuh/certs/dashboard_http/*.key
+wazuh/certs/indexer_cluster/*.pem
+wazuh/certs/indexer_cluster/*.key
+wazuh/certs/indexer_cluster/*.csr
+wazuh/certs/indexer_cluster/*.srl
+wazuh/certs/dashboard_http/*.pem
+wazuh/certs/dashboard_http/*.key
+wazuh/certs/indexer_cluster/*.pem
+wazuh/certs/indexer_cluster/*.key
+wazuh/certs/indexer_cluster/*.csr
+wazuh/certs/indexer_cluster/*.srl
