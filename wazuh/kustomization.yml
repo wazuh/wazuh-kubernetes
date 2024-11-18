@@ -57,6 +57,7 @@ resources:
   - wazuh_managers/wazuh-workers-svc.yaml
   - wazuh_managers/wazuh-master-sts.yaml
   - wazuh_managers/wazuh-worker-sts.yaml
+  - wazuh_managers/syslog-svc.yaml  ###################STARTS MY  CONFIG###########################33  
 
   - indexer_stack/wazuh-indexer/indexer-svc.yaml
   - indexer_stack/wazuh-indexer/cluster/indexer-api-svc.yaml

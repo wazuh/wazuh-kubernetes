@@ -13,7 +13,7 @@ metadata:
   name: wazuh-manager-worker
   namespace: wazuh
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: wazuh-manager
@@ -107,6 +107,8 @@ spec:
               name: agents-events
             - containerPort: 1516
               name: cluster
+            - containerPort: 514
+              name: syslog-events                 
           env:
             - name: INDEXER_URL
               value: 'https://indexer:9200'

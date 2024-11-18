@@ -110,6 +110,8 @@ spec:
               name: cluster
             - containerPort: 55000
               name: api
+            - containerPort: 514
+              name: syslog-events               
           env:
             - name: INDEXER_URL
               value: 'https://indexer:9200'

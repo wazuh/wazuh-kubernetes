@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: wazuh-syslog
+  namespace: wazuh
+  labels:
+    app: wazuh-syslog
+  annotations:
+    service.beta.kubernetes.io/aws-load-balancer-backend-protocol: tcp
+    service.beta.kubernetes.io/aws-load-balancer-eip-allocations: eipalloc-09da44be7717957ee, eipalloc-08f9bb7c3445c690e
+    service.beta.kubernetes.io/aws-load-balancer-subnets: subnet-05fbf4a6250fa2324, subnet-0c3fca6bec1072d2a
+    service.beta.kubernetes.io/aws-load-balancer-name: external-syslog-lb  
+    service.beta.kubernetes.io/aws-load-balancer-internal: "false" 
+spec:
+  type: LoadBalancer
+  selector:
+    app: wazuh-manager
+    node-type: worker #switch to master, worker or remove
+  ports:
+    - name: syslog-events 
+      port: 514
+      protocol: TCP
+      targetPort: 514
