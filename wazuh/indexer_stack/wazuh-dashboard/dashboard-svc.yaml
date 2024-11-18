@@ -18,8 +18,10 @@ metadata:
   annotations:
     # domainName: 'changeme'
     # service.beta.kubernetes.io/aws-load-balancer-ssl-cert: 'changeme'
+    service.beta.kubernetes.io/aws-load-balancer-name: external-lb-dashboard
     service.beta.kubernetes.io/aws-load-balancer-ssl-ports: '443'
     service.beta.kubernetes.io/aws-load-balancer-backend-protocol: https
+    service.beta.kubernetes.io/aws-load-balancer-internal: "false"
 spec:
   type: LoadBalancer
   selector:
