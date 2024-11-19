@@ -15,7 +15,7 @@ permissions:
   contents: read    # This is required for actions/checkout
 
 env:
-  AWS_REGION: us-east-1
+  AWS_REGION: us-west-1
   CLUSTER_NAMME: test-eks-deploy${{ github.event.number }}
 
 jobs:
