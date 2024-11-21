@@ -220,6 +220,9 @@ jobs:
         with:
           ref: ${{ inputs.BRANCH_VERSION }}
 
+      - name: Free Disk Space (Ubuntu)
+        uses: jlumbroso/free-disk-space@main
+
       - name: free disk space
         run: |
           sudo swapoff -a
