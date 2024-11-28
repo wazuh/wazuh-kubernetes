@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: wazuh-internal-lb
+  namespace: wazuh
+  annotations:
+    service.beta.kubernetes.io/aws-load-balancer-type: internal
+    service.beta.kubernetes.io/aws-load-balancer-scheme: internal
+    service.beta.kubernetes.io/aws-load-balancer-nlb-target-type: instance
+    service.beta.kubernetes.io/aws-load-balancer-name: wazuh-internal-lb
+spec:
+  type: LoadBalancer
+  ports:
+  - name: indexer-rest
+    port: 9200
+    targetPort: indexer-rest
+  - name: indexer-nodes
+    port: 9300
+    targetPort: indexer-nodes
+  selector:
+    lbtype: internal
+    app: wazuh-indexer
