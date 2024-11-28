@@ -26,9 +26,12 @@ spec:
     spec:
       # Set the wazuh-indexer volume permissions so the wazuh-indexer user can use it
       volumes:
-        - name: indexer-certs
+        - name: node-certs
           secret:
-            secretName: indexer-certs
+            secretName: node-tls
+        - name: admin-certs
+          secret:
+            secretName: admin-tls
         - name: indexer-conf
           configMap:
             name: indexer-conf
@@ -89,25 +92,29 @@ spec:
           volumeMounts:
             - name: wazuh-indexer
               mountPath: /var/lib/wazuh-indexer
-            - name: indexer-certs
-              mountPath: /usr/share/wazuh-indexer/certs/node-key.pem
-              subPath: node-key.pem
+            - name: node-certs
+              mountPath: /usr/share/wazuh-indexer/certs/node/ca.crt
+              subPath: ca.crt
               readOnly: true
-            - name: indexer-certs
-              mountPath: /usr/share/wazuh-indexer/certs/node.pem
-              subPath: node.pem
+            - name: node-certs
+              mountPath: /usr/share/wazuh-indexer/certs/node/tls.key
+              subPath: tls.key
               readOnly: true
-            - name: indexer-certs
-              mountPath: /usr/share/wazuh-indexer/certs/root-ca.pem
-              subPath: root-ca.pem
+            - name: node-certs
+              mountPath: /usr/share/wazuh-indexer/certs/node/tls.crt
+              subPath: tls.crt
               readOnly: true
-            - name: indexer-certs
-              mountPath: /usr/share/wazuh-indexer/certs/admin.pem
-              subPath: admin.pem
+            - name: admin-certs
+              mountPath: /usr/share/wazuh-indexer/certs/admin/ca.crt
+              subPath: ca.crt
               readOnly: true
-            - name: indexer-certs
-              mountPath: /usr/share/wazuh-indexer/certs/admin-key.pem
-              subPath: admin-key.pem
+            - name: admin-certs
+              mountPath: /usr/share/wazuh-indexer/certs/admin/tls.crt
+              subPath: tls.crt
+              readOnly: true
+            - name: admin-certs
+              mountPath: /usr/share/wazuh-indexer/certs/admin/tls.key
+              subPath: tls.key
               readOnly: true
             - name: indexer-conf
               mountPath: /usr/share/wazuh-indexer/opensearch.yml

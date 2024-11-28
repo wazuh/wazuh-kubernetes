@@ -33,7 +33,7 @@ spec:
             name: wazuh-conf
         - name: filebeat-certs
           secret:
-            secretName: indexer-certs
+            secretName: filebeat-tls
         - name: wazuh-authd-pass
           secret:
             secretName: wazuh-authd-pass
@@ -55,16 +55,16 @@ spec:
               subPath: master.conf
               readOnly: true
             - name: filebeat-certs
-              mountPath: /etc/ssl/root-ca.pem
+              mountPath: /etc/ssl/ca.crt
               readOnly: true
-              subPath: root-ca.pem
+              subPath: ca.crt
             - name: filebeat-certs
-              mountPath: /etc/ssl/filebeat.pem
-              subPath: filebeat.pem
+              mountPath: /etc/ssl/tls.crt
+              subPath: tls.crt
               readOnly: true
             - name: filebeat-certs
-              mountPath: /etc/ssl/filebeat.key
-              subPath: filebeat-key.pem
+              mountPath: /etc/ssl/tls.key
+              subPath: tls.key
               readOnly: true
             - name: wazuh-authd-pass
               mountPath: /wazuh-config-mount/etc/authd.pass
@@ -126,11 +126,11 @@ spec:
             - name: FILEBEAT_SSL_VERIFICATION_MODE
               value: 'full'
             - name: SSL_CERTIFICATE_AUTHORITIES
-              value: /etc/ssl/root-ca.pem
+              value: /etc/ssl/ca.crt
             - name: SSL_CERTIFICATE
-              value: /etc/ssl/filebeat.pem
+              value: /etc/ssl/tls.crt
             - name: SSL_KEY
-              value: /etc/ssl/filebeat.key
+              value: /etc/ssl/tls.key
             - name: API_USERNAME
               valueFrom:
                 secretKeyRef:

@@ -29,7 +29,7 @@ spec:
             name: dashboard-conf
         - name: dashboard-certs
           secret:
-            secretName: dashboard-certs
+            secretName: dashboard-tls
       containers:
         - name: wazuh-dashboard
           image: 'wazuh/wazuh-dashboard:5.0.0'
@@ -43,16 +43,16 @@ spec:
               subPath: opensearch_dashboards.yml
               readOnly: false
             - name: dashboard-certs
-              mountPath: /usr/share/wazuh-dashboard/certs/cert.pem
+              mountPath: /usr/share/wazuh-dashboard/certs/tls.crt
               readOnly: true
-              subPath: cert.pem
+              subPath: tls.crt
             - name: dashboard-certs
-              mountPath: /usr/share/wazuh-dashboard/certs/key.pem
+              mountPath: /usr/share/wazuh-dashboard/certs/tls.key
               readOnly: true
-              subPath: key.pem
+              subPath: tls.key
             - name: dashboard-certs
-              mountPath: /usr/share/wazuh-dashboard/certs/root-ca.pem
-              subPath: root-ca.pem
+              mountPath: /usr/share/wazuh-dashboard/certs/ca.crt
+              subPath: ca.crt
               readOnly: true
           ports:
             - containerPort: 5601
