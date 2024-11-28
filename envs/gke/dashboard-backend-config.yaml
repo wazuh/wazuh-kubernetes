@@ -1,0 +1,14 @@
+apiVersion: cloud.google.com/v1
+kind: BackendConfig
+metadata:
+  name: wazuh-beconfig
+  namespace: wazuh
+spec:
+  healthCheck:
+    checkIntervalSec: 120
+    timeoutSec: 15
+    healthyThreshold: 1
+    unhealthyThreshold: 2
+    type: HTTPS
+    requestPath: "/app/login?"
+    
