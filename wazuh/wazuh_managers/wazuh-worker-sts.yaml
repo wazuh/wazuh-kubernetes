@@ -33,6 +33,10 @@ spec:
             - weight: 100
               podAffinityTerm:
                 topologyKey: kubernetes.io/hostname
+                labelSelector:
+                  matchLabels:
+                    app: wazuh-manager
+                    node-type: worker
       volumes:
         - name: custom-scripts #########START MY CONFIG##############
           configMap:
@@ -129,7 +133,7 @@ spec:
               #readOnly: true           
       containers:
         - name: wazuh-manager
-          image: 'wazuh/wazuh-manager:4.9.1'
+          image: 'wazuh/wazuh-manager:5.0.0'
           resources:
             limits:
               cpu: 400m

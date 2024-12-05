@@ -124,7 +124,7 @@ spec:
               #readOnly: true               
       containers:
         - name: wazuh-manager
-          image: 'wazuh/wazuh-manager:4.9.1'
+          image: 'wazuh/wazuh-manager:5.0.0'
           resources:
             limits:
               cpu: 400m
