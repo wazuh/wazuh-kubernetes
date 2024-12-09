@@ -15,7 +15,7 @@ metadata:
   labels:
     app: wazuh-indexer
 spec:
-  type: LoadBalancer
+  type: ClusterIP
   selector:
     app: wazuh-indexer
   ports:
