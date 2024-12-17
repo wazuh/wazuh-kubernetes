@@ -221,7 +221,7 @@ jobs:
           ref: ${{ inputs.BRANCH_VERSION }}
 
       - name: Free Disk Space (Ubuntu)
-        uses: jlumbroso/free-disk-space@main
+        uses: ./.github/free-disk-space
 
       - name: free disk space
         run: |
