@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [4.10.2]
+## [4.10.3]
 
 ### Added
 
@@ -20,7 +20,23 @@ All notable changes to this project will be documented in this file.
 
 - None
 
-- Update to Wazuh version [4.10.2](https://github.com/wazuh/wazuh/blob/v4.10.2/CHANGELOG.md#v4101)
+## [4.10.2]
+
+### Added
+
+- None
+
+### Changed
+
+- None
+
+### Fixed
+
+- None
+
+### Deleted
+
+- None
 
 ## [4.10.1]
 
