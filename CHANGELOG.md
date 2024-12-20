@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [4.10.3]
+## [4.12.0]
 
 ### Added
 
