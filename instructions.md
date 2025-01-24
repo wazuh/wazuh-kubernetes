@@ -168,6 +168,7 @@ wazuh           LoadBalancer   10.100.176.82    <entrypoint_assigned>   1515:326
 wazuh-cluster   ClusterIP      None             <none>                  1516/TCP                         4h13m
 wazuh-indexer   ClusterIP      None             <none>                  9300/TCP                         4h13m
 wazuh-workers   LoadBalancer   10.100.165.20    <entrypoint_assigned>   1514:30128/TCP                   4h13m
+wazuh-loadbalancer   LoadBalancer   10.100.165.21   <entrypoint_assigned>   1514:30318/TCP,1515:30190/TCP    10h
 ```
 
 #### Deployments
@@ -176,6 +177,7 @@ wazuh-workers   LoadBalancer   10.100.165.20    <entrypoint_assigned>   1514:301
 $ kubectl get deployments -n wazuh
 NAME              READY   UP-TO-DATE   AVAILABLE   AGE
 wazuh-dashboard   1/1     1            1           4h16m
+wazuh-loadbalancer   2/2     2            2           10h
 ```
 
 #### Statefulsets
@@ -200,6 +202,8 @@ wazuh-indexer-2                    1/1     Running   0          4h17m
 wazuh-manager-master-0             1/1     Running   0          4h17m
 wazuh-manager-worker-0             1/1     Running   0          4h17m
 wazuh-manager-worker-1             1/1     Running   0          4h17m
+wazuh-loadbalancer-66b68f8589-62gw2   1/1     Running     0          9h
+wazuh-loadbalancer-66b68f8589-qlqvl   1/1     Running     0          9h
 ```
 
 #### Accessing Wazuh dashboard
@@ -213,3 +217,35 @@ $ kubectl get services -o wide -n wazuh
 NAME        TYPE           CLUSTER-IP       EXTERNAL-IP                                                              PORT(S)        AGE     SELECTOR
 dashboard   LoadBalancer   10.100.55.244    a91dadfdf2d33493dad0a267eb85b352-1129724810.us-west-1.elb.amazonaws.com  443:31670/TCP  4h19m   app=wazuh-dashboard
 ```
+
+
+###  Configure agents to join wazuh on kubernetes
+
+1- get the ip of the wazuh-loadbalancer
+
+```
+kubectl get service wazuh -loadbalancer
+NAME                 TYPE           CLUSTER-IP       EXTERNAL-IP    PORT(S)                         AGE
+nginx-loadbalancer   LoadBalancer   10.100.108.134   137.205.213.7   1514:30318/TCP,1515:30190/TCP   10h
+```
+
+in this case the external ip is `137.205.213.7`
+
+2- Configure the client to use that ip for registration (port 1515) and reporting (port 1414). As described on 
+https://documentation.wazuh.com/current/user-manual/wazuh-server-cluster.html#connecting-wazuh-agents-to-the-wazuh-cluster-with-a-load-balancer
+
+In our case is:
+
+```
+<ossec_config>
+  <client>
+    <server>
+      <address>137.205.213.7</address>
+      <protocol>tcp</protocol>
+    </server>
+    ...
+  </client>
+</ossec_config>
+```
+
+For more information on how to configure NGINX as reverse proxy: https://documentation.wazuh.com/current/user-manual/wazuh-server-cluster.html#nginx
