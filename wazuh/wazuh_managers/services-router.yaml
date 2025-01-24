@@ -1,0 +1,86 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nginx-lb-config
+data:
+  nginx.conf: |
+    worker_processes auto;
+
+    events {
+        worker_connections 1024;
+    }
+
+    stream {
+      log_format basic '$remote_addr [$time_local] '
+                        'Protocol: $protocol '
+                        'Status: $status '
+                        'Bytes sent: $bytes_sent '
+                        'Bytes received: $bytes_received '
+                        'Session time: $session_time';
+       upstream master {
+           server wazuh:1515;
+       }
+       upstream workers {
+           hash $remote_addr consistent;
+           server wazuh-workers:1514;
+       }
+       server {
+           listen 1515;
+           proxy_pass master;
+           access_log /dev/stdout basic;
+       }
+       server {
+           listen 1514;
+           proxy_pass workers;
+           # ßaccess_log /dev/stdout basic;
+       }
+    }
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: wazuh-loadbalancer
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: wazuh-loadbalancer
+  template:
+    metadata:
+      labels:
+        app: wazuh-loadbalancer
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:alpine
+        ports:
+        - containerPort: 1514
+        - containerPort: 1515
+        volumeMounts:
+        - name: config
+          mountPath: /etc/nginx/nginx.conf
+          subPath: nginx.conf
+      volumes:
+      - name: config
+        configMap:
+          name: nginx-lb-config
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: wazuh-loadbalancer
+spec:
+  type: LoadBalancer
+  ports:
+  - port: 1514
+    targetPort: 1514
+    protocol: TCP
+    name: agent-report
+  - port: 1515
+    targetPort: 1515
+    protocol: TCP
+    name: agent-register
+  selector:
+    app: wazuh-loadbalancer
