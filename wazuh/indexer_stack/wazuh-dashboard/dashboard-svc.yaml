@@ -14,10 +14,10 @@ metadata:
   namespace: wazuh
   labels:
     app: wazuh-dashboard
-    # dns: route53
+    dns: route53
   annotations:
-    # domainName: 'changeme'
-    # service.beta.kubernetes.io/aws-load-balancer-ssl-cert: 'changeme'
+    domainName: 'siem.slicedhealth.com'
+    service.beta.kubernetes.io/aws-load-balancer-ssl-cert: 'arn:aws:acm:us-east-1:569333325897:certificate/7377cfa8-c7f8-4017-834a-0d9354002559'
     service.beta.kubernetes.io/aws-load-balancer-ssl-ports: '443'
     service.beta.kubernetes.io/aws-load-balancer-backend-protocol: https
 spec:
