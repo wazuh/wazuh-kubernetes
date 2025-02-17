@@ -10,7 +10,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
-- None
+- Change VERSION file format ([#985](https://github.com/wazuh/wazuh-kubernetes/pull/985)) \- (VERSION file)
 
 ### Fixed
 
