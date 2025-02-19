@@ -47,7 +47,7 @@ To deploy a cluster on your local environment (like Minikube, Kind or Microk8s) 
     ├── local-environment.md
     ├── README.md
     ├── upgrade.md
-    ├── VERSION
+    ├── VERSION.json
     └── wazuh
         ├── base
         │   ├── storage-class.yaml
