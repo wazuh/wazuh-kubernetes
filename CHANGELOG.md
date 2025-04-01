@@ -2,6 +2,24 @@
 
 All notable changes to this project will be documented in this file.
 
+## [4.12.0]
+
+### Added
+
+- None
+
+### Changed
+
+- Change VERSION file format ([#985](https://github.com/wazuh/wazuh-kubernetes/pull/985)) \- (VERSION file)
+
+### Fixed
+
+- None
+
+### Deleted
+
+- None
+
 ## [4.11.2]
 
 ### Added
