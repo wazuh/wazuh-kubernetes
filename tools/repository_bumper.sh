@@ -68,13 +68,10 @@ update_version_in_files() {
 
 update_stage_in_files() {
     local OLD_STAGE="$(echo "${OLD_STAGE}")"
-    files=( $(grep_command "${OLD_STAGE}" "${DIR}") )
-    for file in "${files[@]}"; do
-        sed -i "s/${OLD_STAGE}/${STAGE}/g" "${file}"
-        if [[ $(git diff --name-only "${file}") ]]; then
-            FILES_EDITED+=("${file}")
-        fi
-    done
+    sed -i "s/${OLD_STAGE}/${STAGE}/g" "${DIR}/VERSION.json"
+    if [[ $(git diff --name-only "${DIR}/VERSION.json") ]]; then
+        FILES_EDITED+=("${DIR}/VERSION.json")
+    fi
 }
 
 main() {
