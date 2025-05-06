@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file.
 
+## [4.12.2]
+
+### Added
+
+- None
+
+### Changed
+
+- None
+
+### Fixed
+
+- None
+
+### Deleted
+
 ## [4.12.1]
 
 ### Added
