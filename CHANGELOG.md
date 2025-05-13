@@ -2,11 +2,29 @@
 
 All notable changes to this project will be documented in this file.
 
-## [5.0.0]
+## [6.0.0]
 
 ### Added
 
 - New PR Checks ([#896](https://github.com/wazuh/wazuh-kubernetes/pull/896)) \- (Kubernetes workflow Test)
+
+### Changed
+
+- None
+
+### Fixed
+
+- None
+
+### Deleted
+
+- None
+
+## [5.0.0]
+
+### Added
+
+- None
 
 ### Changed
 
