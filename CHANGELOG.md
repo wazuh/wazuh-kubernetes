@@ -2,11 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
-## [4.12.1]
+## [4.13.0]
 
 ### Added
 
-- None
+- Added repository_bumper script. ([#1039](https://github.com/wazuh/wazuh-kubernetes/pull/1039))
 
 ### Changed
 
@@ -18,7 +18,7 @@ All notable changes to this project will be documented in this file.
 
 ### Deleted
 
-- None
+- Remove 'stable' branch ocurrencies ([#1014](https://github.com/wazuh/wazuh-kubernetes/pull/1014))
 
 ## [4.12.0]
 
