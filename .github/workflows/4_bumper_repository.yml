@@ -22,6 +22,7 @@ on:
         description: 'Optional identifier for the run'
         required: false
         type: string
+  push:
 
 jobs:
   bump:
