@@ -15,7 +15,7 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
-- None
+- Add missing malicious-ioc ruleset lists ([#1092](https://github.com/wazuh/wazuh-kubernetes/pull/1092))
 
 ### Deleted
 
