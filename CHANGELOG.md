@@ -10,7 +10,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
-- None
+- Replace OpenSearch deprecated settings ([#1109](https://github.com/wazuh/wazuh-kubernetes/pull/1109))
 
 ### Fixed
 
