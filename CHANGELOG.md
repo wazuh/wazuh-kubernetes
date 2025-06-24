@@ -2,6 +2,42 @@
 
 All notable changes to this project will be documented in this file.
 
+## [6.0.0]
+
+### Added
+
+- New PR Checks ([#896](https://github.com/wazuh/wazuh-kubernetes/pull/896)) \- (Kubernetes workflow Test)
+
+### Changed
+
+- None
+
+### Fixed
+
+- None
+
+### Deleted
+
+- None
+
+## [5.0.0]
+
+### Added
+
+- None
+
+### Changed
+
+- None
+
+### Fixed
+
+- None
+
+### Deleted
+
+- None
+
 ## [4.13.0]
 
 ### Added
@@ -22,61 +58,7 @@ All notable changes to this project will be documented in this file.
 
 - Remove 'stable' branch ocurrencies ([#1014](https://github.com/wazuh/wazuh-kubernetes/pull/1014))
 
-## [4.12.0]
-
-### Added
-
-- None
-
-### Changed
-
-- Change VERSION file format ([#985](https://github.com/wazuh/wazuh-kubernetes/pull/985)) \- (VERSION file)
-
-### Fixed
-
-- None
-
-### Deleted
-
-- None
-
-## [4.11.2]
-
-### Added
-
-- None
-
-### Changed
-
-- None
-
-### Fixed
-
-- None
-
-### Deleted
-
-- None
-
-## [4.11.1]
-
-### Added
-
-- None
-
-### Changed
-
-- None
-
-### Fixed
-
-- None
-
-### Deleted
-
-- None
-
-## [4.11.0]
+## [4.10.2]
 
 ### Added
 

@@ -10,6 +10,8 @@ Deploy a Wazuh cluster with a basic indexer and dashboard stack on Kubernetes.
 ## Branches
 
 * `main` branch contains the latest code, be aware of possible bugs on this branch.
+* `stable` branch on correspond to the last Wazuh stable version.
+
 
 ## Documentation
 
