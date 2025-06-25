@@ -38,6 +38,26 @@ All notable changes to this project will be documented in this file.
 
 - None
 
+## [4.13.0]
+
+### Added
+
+- Add missing malicious-ioc ruleset lists ([#1092](https://github.com/wazuh/wazuh-kubernetes/pull/1092))
+- Integrate bumper script via GitHub action. ([#1086](https://github.com/wazuh/wazuh-kubernetes/pull/1086))
+- Added repository_bumper script. ([#1039](https://github.com/wazuh/wazuh-kubernetes/pull/1039))
+
+### Changed
+
+- None
+
+### Fixed
+
+- None
+
+### Deleted
+
+- Remove 'stable' branch ocurrencies ([#1014](https://github.com/wazuh/wazuh-kubernetes/pull/1014))
+
 ## [4.10.2]
 
 ### Added
