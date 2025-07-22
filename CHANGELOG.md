@@ -3,7 +3,6 @@
 All notable changes to this project will be documented in this file.
 
 ## [5.0.0]
-
 ### Added
 
 - New PR Checks ([#896](https://github.com/wazuh/wazuh-kubernetes/pull/896)) \- (Kubernetes workflow Test)
@@ -21,6 +20,137 @@ All notable changes to this project will be documented in this file.
 - None
 
 ## [4.10.2]
+
+
+### Added
+
+- None
+
+### Changed
+
+
+=======
+- Replace OpenSearch deprecated settings ([#1109](https://github.com/wazuh/wazuh-kubernetes/pull/1109))
+
+### Fixed
+
+- None
+
+### Deleted
+
+- None
+
+## [4.14.0]
+
+### Added
+
+- None
+
+### Changed
+
+- None
+
+### Fixed
+
+- None
+
+### Deleted
+
+- None
+
+## [4.13.1]
+
+### Added
+
+- None
+
+### Changed
+
+- None
+
+### Fixed
+
+- None
+
+### Deleted
+
+- None
+
+## [4.13.0]
+
+### Added
+
+- Add missing malicious-ioc ruleset lists ([#1092](https://github.com/wazuh/wazuh-kubernetes/pull/1092))
+- Integrate bumper script via GitHub action. ([#1086](https://github.com/wazuh/wazuh-kubernetes/pull/1086))
+- Added repository_bumper script. ([#1039](https://github.com/wazuh/wazuh-kubernetes/pull/1039))
+
+### Changed
+
+- None
+
+### Fixed
+
+- None
+
+### Deleted
+
+- Remove 'stable' branch ocurrencies ([#1014](https://github.com/wazuh/wazuh-kubernetes/pull/1014))
+
+## [4.12.0]
+
+### Added
+
+- None
+
+### Changed
+
+- Change VERSION file format ([#985](https://github.com/wazuh/wazuh-kubernetes/pull/985)) \- (VERSION file)
+
+### Fixed
+
+- None
+
+### Deleted
+
+- None
+
+## [4.11.2]
+
+### Added
+
+- None
+
+### Changed
+
+- None
+
+### Fixed
+
+- None
+
+### Deleted
+
+- None
+
+## [4.11.1]
+
+### Added
+
+- None
+
+### Changed
+
+- None
+
+### Fixed
+
+- None
+
+### Deleted
+
+- None
+
+## [4.11.0]
 
 ### Added
 
