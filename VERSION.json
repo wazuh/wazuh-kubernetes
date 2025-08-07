@@ -1,4 +1,9 @@
 {
+<<<<<<< HEAD
     "version": "4.13.0",
     "stage": "rc4"
+=======
+    "version": "4.13.1",
+    "stage": "alpha0"
+>>>>>>> 71e728657210cf4e9bf996ecfa1e5c7d58a123ca
 }
