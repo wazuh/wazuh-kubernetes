@@ -32,11 +32,7 @@ spec:
             secretName: dashboard-certs
       containers:
         - name: wazuh-dashboard
-<<<<<<< HEAD
-          image: 'wazuh/wazuh-dashboard:4.13.0-rc4'
-=======
-          image: 'wazuh/wazuh-dashboard:4.13.1'
->>>>>>> 71e728657210cf4e9bf996ecfa1e5c7d58a123ca
+          image: 'wazuh/wazuh-dashboard:4.13.0'
           resources:
             limits:
               cpu: 500m
