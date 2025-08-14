@@ -32,25 +32,7 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
-- None
-
-### Deleted
-
-- None
-
-## [4.13.1]
-
-### Added
-
-- None
-
-### Changed
-
-- None
-
-### Fixed
-
-- None
+- Add new config path and new permission for conf and certs files ([#1152](https://github.com/wazuh/wazuh-kubernetes/pull/1152))
 
 ### Deleted
 
