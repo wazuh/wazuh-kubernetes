@@ -1,0 +1,357 @@
+run-name: Kubernetes deployment test - Branch ${{ inputs.BRANCH_VERSION }} - Launched by @${{ github.actor }}
+name: Test Wazuh deployment on Kubernetes
+
+on:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      BRANCH_VERSION:
+        description: 'Branch version to deploy'
+        required: true
+        default: '5.0.0'
+
+permissions:
+  id-token: write   # This is required for requesting the JWT
+  contents: read    # This is required for actions/checkout
+
+env:
+  AWS_REGION: us-west-1
+  CLUSTER_NAMME: test-eks-deploy${{ github.event.number }}
+
+jobs:
+  EKS_deployment_test:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.BRANCH_VERSION }}
+
+      - name: Configure aws credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_IAM_ROLE }}
+          aws-region: "${{ env.AWS_REGION }}"
+
+      - name: Install eksctl
+        run: |
+          ARCH=amd64
+          PLATFORM=$(uname -s)_$ARCH
+          curl -sLO "https://github.com/eksctl-io/eksctl/releases/latest/download/eksctl_$PLATFORM.tar.gz"
+          curl -sL "https://github.com/eksctl-io/eksctl/releases/latest/download/eksctl_checksums.txt" | grep $PLATFORM | sha256sum --check
+          tar -xzf eksctl_$PLATFORM.tar.gz -C /tmp && rm eksctl_$PLATFORM.tar.gz
+          sudo mv /tmp/eksctl /usr/local/bin
+
+      - name: Deploy eks cluster
+        run: |
+          eksctl create cluster \
+          --name ${{ env.CLUSTER_NAMME }} \
+          --with-oidc \
+          --region ${{ env.AWS_REGION }} \
+          --nodes-min 6 \
+          --nodes-max 6 \
+          --managed \
+          --spot \
+          -t t3a.medium \
+          --tags "issue=https://github.com/wazuh/wazuh-kubernetes/pull/${{ github.event.number }},team=devops,termination_date=2030-01-01 21:00:00"
+
+      - name: Create sa for ebs-csi-controller
+        run: |
+          eksctl create iamserviceaccount \
+          --name ebs-csi-controller-sa \
+          --region ${{ env.AWS_REGION }}  \
+          --namespace kube-system \
+          --cluster ${{ env.CLUSTER_NAMME }} \
+          --role-name eksctl-EBS-CSI-DriverRole-${{ env.CLUSTER_NAMME }} \
+          --role-only \
+          --attach-policy-arn arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy \
+          --approve
+
+      - name: Install addon aws-ebs-csi-driver into a eks cluster deployed
+        run: |
+          eksctl create addon \
+          --name aws-ebs-csi-driver \
+          --cluster ${{ env.CLUSTER_NAMME }} \
+          --region ${{ env.AWS_REGION }} \
+          --service-account-role-arn arn:aws:iam::567970947422:role/eksctl-EBS-CSI-DriverRole-${{ env.CLUSTER_NAMME }} \
+          --force
+
+      - name: Create Wazuh indexer certificates
+        run: wazuh/certs/indexer_cluster/generate_certs.sh
+
+      - name: Create Wazuh dashboard certificates
+        run: wazuh/certs/dashboard_http/generate_certs.sh
+
+      - name: Deploy Wazuh stack
+        run: kubectl apply -k envs/eks/
+
+      - name: Wait 10 minutes for Wazuh stack startup
+        run: sleep 10m
+
+      - name: View stack status
+        run: kubectl get all -n wazuh -o wide
+
+      - name: View Wazuh dashboard logs
+        run: kubectl logs $(kubectl get pods -n wazuh | grep wazuh-dashboard | awk '{print $1;}') -n wazuh
+
+      - name: View Wazuh indexer 0 logs
+        run: kubectl logs wazuh-indexer-0 -n wazuh
+
+      - name: View Wazuh indexer 1 logs
+        run: kubectl logs wazuh-indexer-1 -n wazuh
+
+      - name: View Wazuh indexer 2 logs
+        run: kubectl logs wazuh-indexer-2 -n wazuh
+
+      - name: View Wazuh manager master logs
+        run: kubectl logs wazuh-manager-master-0 -n wazuh
+
+      - name: View Wazuh manager worker 0 logs
+        run: kubectl logs wazuh-manager-worker-0 -n wazuh
+
+      - name: View Wazuh manager worker 1 logs
+        run: kubectl logs wazuh-manager-worker-1 -n wazuh
+
+      - name: Set Wazuh service URLs
+        run: |
+          echo "MANAGER_URL=https://$(kubectl get service wazuh -n wazuh -o jsonpath='{.status.loadBalancer.ingress[0].hostname}'):$(kubectl get service wazuh -n wazuh -o jsonpath='{.spec.ports[?(@.port==55000)].port}')" >> $GITHUB_ENV
+          echo "INDEXER_URL=https://$(kubectl get service indexer -n wazuh -o jsonpath='{.status.loadBalancer.ingress[0].hostname}'):$(kubectl get service indexer -n wazuh -o jsonpath='{.spec.ports[?(@.port==9200)].port}')" >> $GITHUB_ENV
+          echo "DASHBOARD_URL=https://$(kubectl get service dashboard -n wazuh -o jsonpath='{.status.loadBalancer.ingress[0].hostname}'):$(kubectl get service dashboard -n wazuh -o jsonpath='{.spec.ports[?(@.port==443)].port}')" >> $GITHUB_ENV
+
+      - name: Check Wazuh indexer start
+        run: |
+          status_green="`curl -XGET "${{ env.INDEXER_URL }}/_cluster/health" -u admin:SecretPassword -k -s | grep green | wc -l`"
+          if [[ $status_green -eq 1 ]]; then
+          curl -XGET "${{ env.INDEXER_URL }}/_cluster/health" -u admin:SecretPassword -k -s
+          else
+          curl -XGET "${{ env.INDEXER_URL }}/_cluster/health" -u admin:SecretPassword -k -s
+          exit 1
+          fi
+          status_index="`curl -XGET "${{ env.INDEXER_URL }}/_cat/indices" -u admin:SecretPassword -k -s | wc -l`"
+          status_index_green="`curl -XGET "${{ env.INDEXER_URL }}/_cat/indices" -u admin:SecretPassword -k -s | grep "green" | wc -l`"
+          if [[ $status_index_green -eq $status_index ]]; then
+          curl -XGET "${{ env.INDEXER_URL }}/_cat/indices" -u admin:SecretPassword -k -s
+          else
+          curl -XGET "${{ env.INDEXER_URL }}/_cat/indices" -u admin:SecretPassword -k -s
+          exit 1
+          fi
+
+      - name: Check Wazuh indexer nodes
+        run: |
+          nodes="`curl -XGET "${{ env.INDEXER_URL }}/_cat/nodes" -u admin:SecretPassword -k -s | grep -E "indexer" | wc -l`"
+          if [[ $nodes -eq 3 ]]; then
+          echo "Wazuh indexer nodes: ${nodes}"
+          else
+          echo "Wazuh indexer nodes: ${nodes}"
+          exit 1
+          fi
+
+      - name: Check documents into wazuh-alerts index
+        run: |
+          docs="`curl -XGET "${{ env.INDEXER_URL }}/wazuh-alerts*/_count" -u admin:SecretPassword -k -s | jq -r ".count"`"
+          if [[ $docs -gt 0 ]]; then
+          echo "wazuh-alerts index documents: ${docs}"
+          else
+          echo "wazuh-alerts index documents: ${docs}"
+          exit 1
+          fi
+
+      - name: Check Wazuh templates
+        run: |
+          qty_templates="`curl -XGET "${{ env.INDEXER_URL }}/_cat/templates" -u admin:SecretPassword -k -s | grep -P "wazuh|wazuh-agent|wazuh-statistics" | wc -l`"
+          templates="`curl -XGET "${{ env.INDEXER_URL }}/_cat/templates" -u admin:SecretPassword -k -s | grep -P "wazuh|wazuh-agent|wazuh-statistics"`"
+          if [[ $qty_templates -gt 3 ]]; then
+          echo "wazuh templates:"
+          echo "${templates}"
+          else
+          echo "wazuh templates:"
+          echo "${templates}"
+          exit 1
+          fi
+
+      - name: Check Wazuh manager start
+        run: |
+          services="`curl -k -s -X GET "${{ env.MANAGER_URL }}/manager/status?pretty=true" -H  "Authorization: Bearer ${{env.TOKEN}}" | jq -r .data.affected_items | grep running | wc -l`"
+          if [[ $services -gt 9 ]]; then
+            echo "Wazuh Manager Services: ${services}"
+            echo "OK"
+          else
+            echo "Wazuh indexer nodes: ${nodes}"
+            curl -k -X GET "${{ env.MANAGER_URL }}/manager/status?pretty=true" -H  "Authorization: Bearer ${{env.TOKEN}}" | jq -r .data.affected_items
+            exit 1
+          fi
+        env:
+          TOKEN: $(curl -s -u wazuh-wui:MyS3cr37P450r.*- -k -X GET "${{ env.MANAGER_URL }}/security/user/authenticate?raw=true")
+
+      - name: Check Wazuh dashboard service URL
+        run: |
+          status=$(curl -XGET --silent  ${{ env.DASHBOARD_URL }}/app/status -k -u admin:SecretPassword -I -s | grep -E "^HTTP" | awk  '{print $2}')
+          if [[ $status -eq 200 ]]; then
+          echo "Wazuh dashboard status: ${status}"
+          else
+          echo "Wazuh dashboard status: ${status}"
+          exit 1
+          fi
+
+      - name: Delete eks cluster
+        if: always()
+        run: |
+          eksctl delete cluster \
+          --name ${{ env.CLUSTER_NAMME }} \
+          --region ${{ env.AWS_REGION }}
+
+      - name: Delete EBS dynamic volumes
+        if: always()
+        run: |
+          for volume_id in $(aws ec2 describe-volumes \
+                              --region ${{ env.AWS_REGION }} \
+                              --filters Name=tag:KubernetesCluster,Values="${{ env.CLUSTER_NAMME }}" \
+                              --query "Volumes[].VolumeId" \
+                              --output text); do
+              echo "Eliminando volumen con ID: $volume_id"
+              aws ec2 delete-volume --region ${{ env.AWS_REGION }} --volume-id $volume_id
+          done
+
+  Local_deployment_test:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.BRANCH_VERSION }}
+
+      - name: Free Disk Space (Ubuntu)
+        uses: jlumbroso/free-disk-space@main
+
+      - name: free disk space
+        run: |
+          sudo swapoff -a
+          sudo rm -f /swapfile
+          sudo apt update -y && sudo apt upgrade -y
+          sudo apt clean
+          df -h
+
+      - name: Install Minikube cluster
+        run: |
+          curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
+          sudo install minikube-linux-amd64 /usr/local/bin/minikube && rm minikube-linux-amd64
+
+      - name: Start Minikube cluster
+        run: minikube start
+
+      - name: Create Wazuh indexer certificates
+        run: wazuh/certs/indexer_cluster/generate_certs.sh
+
+      - name: Create Wazuh dashboard certificates
+        run: wazuh/certs/dashboard_http/generate_certs.sh
+
+      - name: Change provisioner for minikube
+        run: |
+          sed -i 's/provisioner: microk8s.io\/hostpath/# provisioner: microk8s.io\/hostpath/; s/# provisioner: k8s.io\/minikube-hostpath/provisioner: k8s.io\/minikube-hostpath/' envs/local-env/storage-class.yaml
+
+      - name: Deploy Wazuh stack
+        run: kubectl apply -k envs/local-env/
+
+      - name: Wait 10 minutes for Wazuh stack startup
+        run: sleep 10m
+
+      - name: Start minikube tunnel
+        run: |
+          minikube tunnel &> /dev/null &
+          sleep 30
+
+      - name: View stack status
+        run: kubectl get all -n wazuh -o wide
+
+      - name: View Wazuh dashboard logs
+        run: kubectl logs $(kubectl get pods -n wazuh | grep wazuh-dashboard | awk '{print $1;}') -n wazuh
+
+      - name: View Wazuh indexer 0 logs
+        run: kubectl logs wazuh-indexer-0 -n wazuh
+
+      - name: View Wazuh manager master logs
+        run: kubectl logs wazuh-manager-master-0 -n wazuh
+
+      - name: View Wazuh manager worker 0 logs
+        run: kubectl logs wazuh-manager-worker-0 -n wazuh
+
+      - name: Set Wazuh service URLs
+        run: |
+          echo "MANAGER_URL=https://$(kubectl get service wazuh -n wazuh -o jsonpath='{.status.loadBalancer.ingress[0].ip}'):$(kubectl get service wazuh -n wazuh -o jsonpath='{.spec.ports[?(@.port==55000)].port}')" >> $GITHUB_ENV
+          echo "INDEXER_URL=https://$(kubectl get service indexer -n wazuh -o jsonpath='{.status.loadBalancer.ingress[0].ip}'):$(kubectl get service indexer -n wazuh -o jsonpath='{.spec.ports[?(@.port==9200)].port}')" >> $GITHUB_ENV
+          echo "DASHBOARD_URL=https://$(kubectl get service dashboard -n wazuh -o jsonpath='{.status.loadBalancer.ingress[0].ip}'):$(kubectl get service dashboard -n wazuh -o jsonpath='{.spec.ports[?(@.port==443)].port}')" >> $GITHUB_ENV
+
+      - name: Check Wazuh indexer start
+        run: |
+          status_green="`curl -XGET "${{ env.INDEXER_URL }}/_cluster/health" -u admin:SecretPassword -k -s | grep green | wc -l`"
+          if [[ $status_green -eq 1 ]]; then
+          curl -XGET "${{ env.INDEXER_URL }}/_cluster/health" -u admin:SecretPassword -k -s
+          else
+          curl -XGET "${{ env.INDEXER_URL }}/_cluster/health" -u admin:SecretPassword -k -s
+          exit 1
+          fi
+          status_index="`curl -XGET "${{ env.INDEXER_URL }}/_cat/indices" -u admin:SecretPassword -k -s | wc -l`"
+          status_index_green="`curl -XGET "${{ env.INDEXER_URL }}/_cat/indices" -u admin:SecretPassword -k -s | grep "green" | wc -l`"
+          if [[ $status_index_green -eq $status_index ]]; then
+          curl -XGET "${{ env.INDEXER_URL }}/_cat/indices" -u admin:SecretPassword -k -s
+          else
+          curl -XGET "${{ env.INDEXER_URL }}/_cat/indices" -u admin:SecretPassword -k -s
+          exit 1
+          fi
+
+      - name: Check Wazuh indexer nodes
+        run: |
+          nodes="`curl -XGET "${{ env.INDEXER_URL }}/_cat/nodes" -u admin:SecretPassword -k -s | grep -E "indexer" | wc -l`"
+          if [[ $nodes -eq 1 ]]; then
+          echo "Wazuh indexer nodes: ${nodes}"
+          else
+          echo "Wazuh indexer nodes: ${nodes}"
+          exit 1
+          fi
+
+      - name: Check documents into wazuh-alerts index
+        run: |
+          docs="`curl -XGET "${{ env.INDEXER_URL }}/wazuh-alerts*/_count" -u admin:SecretPassword -k -s | jq -r ".count"`"
+          if [[ $docs -gt 0 ]]; then
+          echo "wazuh-alerts index documents: ${docs}"
+          else
+          echo "wazuh-alerts index documents: ${docs}"
+          exit 1
+          fi
+
+      - name: Check Wazuh templates
+        run: |
+          qty_templates="`curl -XGET "${{ env.INDEXER_URL }}/_cat/templates" -u admin:SecretPassword -k -s | grep -P "wazuh|wazuh-agent|wazuh-statistics" | wc -l`"
+          templates="`curl -XGET "${{ env.INDEXER_URL }}/_cat/templates" -u admin:SecretPassword -k -s | grep -P "wazuh|wazuh-agent|wazuh-statistics"`"
+          if [[ $qty_templates -gt 3 ]]; then
+          echo "wazuh templates:"
+          echo "${templates}"
+          else
+          echo "wazuh templates:"
+          echo "${templates}"
+          exit 1
+          fi
+
+      - name: Check Wazuh manager start
+        run: |
+          services="`curl -k -s -X GET "${{ env.MANAGER_URL }}/manager/status?pretty=true" -H  "Authorization: Bearer ${{env.TOKEN}}" | jq -r .data.affected_items | grep running | wc -l`"
+          if [[ $services -gt 9 ]]; then
+            echo "Wazuh Manager Services: ${services}"
+            echo "OK"
+          else
+            echo "Wazuh indexer nodes: ${nodes}"
+            curl -k -X GET "${{ env.MANAGER_URL }}/manager/status?pretty=true" -H  "Authorization: Bearer ${{env.TOKEN}}" | jq -r .data.affected_items
+            exit 1
+          fi
+        env:
+          TOKEN: $(curl -s -u wazuh-wui:MyS3cr37P450r.*- -k -X GET "${{ env.MANAGER_URL }}/security/user/authenticate?raw=true")
+
+      - name: Check Wazuh dashboard service URL
+        run: |
+          status=$(curl -XGET --silent  ${{ env.DASHBOARD_URL }}/app/status -k -u admin:SecretPassword -I -s | grep -E "^HTTP" | awk  '{print $2}')
+          if [[ $status -eq 200 ]]; then
+          echo "Wazuh dashboard status: ${status}"
+          else
+          echo "Wazuh dashboard status: ${status}"
+          exit 1
+          fi
