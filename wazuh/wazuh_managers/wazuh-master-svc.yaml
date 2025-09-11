@@ -24,9 +24,9 @@ spec:
     app: wazuh-manager
     node-type: master
   ports:
-    - name: registration
-      port: 1515
-      targetPort: 1515
     - name: api
       port: 55000
       targetPort: 55000
+    - name: registration
+      port: 1515
+      targetPort: 1515

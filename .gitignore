@@ -1,1 +1,7 @@
 repository_bumper_*.log
+wazuh/certs/indexer_cluster/*.pem
+wazuh/certs/indexer_cluster/*.csr
+wazuh/certs/indexer_cluster/*.srl
+wazuh/certs/dashboard_http/*.pem
+wazuh/certs/dashboard_http/*.csr
+wazuh/certs/dashboard_http/*.srl
