@@ -10,7 +10,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
-- None
+- Dashboard settings added ([#1187](https://github.com/wazuh/wazuh-kubernetes/pull/1187))
 
 ### Fixed
 
