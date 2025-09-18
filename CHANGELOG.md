@@ -32,11 +32,11 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
-- None
+- Syscollector configuration change ([#1181](https://github.com/wazuh/wazuh-kubernetes/pull/1181))
 
 ### Fixed
 
-- None
+- Change ports order ([#1183](https://github.com/wazuh/wazuh-kubernetes/pull/1183))
 
 ### Deleted
 
