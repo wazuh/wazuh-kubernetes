@@ -28,7 +28,8 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
-- None
+- Rollback data source setting ([#1188](https://github.com/wazuh/wazuh-kubernetes/pull/1188))
+- Dashboard settings added ([#1187](https://github.com/wazuh/wazuh-kubernetes/pull/1187))
 
 ### Fixed
 
@@ -49,11 +50,11 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
-- None
+- Syscollector configuration change ([#1181](https://github.com/wazuh/wazuh-kubernetes/pull/1181))
 
 ### Fixed
 
-- None
+- Change ports order ([#1183](https://github.com/wazuh/wazuh-kubernetes/pull/1183))
 
 ### Deleted
 
