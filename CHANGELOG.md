@@ -2,6 +2,25 @@
 
 All notable changes to this project will be documented in this file.
 
+## [4.14.0]
+
+### Added
+
+- None
+
+### Changed
+
+- Rollback data source setting ([#1188](https://github.com/wazuh/wazuh-kubernetes/pull/1188))
+- Dashboard settings added ([#1187](https://github.com/wazuh/wazuh-kubernetes/pull/1187))
+
+### Fixed
+
+- Add new config path and new permission for conf and certs files ([#1152](https://github.com/wazuh/wazuh-kubernetes/pull/1152))
+
+### Deleted
+
+- None
+
 ## [4.13.1]
 
 ### Added

@@ -24,14 +24,18 @@ spec:
         app: wazuh-indexer
       name: wazuh-indexer
     spec:
+      securityContext:
+        fsGroup: 1000
       # Set the wazuh-indexer volume permissions so the wazuh-indexer user can use it
       volumes:
         - name: indexer-certs
           secret:
             secretName: indexer-certs
+            defaultMode: 0600
         - name: indexer-conf
           configMap:
             name: indexer-conf
+            defaultMode: 0600
       initContainers:
         - name: volume-mount-hack
           image: busybox
@@ -59,7 +63,11 @@ spec:
             privileged: true
       containers:
         - name: wazuh-indexer
+<<<<<<< HEAD
           image: 'wazuh/wazuh-indexer:4.13.1'
+=======
+          image: 'wazuh/wazuh-indexer:4.14.0'
+>>>>>>> 8bfb3f1ac926da3f2fbe4c37ee38079a1db0a58a
           resources:
             limits:
               cpu: 500m
@@ -84,37 +92,39 @@ spec:
             - name: DISABLE_INSTALL_DEMO_CONFIG
               value: 'true'
           securityContext:
+            runAsUser: 1000
+            runAsGroup: 1000
             capabilities:
               add: ["SYS_CHROOT"]
           volumeMounts:
             - name: wazuh-indexer
               mountPath: /var/lib/wazuh-indexer
             - name: indexer-certs
-              mountPath: /usr/share/wazuh-indexer/certs/node-key.pem
+              mountPath: /usr/share/wazuh-indexer/config/certs/node-key.pem
               subPath: node-key.pem
               readOnly: true
             - name: indexer-certs
-              mountPath: /usr/share/wazuh-indexer/certs/node.pem
+              mountPath: /usr/share/wazuh-indexer/config/certs/node.pem
               subPath: node.pem
               readOnly: true
             - name: indexer-certs
-              mountPath: /usr/share/wazuh-indexer/certs/root-ca.pem
+              mountPath: /usr/share/wazuh-indexer/config/certs/root-ca.pem
               subPath: root-ca.pem
               readOnly: true
             - name: indexer-certs
-              mountPath: /usr/share/wazuh-indexer/certs/admin.pem
+              mountPath: /usr/share/wazuh-indexer/config/certs/admin.pem
               subPath: admin.pem
               readOnly: true
             - name: indexer-certs
-              mountPath: /usr/share/wazuh-indexer/certs/admin-key.pem
+              mountPath: /usr/share/wazuh-indexer/config/certs/admin-key.pem
               subPath: admin-key.pem
               readOnly: true
             - name: indexer-conf
-              mountPath: /usr/share/wazuh-indexer/opensearch.yml
+              mountPath: /usr/share/wazuh-indexer/config/opensearch.yml
               subPath: opensearch.yml
               readOnly: true
             - name: indexer-conf
-              mountPath: /usr/share/wazuh-indexer/opensearch-security/internal_users.yml
+              mountPath: /usr/share/wazuh-indexer/config/opensearch-security/internal_users.yml
               subPath: internal_users.yml
               readOnly: true
           ports:
