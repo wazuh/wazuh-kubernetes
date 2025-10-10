@@ -15,9 +15,25 @@ Deploy a Wazuh cluster with a basic indexer and dashboard stack on Kubernetes.
 
 ## Amazon EKS development
 
-To deploy a cluster on Amazon EKS cluster read the instructions on [instructions.md](instructions.md).
+To deploy a cluster on Amazon EKS cluster read the instructions on [eks_instructions.md](eks_instructions.md).
 Note: For Kubernetes version 1.23 or higher, the assignment of an IAM Role is necessary for the CSI driver to function correctly. Within the AWS documentation you can find the instructions for the assignment: https://docs.aws.amazon.com/eks/latest/userguide/ebs-csi.html
 The installation of the CSI driver is mandatory for new and old deployments if you are going to use Kubernetes 1.23 for the first time or you need to upgrade the cluster.
+
+## Google GKE development
+
+To deploy a cluster on Google Kubernetes Engine (GKE), use the GKE-specific configuration on [gke_instructions.md](gke_instructions.md).
+
+```bash
+kubectl apply -k envs/gke/
+```
+
+The GKE environment includes:
+
+* **GKE-optimized storage**: Uses `pd.csi.storage.gke.io` provisioner with `pd-balanced` disks and regional replication for high availability
+* **LoadBalancer services**: Exposes Wazuh services via GCP Load Balancers for external access
+* **Regional persistent disks**: Provides better availability and durability for your Wazuh data
+
+Make sure your GKE cluster has the necessary permissions and that the Compute Engine Persistent Disk CSI driver is enabled (it's enabled by default in GKE clusters version 1.18.10-gke.2100 and later).
 
 ## Local development
 
@@ -35,12 +51,23 @@ To deploy a cluster on your local environment (like Minikube, Kind or Microk8s) 
     │   │   ├── storage-class.yaml
     │   │   ├── wazuh-master-resources.yaml
     │   │   └── wazuh-worker-resources.yaml
+    │   ├── gke
+    │   │   ├── dashboard-resources.yaml
+    │   │   ├── dashboard-svc.yaml
+    │   │   ├── indexer-resources.yaml
+    │   │   ├── kustomization.yml
+    │   │   ├── storage-class.yaml
+    │   │   ├── wazuh-master-resources.yaml
+    │   │   ├── wazuh-master-svc.yaml
+    │   │   ├── wazuh-worker-resources.yaml
+    │   │   └── wazuh-workers-svc.yaml
     │   └── local-env
     │       ├── indexer-resources.yaml
     │       ├── kustomization.yml
     │       ├── storage-class.yaml
     │       └── wazuh-resources.yaml
-    ├── instructions.md
+    ├── eks_instructions.md
+    ├── gke_instructions.md
     ├── LICENSE
     ├── local-environment.md
     ├── README.md

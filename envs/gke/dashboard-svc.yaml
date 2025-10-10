@@ -5,25 +5,20 @@
 # License (version 2) as published by the FSF - Free Software
 # Foundation.
 
-# Wazuh master Service: API and registration (authd)
+# Dashboard service
 
 apiVersion: v1
 kind: Service
 metadata:
-  name: wazuh  # Don't change, unless you update the Wazuh dashboard app config
+  name: dashboard
   namespace: wazuh
-  labels:
-    app: wazuh-manager
   annotations: {}
 spec:
   type: LoadBalancer
+  loadBalancerIP: "xx.xx.xx.xx"  # add your reserved static IP here
   selector:
-    app: wazuh-manager
-    node-type: master
+    app: wazuh-dashboard
   ports:
-    - name: api
-      port: 55000
-      targetPort: 55000
-    - name: registration
-      port: 1515
-      targetPort: 1515
+    - name: dashboard
+      port: 443
+      targetPort: 5601
