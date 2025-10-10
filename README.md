@@ -42,11 +42,14 @@ To deploy a cluster on your local environment (like Minikube, Kind or Microk8s) 
     ├── envs
     │   ├── eks
     │   │   ├── dashboard-resources.yaml
+    │   │   ├── dashboard-svc.yaml
     │   │   ├── indexer-resources.yaml
     │   │   ├── kustomization.yml
     │   │   ├── storage-class.yaml
     │   │   ├── wazuh-master-resources.yaml
+    │   │   ├── wazuh-master-svc.yaml
     │   │   └── wazuh-worker-resources.yaml
+    │   │   └── wazuh-workers-svc.yaml
     │   ├── gke
     │   │   ├── dashboard-resources.yaml
     │   │   ├── dashboard-svc.yaml
