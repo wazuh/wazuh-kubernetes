@@ -23,10 +23,6 @@ The installation of the CSI driver is mandatory for new and old deployments if y
 
 To deploy a cluster on Google Kubernetes Engine (GKE), use the GKE-specific configuration on [gke_instructions.md](gke_instructions.md).
 
-```bash
-kubectl apply -k envs/gke/
-```
-
 The GKE environment includes:
 
 * **GKE-optimized storage**: Uses `pd.csi.storage.gke.io` provisioner with `pd-balanced` disks and regional replication for high availability
