@@ -47,6 +47,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
+- Remove dashboard chat setting ([#1209](https://github.com/wazuh/wazuh-kubernetes/pull/1209))
 - Rollback data source setting ([#1188](https://github.com/wazuh/wazuh-kubernetes/pull/1188))
 - Dashboard settings added ([#1187](https://github.com/wazuh/wazuh-kubernetes/pull/1187))
 
