@@ -1,0 +1,14 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: wazuh-ca
+  namespace: wazuh
+spec:
+  isCA: true
+  commonName: wazuh-ca
+  secretName: wazuh-ca
+  issuerRef:
+    name: selfsigned-bootstrap
+    kind: Issuer
+
+

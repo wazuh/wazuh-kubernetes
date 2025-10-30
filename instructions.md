@@ -110,6 +110,12 @@ $ git clone https://github.com/wazuh/wazuh-kubernetes.git
 $ cd wazuh-kubernetes
 ```
 
+there are three options how to deploy wazuh. 
+1. deploy using generated certificates. Follow instruction in 3.1
+2. deploy using certmanager. This requires certmanager is deployed in the cluster. To deploy cluster please follow [https://cert-manager.io/docs/installation/](https://cert-manager.io/docs/installation/)
+  2.1. deploy using certmanager overlay. `kustomize build overlays/certmanager | kubectl apply -f -`
+3. deploy using external certs (external secrets or other option). `kustomize build overlays/external-certs | kubectl apply -f -`
+
 ### Step 3.1: Setup SSL certificates
 
 You can generate self-signed certificates for the Wazuh indexer cluster using the script at `wazuh/certs/indexer_cluster/generate_certs.sh` or provide your own.

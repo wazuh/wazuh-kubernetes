@@ -1,8 +1,23 @@
 kind: Kustomization
 apiVersion: kustomize.config.k8s.io/v1beta1
 
-bases:
-  - ../../wazuh
+namespace: wazuh
 
-# components:
-#   - ../../wazuh/certs
+resources:
+  - ../../wazuh/base
+  - ../../wazuh/secrets
+  - ../../wazuh/wazuh_managers
+  - ../../wazuh/indexer_stack
+  - certmanager/issuer-selfsigned.yaml
+  - certmanager/ca-certificate.yaml
+  - certmanager/issuer-wazuh-ca.yaml
+  - certmanager/certificates.yaml
+
+patches:
+  - path: patches/patch-dashboard-vol.yaml
+  - path: patches/patch-indexer-vol.yaml
+  - path: patches/patch-manager-master-vol.yaml
+  - path: patches/patch-manager-worker-vol.yaml
+
+
+  

@@ -46,16 +46,23 @@ To deploy a cluster on your local environment (like Minikube, Kind or Microk8s) 
     ├── README.md
     ├── upgrade.md
     ├── VERSION.json
+    ├── overlays
+    |   ├── certmanager
+    |   ├── external-certs
+    |   └── local-certs
     └── wazuh
         ├── base
         │   ├── storage-class.yaml
-        │   └── wazuh-ns.yaml
+        │   ├── wazuh-ns.yaml
+        │   └── kustomization.yaml
         ├── certs
+        │   ├── kustomization.yaml
         │   ├── dashboard_http
         │   │   └── generate_certs.sh
         │   └── indexer_cluster
         │       └── generate_certs.sh
         ├── indexer_stack
+        │   ├── kustomization.yaml
         │   ├── wazuh-dashboard
         │   │   ├── dashboard_conf
         │   │   │   └── opensearch_dashboards.yml
@@ -75,8 +82,10 @@ To deploy a cluster on your local environment (like Minikube, Kind or Microk8s) 
         │   ├── indexer-cred-secret.yaml
         │   ├── wazuh-api-cred-secret.yaml
         │   ├── wazuh-authd-pass-secret.yaml
-        │   └── wazuh-cluster-key-secret.yaml
+        │   ├── wazuh-cluster-key-secret.yaml
+        │   └── kustomization.yaml
         └── wazuh_managers
+            ├── kustomization.yaml
             ├── wazuh-cluster-svc.yaml
             ├── wazuh_conf
             │   ├── master.conf
