@@ -1,0 +1,5 @@
+resources:
+  - ../../wazuh/base
+  - ../../wazuh/secrets
+  - ../../wazuh/wazuh_managers
+  - ../../wazuh/indexer_stack

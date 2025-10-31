@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: wazuh-manager-master
+  namespace: wazuh
+spec:
+  template:
+    spec:
+      volumes:
+        - name: filebeat-certs
+          secret: null
+          projected:
+            defaultMode: 0600
+            sources:
+              - secret:
+                  name: filebeat-client
+                  items:
+                    - key: tls.crt
+                      path: filebeat.pem
+                    - key: tls.key
+                      path: filebeat-key.pem
+                    - key: ca.crt
+                      path: root-ca.pem
+      
+

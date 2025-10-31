@@ -1,0 +1,12 @@
+configMapGenerator:
+  - name: wazuh-conf
+    files:
+      - wazuh_conf/master.conf
+      - wazuh_conf/worker.conf
+
+resources:
+  - wazuh-master-svc.yaml
+  - wazuh-master-sts.yaml
+  - wazuh-workers-svc.yaml
+  - wazuh-worker-sts.yaml
+  - wazuh-cluster-svc.yaml
