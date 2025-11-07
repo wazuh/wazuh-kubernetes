@@ -2,6 +2,25 @@
 
 All notable changes to this project will be documented in this file.
 
+## [5.0.0]
+
+### Added
+
+- None
+
+### Changed
+
+- Wazuh server clean-up ([#1213](https://github.com/wazuh/wazuh-kubernetes/pull/1213))
+- Replace OpenSearch deprecated settings ([#1109](https://github.com/wazuh/wazuh-kubernetes/pull/1109))
+
+### Fixed
+
+- None
+
+### Deleted
+
+- None
+
 ## [4.14.1]
 
 ### Added
@@ -31,6 +50,24 @@ All notable changes to this project will be documented in this file.
 - Remove dashboard chat setting ([#1209](https://github.com/wazuh/wazuh-kubernetes/pull/1209))
 - Rollback data source setting ([#1188](https://github.com/wazuh/wazuh-kubernetes/pull/1188))
 - Dashboard settings added ([#1187](https://github.com/wazuh/wazuh-kubernetes/pull/1187))
+
+### Fixed
+
+- None
+
+### Deleted
+
+- None
+
+## [4.14.0]
+
+### Added
+
+- None
+
+### Changed
+
+- None
 
 ### Fixed
 
