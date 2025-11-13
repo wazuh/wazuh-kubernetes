@@ -1,0 +1,3 @@
+resources:
+  - wazuh-ns.yaml
+  - storage-class.yaml

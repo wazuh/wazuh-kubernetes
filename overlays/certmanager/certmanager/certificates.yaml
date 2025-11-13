@@ -1,0 +1,73 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: wazuh-dashboard-cert
+  namespace: wazuh
+spec:
+  secretName: dashboard-certs
+  dnsNames:
+    - dashboard
+    - dashboard.wazuh
+    - dashboard.wazuh.svc
+  issuerRef:
+    name: wazuh-ca-issuer
+    kind: Issuer
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: wazuh-indexer-node
+  namespace: wazuh
+spec:
+  secretName: indexer-node
+  commonName: indexer
+  subject:
+    organizations:
+      - Company
+    localities:
+      - California
+    countries:
+      - US
+  issuerRef:
+    name: wazuh-ca-issuer
+    kind: Issuer
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: wazuh-indexer-admin
+  namespace: wazuh
+spec:
+  secretName: indexer-admin
+  commonName: admin
+  subject:
+    organizations:
+      - Company
+    localities:
+      - California
+    countries:
+      - US
+  issuerRef:
+    name: wazuh-ca-issuer
+    kind: Issuer
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: wazuh-filebeat-client
+  namespace: wazuh
+spec:
+  secretName: filebeat-client
+  commonName: filebeat
+  subject:
+    organizations:
+      - Company
+    localities:
+      - California
+    countries:
+      - US
+  issuerRef:
+    name: wazuh-ca-issuer
+    kind: Issuer
+
+

@@ -1,0 +1,10 @@
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: wazuh-ca-issuer
+  namespace: wazuh
+spec:
+  ca:
+    secretName: wazuh-ca
+
+

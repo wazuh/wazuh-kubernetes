@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: wazuh-indexer
+  namespace: wazuh
+spec:
+  template:
+    spec:
+      volumes:
+        - name: indexer-certs
+          secret: null
+          projected:
+            defaultMode: 0600
+            sources:
+              - secret:
+                  name: indexer-node
+                  items:
+                    - key: tls.crt
+                      path: node.pem
+                    - key: tls.key
+                      path: node-key.pem
+                    - key: ca.crt
+                      path: root-ca.pem
+              - secret:
+                  name: indexer-admin
+                  items:
+                    - key: tls.crt
+                      path: admin.pem
+                    - key: tls.key
+                      path: admin-key.pem
+        - name: indexer-conf
+          configMap:
+            name: indexer-conf
+            defaultMode: 0600
+
+

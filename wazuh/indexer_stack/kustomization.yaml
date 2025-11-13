@@ -1,0 +1,16 @@
+resources:
+  - wazuh-indexer/indexer-svc.yaml
+  - wazuh-indexer/cluster/indexer-api-svc.yaml
+  - wazuh-indexer/cluster/indexer-sts.yaml
+  - wazuh-dashboard/dashboard-svc.yaml
+  - wazuh-dashboard/dashboard-deploy.yaml
+
+configMapGenerator:
+  - name: indexer-conf
+    files:
+      - wazuh-indexer/indexer_conf/opensearch.yml
+      - wazuh-indexer/indexer_conf/internal_users.yml
+  
+  - name: dashboard-conf
+    files:
+      - wazuh-dashboard/dashboard_conf/opensearch_dashboards.yml
