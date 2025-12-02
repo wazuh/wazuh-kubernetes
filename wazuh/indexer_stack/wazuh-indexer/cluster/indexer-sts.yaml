@@ -32,10 +32,6 @@ spec:
           secret:
             secretName: indexer-certs
             defaultMode: 0600
-        - name: indexer-conf
-          configMap:
-            name: indexer-conf
-            defaultMode: 0600
       initContainers:
         - name: volume-mount-hack
           image: busybox
@@ -69,16 +65,22 @@ spec:
               cpu: 500m
               memory: 1564Mi
           env:
+            - name: bootstrap.memory_lock
+              value: "true"
+            - name: cluster.name
+              value: wazuh
+            - name: network.host
+              value: "0.0.0.0"
+            - name: node.name
+              value: wazuh-indexer-0
+            - name: cluster.initial_cluster_manager_nodes
+              value: wazuh-indexer-0
+            - name: plugins.security.allow_default_init_securityindex
+              value: "true"
+            - name: NODES_DN
+              value: CN=wazuh-indexer-0,OU=Wazuh,O=Wazuh,L=California,C=US
             - name: OPENSEARCH_JAVA_OPTS
               value: '-Xms1g -Xmx1g -Dlog4j2.formatMsgNoLookups=true'
-            - name: CLUSTER_NAME
-              value: wazuh
-            - name: NETWORK_HOST
-              value: "0.0.0.0"
-            - name: NODE_NAME
-              valueFrom:
-                fieldRef:
-                  fieldPath: metadata.name
             - name: DISCOVERY_SERVICE
               value: wazuh-indexer
             - name: KUBERNETES_NAMESPACE
@@ -96,12 +98,12 @@ spec:
             - name: wazuh-indexer
               mountPath: /var/lib/wazuh-indexer
             - name: indexer-certs
-              mountPath: /usr/share/wazuh-indexer/config/certs/node-key.pem
-              subPath: node-key.pem
+              mountPath: /usr/share/wazuh-indexer/config/certs/indexer-key.pem
+              subPath: indexer-key.pem
               readOnly: true
             - name: indexer-certs
-              mountPath: /usr/share/wazuh-indexer/config/certs/node.pem
-              subPath: node.pem
+              mountPath: /usr/share/wazuh-indexer/config/certs/indexer.pem
+              subPath: indexer.pem
               readOnly: true
             - name: indexer-certs
               mountPath: /usr/share/wazuh-indexer/config/certs/root-ca.pem
@@ -114,14 +116,6 @@ spec:
             - name: indexer-certs
               mountPath: /usr/share/wazuh-indexer/config/certs/admin-key.pem
               subPath: admin-key.pem
-              readOnly: true
-            - name: indexer-conf
-              mountPath: /usr/share/wazuh-indexer/config/opensearch.yml
-              subPath: opensearch.yml
-              readOnly: true
-            - name: indexer-conf
-              mountPath: /usr/share/wazuh-indexer/config/opensearch-security/internal_users.yml
-              subPath: internal_users.yml
               readOnly: true
           ports:
             - containerPort: 9200

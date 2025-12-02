@@ -1,0 +1,14 @@
+nodes:
+  # Wazuh indexer nodes
+  indexer:
+    - name: indexer
+      ip: "127.0.0.1"
+
+  server:
+    - name: filebeat
+      ip: "127.0.0.1"
+
+  # Wazuh dashboard nodes
+  dashboard:
+    - name: dashboard
+      ip: "127.0.0.1"

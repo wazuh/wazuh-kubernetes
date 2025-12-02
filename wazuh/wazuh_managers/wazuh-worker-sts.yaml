@@ -38,9 +38,6 @@ spec:
                     app: wazuh-manager
                     node-type: worker
       volumes:
-        - name: config
-          configMap:
-            name: wazuh-conf
         - name: filebeat-certs
           secret:
             secretName: indexer-certs
@@ -57,10 +54,6 @@ spec:
             capabilities:
               add: ["SYS_CHROOT"]
           volumeMounts:
-            - name: config
-              mountPath: /wazuh-config-mount/etc/ossec.conf
-              subPath: worker.conf
-              readOnly: true
             - name: filebeat-certs
               mountPath: /etc/ssl/root-ca.pem
               readOnly: true
