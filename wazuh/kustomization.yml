@@ -21,8 +21,8 @@ secretGenerator:
       - wazuh-certificates/dashboard-key.pem
       - wazuh-certificates/admin.pem
       - wazuh-certificates/admin-key.pem
-      - wazuh-certificates/filebeat.pem
-      - wazuh-certificates/filebeat-key.pem
+      - wazuh-certificates/server.pem
+      - wazuh-certificates/server-key.pem
   - name: dashboard-certs
     files:
       - wazuh-certificates/dashboard.pem

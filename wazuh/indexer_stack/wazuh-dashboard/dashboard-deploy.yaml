@@ -82,8 +82,10 @@ spec:
               value: /usr/share/wazuh-dashboard/config/certs/dashboard.pem
             - name: SERVER_SSL_KEY
               value: /usr/share/wazuh-dashboard/config/certs/dashboard-key.pem
+            - name: OPENSEARCH_SSL_CERTIFICATE_AUTHORITIES
+              value: /usr/share/wazuh-dashboard/config/certs/root-ca.pem
             - name: WAZUH_API_URL
-              value: https://wazuh-manager-master-0.wazuh
+              value: https://wazuh
             - name: API_USERNAME
               valueFrom:
                 secretKeyRef:

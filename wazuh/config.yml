@@ -5,7 +5,7 @@ nodes:
       ip: "127.0.0.1"
 
   server:
-    - name: filebeat
+    - name: server
       ip: "127.0.0.1"
 
   # Wazuh dashboard nodes

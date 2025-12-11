@@ -14,7 +14,6 @@ PERMANENT_DATA[((i++))]="/var/ossec/queue"
 PERMANENT_DATA[((i++))]="/var/ossec/var/multigroups"
 PERMANENT_DATA[((i++))]="/var/ossec/active-response/bin"
 PERMANENT_DATA[((i++))]="/var/ossec/wodles"
-PERMANENT_DATA[((i++))]="/etc/filebeat"
 ```
 
 Any file that we modify referring to the files previously mentioned, will be changed also the corresponding volume. When the corresponding Wazuh pod is created again, it will get the cited files from the volume, thus keeping the changes made previously.
