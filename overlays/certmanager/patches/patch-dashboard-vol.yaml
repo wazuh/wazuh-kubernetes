@@ -1,0 +1,24 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: wazuh-dashboard
+  namespace: wazuh
+spec:
+  template:
+    spec:
+      volumes:
+        - name: dashboard-certs
+          secret: null
+          projected:
+            sources:
+              - secret:
+                  name: dashboard-certs
+                  items:
+                    - key: tls.crt
+                      path: cert.pem
+                    - key: tls.key
+                      path: key.pem
+                    - key: ca.crt
+                      path: root-ca.pem
+
+

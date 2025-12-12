@@ -1,0 +1,17 @@
+secretGenerator:
+  - name: indexer-certs
+    files:
+      - indexer_cluster/root-ca.pem
+      - indexer_cluster/node.pem
+      - indexer_cluster/node-key.pem
+      - indexer_cluster/dashboard.pem
+      - indexer_cluster/dashboard-key.pem
+      - indexer_cluster/admin.pem
+      - indexer_cluster/admin-key.pem
+      - indexer_cluster/filebeat.pem
+      - indexer_cluster/filebeat-key.pem
+  - name: dashboard-certs
+    files:
+      - dashboard_http/cert.pem
+      - dashboard_http/key.pem
+      - indexer_cluster/root-ca.pem
