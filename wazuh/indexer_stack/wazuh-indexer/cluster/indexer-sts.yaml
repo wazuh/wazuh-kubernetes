@@ -67,18 +67,23 @@ spec:
           env:
             - name: bootstrap.memory_lock
               value: "true"
-            - name: cluster.name
-              value: wazuh
             - name: network.host
               value: "0.0.0.0"
             - name: node.name
-              value: wazuh-indexer-0
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
             - name: cluster.initial_cluster_manager_nodes
               value: wazuh-indexer-0
+            # For a 3-node cluster, all nodes should be listed here, if another node is added, it should be included as well
+            - name: discovery.seed_hosts
+              value: "wazuh-indexer-0.wazuh-indexer,wazuh-indexer-1.wazuh-indexer,wazuh-indexer-2.wazuh-indexer"
+            - name: node.max_local_storage_nodes
+              value: "3"
             - name: plugins.security.allow_default_init_securityindex
               value: "true"
             - name: NODES_DN
-              value: CN=wazuh-indexer-0,OU=Wazuh,O=Wazuh,L=California,C=US
+              value: CN=indexer,OU=Wazuh,O=Wazuh,L=California,C=US
             - name: OPENSEARCH_JAVA_OPTS
               value: '-Xms1g -Xmx1g -Dlog4j2.formatMsgNoLookups=true'
             - name: DISCOVERY_SERVICE

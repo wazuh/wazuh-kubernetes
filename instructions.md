@@ -116,14 +116,32 @@ Wazuh uses certificates to establish confidentiality and encrypt communications 
 
 Download the `wazuh-certs-tool.sh` script. This creates the certificates that encrypt communications between the Wazuh central components.
 
-```BASH
-cd wazuh/
-curl -sO https://packages.wazuh.com/5.0/wazuh-certs-tool.sh
+#### 3.1.1 Download the Wazuh certificates tool script and config.yml file:
+```
+$ curl -sO https://packages.wazuh.com/5.0/wazuh-certs-tool.sh
+$ curl -sO https://packages.wazuh.com/5.0/config.yml
 ```
 
-Run `wazuh-certs-tool.sh` to create the certificates.
+#### 3.1.2 Edit the config.yml file with the configuration of the Wazuh components to be deployed
+```
+nodes:
+  # Wazuh indexer nodes
+  indexer:
+    - name: indexer
+      ip: "127.0.0.1"
 
-```BASH
+  server:
+    - name: server
+      ip: "127.0.0.1"
+
+  # Wazuh dashboard nodes
+  dashboard:
+    - name: dashboard
+      ip: "127.0.0.1"
+```
+
+#### 3.1.3 Run the Wazuh certificates tool script:
+```
 bash wazuh-certs-tool.sh -A
 ```
 
