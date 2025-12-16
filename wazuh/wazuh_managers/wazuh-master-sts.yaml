@@ -38,7 +38,7 @@ spec:
         fsGroup: 101
       initContainers:
         - name: init-wazuh-etc
-          image: '966237403726.dkr.ecr.us-west-1.amazonaws.com/wazuh/wazuh-manager:5.0.0'
+          image: 'wazuh/wazuh-manager:5.0.0'
           command:
             - /bin/sh
             - -c
