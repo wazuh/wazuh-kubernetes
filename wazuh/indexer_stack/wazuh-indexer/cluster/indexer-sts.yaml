@@ -66,7 +66,7 @@ spec:
               memory: 1564Mi
           env:
             - name: bootstrap.memory_lock
-              value: "true"
+              value: "false"
             - name: network.host
               value: "0.0.0.0"
             - name: node.name

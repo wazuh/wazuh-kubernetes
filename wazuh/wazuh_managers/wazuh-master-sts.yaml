@@ -106,8 +106,16 @@ spec:
             - containerPort: 55000
               name: api
           env:
-            - name: INDEXER_URL
-              value: 'https://indexer:9200'
+            - name: WAZUH_INDEXER_HOSTS
+              value: 'indexer:9200'
+            - name: WAZUH_NODE_NAME
+              value: 'master'
+            - name: WAZUH_NODE_TYPE
+              value: 'master'
+            - name: WAZUH_CLUSTER_BIND_ADDR
+              value: '0.0.0.0'
+            - name: WAZUH_CLUSTER_NODES
+              value: 'wazuh-cluster'
             - name: INDEXER_USERNAME
               valueFrom:
                 secretKeyRef:

@@ -107,8 +107,18 @@ spec:
             - containerPort: 1516
               name: cluster
           env:
-            - name: INDEXER_URL
-              value: 'https://indexer:9200'
+            - name: WAZUH_INDEXER_HOSTS
+              value: 'indexer:9200'
+            - name: WAZUH_NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: WAZUH_NODE_TYPE
+              value: 'worker'
+            - name: WAZUH_CLUSTER_BIND_ADDR
+              value: '0.0.0.0'
+            - name: WAZUH_CLUSTER_NODES
+              value: 'wazuh-cluster'
             - name: INDEXER_USERNAME
               valueFrom:
                 secretKeyRef:
