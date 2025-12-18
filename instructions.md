@@ -112,28 +112,58 @@ $ cd wazuh-kubernetes
 
 ### Step 3.1: Setup SSL certificates
 
-You can generate self-signed certificates for the Wazuh indexer cluster using the script at `wazuh/certs/indexer_cluster/generate_certs.sh` or provide your own.
+Wazuh uses certificates to establish confidentiality and encrypt communications between its central components. Follow these steps to create certificates for the Wazuh central components.
 
-Since Wazuh dashboard has HTTPS enabled it will require its own certificates, these may be generated with: `openssl req -x509 -batch -nodes -days 365 -newkey rsa:2048 -keyout key.pem -out cert.pem`, there is an utility script at `wazuh/certs/dashboard_http/generate_certs.sh` to help with this.
+Download the `wazuh-certs-tool.sh` script. This creates the certificates that encrypt communications between the Wazuh central components.
+
+#### 3.1.1 Download the Wazuh certificates tool script and config.yml file:
+```
+$ curl -sO https://packages.wazuh.com/5.0/wazuh-certs-tool.sh
+$ curl -sO https://packages.wazuh.com/5.0/config.yml
+```
+
+#### 3.1.2 Edit the config.yml file with the configuration of the Wazuh components to be deployed
+```
+nodes:
+  # Wazuh indexer nodes
+  indexer:
+    - name: indexer
+      ip: "127.0.0.1"
+
+  server:
+    - name: server
+      ip: "127.0.0.1"
+
+  # Wazuh dashboard nodes
+  dashboard:
+    - name: dashboard
+      ip: "127.0.0.1"
+```
+
+#### 3.1.3 Run the Wazuh certificates tool script:
+```
+bash wazuh-certs-tool.sh -A
+```
 
 The required certificates are imported via secretGenerator on the `kustomization.yml` file:
 
     secretGenerator:
-    - name: indexer-certs
+      - name: indexer-certs
         files:
-        - certs/indexer_cluster/root-ca.pem
-        - certs/indexer_cluster/node.pem
-        - certs/indexer_cluster/node-key.pem
-        - certs/indexer_cluster/dashboard.pem
-        - certs/indexer_cluster/dashboard-key.pem
-        - certs/indexer_cluster/admin.pem
-        - certs/indexer_cluster/admin-key.pem
-        - certs/indexer_cluster/filebeat.pem
-        - certs/indexer_cluster/filebeat-key.pem
-    - name: dashboard-certs
+          - wazuh-certificates/root-ca.pem
+          - wazuh-certificates/indexer.pem
+          - wazuh-certificates/indexer-key.pem
+          - wazuh-certificates/dashboard.pem
+          - wazuh-certificates/dashboard-key.pem
+          - wazuh-certificates/admin.pem
+          - wazuh-certificates/admin-key.pem
+          - wazuh-certificates/server.pem
+          - wazuh-certificates/server-key.pem
+      - name: dashboard-certs
         files:
-        - certs/dashboard_http/cert.pem
-        - certs/dashboard_http/key.pem
+          - wazuh-certificates/dashboard.pem
+          - wazuh-certificates/dashboard-key.pem
+          - wazuh-certificates/root-ca.pem
 
 ### Step 3.2: Apply all manifests using kustomize
 

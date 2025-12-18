@@ -27,4 +27,4 @@ spec:
   ports:
     - name: dashboard
       port: 443
-      targetPort: 5601
+      targetPort: 443
