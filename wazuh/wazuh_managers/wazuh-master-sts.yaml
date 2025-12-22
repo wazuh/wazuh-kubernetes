@@ -107,7 +107,7 @@ spec:
               name: api
           env:
             - name: WAZUH_INDEXER_HOSTS
-              value: 'indexer:9200'
+              value: 'wazuh-indexer:9200'
             - name: WAZUH_NODE_NAME
               value: 'master'
             - name: WAZUH_NODE_TYPE

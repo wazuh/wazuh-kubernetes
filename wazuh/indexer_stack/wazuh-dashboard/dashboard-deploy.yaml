@@ -55,7 +55,7 @@ spec:
               name: dashboard
           env:
             - name: OPENSEARCH_HOSTS
-              value: 'https://indexer:9200'
+              value: 'https://wazuh-indexer:9200'
             - name: INDEXER_USERNAME
               valueFrom:
                 secretKeyRef:
@@ -85,7 +85,7 @@ spec:
             - name: OPENSEARCH_SSL_CERTIFICATE_AUTHORITIES
               value: /usr/share/wazuh-dashboard/config/certs/root-ca.pem
             - name: WAZUH_API_URL
-              value: https://wazuh
+              value: https://wazuh-api
             - name: API_USERNAME
               valueFrom:
                 secretKeyRef:
