@@ -79,6 +79,33 @@ microk8s-hostpath (default)   microk8s.io/hostpath   Delete          Immediate  
 
 The provisioner column displays `microk8s.io/hostpath`, you must edit the file `envs/local-env/storage-class.yaml` and setup this provisioner.
 
+### Change Wazuh ingress host
+
+To deploy correctly in a local environment, it is necessary to change the parameter `<UPDATE-WITH-THE-FQDN-OF-THE-INGRESS>` to `localhost` in the file `wazuh/base/wazuh-ingress.yaml`, for example:
+
+```
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: wazuh-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-passthrough: "true"
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: localhost
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: dashboard
+            port:
+              number: 443
+
+```
+
 ### Apply all manifests using kustomize
 
 We are using the overlay feature of kustomize two create two variants: `eks` and `local-env`, in this guide we're using `local-env`. (For a production deployment on EKS check the guide on [instructions.md](instructions.md))
@@ -100,3 +127,14 @@ $ kubectl -n wazuh port-forward service/dashboard 8443:443
 ```
 
 Dashboard will be accesible on ``https://localhost:8443``.
+
+#### Exposing Wazuh server ports
+
+```BASH
+$ kubectl -n wazuh port-forward service/wazuh-events 1514:1514
+```
+```BASH
+$ kubectl -n wazuh port-forward service/wazuh-registration 1515:1515
+```
+> **Note**: You can run the process in background adding `&` to the port-forward command, for example: kubectl -n wazuh port-forward service/wazuh-events 1514:1514 &
+
