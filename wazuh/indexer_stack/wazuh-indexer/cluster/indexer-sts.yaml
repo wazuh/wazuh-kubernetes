@@ -59,14 +59,14 @@ spec:
             privileged: true
       containers:
         - name: wazuh-indexer
-          image: '966237403726.dkr.ecr.us-west-1.amazonaws.com/wazuh/wazuh-indexer:5.0.0'
+          image: 'wazuh/wazuh-indexer:5.0.0'
           resources:
             limits:
               cpu: 500m
               memory: 1564Mi
           env:
             - name: bootstrap.memory_lock
-              value: "true"
+              value: "false"
             - name: network.host
               value: "0.0.0.0"
             - name: node.name

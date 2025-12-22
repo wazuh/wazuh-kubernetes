@@ -38,7 +38,7 @@ spec:
         fsGroup: 101
       initContainers:
         - name: init-wazuh-etc
-          image: '966237403726.dkr.ecr.us-west-1.amazonaws.com/wazuh/wazuh-manager:5.0.0'
+          image: 'wazuh/wazuh-manager:5.0.0'
           command:
             - /bin/sh
             - -c
@@ -52,7 +52,7 @@ spec:
               subPath: wazuh/var/ossec/etc
       containers:
         - name: wazuh-manager
-          image: '966237403726.dkr.ecr.us-west-1.amazonaws.com/wazuh/wazuh-manager:5.0.0'
+          image: 'wazuh/wazuh-manager:5.0.0'
           resources:
             limits:
               cpu: 400m
@@ -107,7 +107,15 @@ spec:
               name: api
           env:
             - name: WAZUH_INDEXER_HOSTS
-              value: 'wazuh-indexer-0.wazuh-indexer:9200,wazuh-indexer-1.wazuh-indexer:9200,wazuh-indexer-2.wazuh-indexer:9200'
+              value: 'wazuh-indexer:9200'
+            - name: WAZUH_NODE_NAME
+              value: 'master'
+            - name: WAZUH_NODE_TYPE
+              value: 'master'
+            - name: WAZUH_CLUSTER_BIND_ADDR
+              value: '0.0.0.0'
+            - name: WAZUH_CLUSTER_NODES
+              value: 'wazuh-cluster'
             - name: INDEXER_USERNAME
               valueFrom:
                 secretKeyRef:

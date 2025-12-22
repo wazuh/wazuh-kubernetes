@@ -32,7 +32,7 @@ secretGenerator:
 resources:
   - base/wazuh-ns.yaml
   - base/storage-class.yaml
-  - base/lb-external.yaml
+  - base/wazuh-ingress.yaml
 
   - secrets/wazuh-api-cred-secret.yaml
   - secrets/wazuh-authd-pass-secret.yaml
@@ -41,6 +41,8 @@ resources:
   - secrets/indexer-cred-secret.yaml
 
   - wazuh_managers/wazuh-cluster-svc.yaml
+  - wazuh_managers/wazuh-events-svc.yaml
+  - wazuh_managers/wazuh-registration-svc.yaml
   - wazuh_managers/wazuh-api-svc.yaml
   - wazuh_managers/wazuh-master-sts.yaml
   - wazuh_managers/wazuh-worker-sts.yaml
@@ -49,3 +51,4 @@ resources:
   - indexer_stack/wazuh-indexer/cluster/indexer-sts.yaml
 
   - indexer_stack/wazuh-dashboard/dashboard-deploy.yaml
+  - indexer_stack/wazuh-dashboard/dashboard-svc.yaml

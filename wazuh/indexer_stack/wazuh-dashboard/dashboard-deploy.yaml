@@ -32,7 +32,7 @@ spec:
             secretName: dashboard-certs
       containers:
         - name: wazuh-dashboard
-          image: '966237403726.dkr.ecr.us-west-1.amazonaws.com/wazuh/wazuh-dashboard@sha256:931c0d2ce8ea0dcd450e27860ea6a41e04ce57bc95b372c86d45268c6682331d'
+          image: 'wazuh/wazuh-dashboard:5.0.0'
           resources:
             limits:
               cpu: 500m
