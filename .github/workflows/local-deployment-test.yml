@@ -1,0 +1,208 @@
+run-name: Kubernetes EKS deployment test - Branch ${{ inputs.BRANCH_VERSION }} - Launched by @${{ github.actor }}
+name: Test Wazuh EKS deployment on Kubernetes
+
+on:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      BRANCH_VERSION:
+        description: 'Branch version to deploy'
+        required: true
+        default: 'main'
+
+permissions:
+  id-token: write   # This is required for requesting the JWT
+  contents: read    # This is required for actions/checkout
+
+env:
+  AWS_REGION: us-west-1
+  CLUSTER_NAMME: test-eks-deploy${{ github.event.number }}
+  ECR_REGISTRY: 966237403726.dkr.ecr.us-west-1.amazonaws.com
+
+jobs:
+  Local_deployment_test:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.BRANCH_VERSION }}
+
+      - name: Configure aws credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_IAM_ROLE }}
+          aws-region: "${{ env.AWS_REGION }}"
+
+      - name: Free Disk Space (Ubuntu)
+        uses: jlumbroso/free-disk-space@main
+
+      - name: free disk space
+        run: |
+          sudo swapoff -a
+          sudo rm -f /swapfile
+          sudo apt update -y && sudo apt upgrade -y
+          sudo apt clean
+          df -h
+
+      - name: Install Minikube cluster
+        run: |
+          curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
+          sudo install minikube-linux-amd64 /usr/local/bin/minikube && rm minikube-linux-amd64
+
+      - name: Start Minikube cluster
+        run: minikube start
+
+      - name: Get Wazuh version
+        run: |
+            WAZUH_VERSION=$(jq -r '.version' VERSION.json)
+            WAZUH_MAJOR=$(echo "$WAZUH_VERSION" | cut -d '.' -f 1)
+            WAZUH_MINOR=$(echo "$WAZUH_VERSION" | cut -d '.' -f 1-2)
+            echo WAZUH_VERSION=$WAZUH_VERSION >> $GITHUB_ENV
+            echo WAZUH_MAJOR=$WAZUH_MAJOR >> $GITHUB_ENV
+            echo WAZUH_MINOR=$WAZUH_MINOR >> $GITHUB_ENV
+
+      - name: Replace image registry to ECR
+        run: |
+          yq e -i '.spec.template.spec.containers[] |= select(.name == "wazuh-dashboard").image = "${{ env.ECR_REGISTRY }}/wazuh/wazuh-dashboard:${{ env.WAZUH_VERSION }}"' wazuh/indexer_stack/wazuh-dashboard/dashboard-deploy.yaml
+          yq e -i '.spec.template.spec.containers[] |= select(.name == "wazuh-indexer").image = "${{ env.ECR_REGISTRY }}/wazuh/wazuh-indexer:${{ env.WAZUH_VERSION }}"' wazuh/indexer_stack/wazuh-indexer/cluster/indexer-sts.yaml
+          yq e -i '.spec.template.spec.initContainers[] |= select(.name == "init-wazuh-etc").image = "${{ env.ECR_REGISTRY }}/wazuh/wazuh-manager:${{ env.WAZUH_VERSION }}"' wazuh/wazuh_managers/wazuh-master-sts.yaml
+          yq e -i '.spec.template.spec.containers[] |= select(.name == "wazuh-manager").image = "${{ env.ECR_REGISTRY }}/wazuh/wazuh-manager:${{ env.WAZUH_VERSION }}"' wazuh/wazuh_managers/wazuh-master-sts.yaml
+          yq e -i '.spec.template.spec.initContainers[] |= select(.name == "init-wazuh-etc").image = "${{ env.ECR_REGISTRY }}/wazuh/wazuh-manager:${{ env.WAZUH_VERSION }}"' wazuh/wazuh_managers/wazuh-worker-sts.yaml
+          yq e -i '.spec.template.spec.containers[] |= select(.name == "wazuh-manager").image = "${{ env.ECR_REGISTRY }}/wazuh/wazuh-manager:${{ env.WAZUH_VERSION }}"' wazuh/wazuh_managers/wazuh-worker-sts.yaml
+
+      - name: Login to AWS ECR
+        run: |
+          aws ecr get-login-password --region ${{ env.AWS_REGION }} | docker login --username AWS --password-stdin ${{ env.ECR_REGISTRY }}
+
+      - name: Download Wazuh images
+        run: |
+          docker pull ${{ env.ECR_REGISTRY }}/wazuh/wazuh-dashboard:${{ env.WAZUH_VERSION }}
+          docker pull ${{ env.ECR_REGISTRY }}/wazuh/wazuh-indexer:${{ env.WAZUH_VERSION }}
+          docker pull ${{ env.ECR_REGISTRY }}/wazuh/wazuh-manager:${{ env.WAZUH_VERSION }}
+
+      - name: Load Wazuh images into Minikube
+        run: |
+          minikube image load ${{ env.ECR_REGISTRY }}/wazuh/wazuh-dashboard:${{ env.WAZUH_VERSION }}
+          minikube image load ${{ env.ECR_REGISTRY }}/wazuh/wazuh-indexer:${{ env.WAZUH_VERSION }}
+          minikube image load ${{ env.ECR_REGISTRY }}/wazuh/wazuh-manager:${{ env.WAZUH_VERSION }}
+
+      - name: Download Wazuh certificates tool
+        run: |
+          curl -LO "https://packages-dev.wazuh.com/${{ env.WAZUH_MAJOR }}.${{ env.WAZUH_MINOR }}/wazuh-certs-tool.sh"
+
+      - name: Download config files for Wazuh certificates tool
+        run: |
+          curl -LO "https://packages-dev.wazuh.com/${{ env.WAZUH_MAJOR }}.${{ env.WAZUH_MINOR }}/config.yml"
+
+      - name: Update config.yml file
+        run: |
+          yq e -i '.nodes.indexer[0].name = "indexer"' config.yml
+          yq e -i '.nodes.indexer[0].ip = "127.0.0.1"' config.yml
+          yq e -i '.nodes.server[0].name = "server"' config.yml
+          yq e -i '.nodes.server[0].ip = "127.0.0.1"' config.yml
+          yq e -i '.nodes.dashboard[0].ip = "127.0.0.1"' config.yml
+
+      - name: Create Wazuh certificates
+        run: |
+          bash wazuh-certs-tool.sh -A
+
+      - name: Change provisioner for minikube
+        run: |
+          sed -i 's/provisioner: microk8s.io\/hostpath/# provisioner: microk8s.io\/hostpath/; s/# provisioner: k8s.io\/minikube-hostpath/provisioner: k8s.io\/minikube-hostpath/' envs/local-env/storage-class.yaml
+
+      - name: Deploy Wazuh stack
+        run: kubectl apply -k envs/local-env/
+
+      - name: Wait 10 minutes for Wazuh stack startup
+        run: sleep 10m
+
+      - name: Start minikube tunnel
+        run: |
+          minikube tunnel &> /dev/null &
+          sleep 30
+
+      - name: View stack status
+        run: kubectl get all -n wazuh -o wide
+
+      - name: Wazuh dashboard pod name
+        run: |
+          DASHBOARD_POD=$(kubectl get pods -n wazuh | grep wazuh-dashboard | awk '{print $1;}')
+          echo DASHBOARD_POD=$DASHBOARD_POD >> $GITHUB_ENV
+
+      - name: View Wazuh dashboard logs
+        run: kubectl logs ${{ env.DASHBOARD_POD }} -n wazuh
+
+      - name: View Wazuh indexer 0 logs
+        run: kubectl logs wazuh-indexer-0 -n wazuh
+
+      - name: View Wazuh manager master logs
+        run: kubectl logs wazuh-manager-master-0 -n wazuh
+
+      - name: View Wazuh manager worker 0 logs
+        run: kubectl logs wazuh-manager-worker-0 -n wazuh
+
+      - name: Check Wazuh indexer start
+        run: |
+          status="$(kubectl -n wazuh exec -it wazuh-indexer-0 -- curl -XGET "https://localhost:9200/_cluster/health" -u admin:admin -k -s)"
+          echo "$status"
+          if ! echo "$status" | grep -q green; then
+            exit 1
+          fi
+          index="$(kubectl -n wazuh exec -it wazuh-indexer-0 -- curl -XGET "https://localhost:9200/_cat/indices" -u admin:admin -k -s)"
+          echo "$index"
+          lines_total=$(echo "$index" | wc -l)
+          lines_green=$(echo "$index" | grep "green" | wc -l)
+          if [[ $lines_total -ne $lines_green ]]; then
+            exit 1
+          fi
+
+      - name: Check Wazuh indexer nodes
+        run: |
+          NODES="$(kubectl -n wazuh exec -it wazuh-indexer-0 -- curl -XGET "https://localhost:9200/_cat/nodes" -u admin:admin -k -s | grep -E "indexer" | wc -l)"
+          echo "Wazuh indexer nodes: ${NODES}"
+          if [[ ${NODES} -ne 3 ]]; then
+            exit 1
+          fi
+          echo NODES=$NODES >> $GITHUB_ENV
+
+      - name: Check documents into wazuh-alerts index
+        run: |
+          docs="$(kubectl -n wazuh exec -it wazuh-indexer-0 -- curl -XGET "https://localhost:9200/wazuh-alerts*/_count" -u admin:admin -k -s | jq -r ".count")"
+          echo "wazuh-alerts index documents: ${docs}"
+          if [[ $docs -eq 0 ]]; then
+            exit 1
+          fi
+
+      - name: Check Wazuh templates
+        run: |
+          templates_command="$(kubectl -n wazuh exec -it wazuh-indexer-0 -- curl -XGET "https://localhost:9200/_cat/templates" -u admin:admin -k -s)"
+          qty_templates="$(echo "$templates_command" | grep -P "wazuh|wazuh-agent|wazuh-statistics" | wc -l)"
+          templates="$(echo "$templates_command" | grep -P "wazuh|wazuh-agent|wazuh-statistics")"
+          echo "wazuh templates:"
+          echo "${templates}"
+          if [[ $qty_templates -le 3 ]]; then
+            exit 1
+          fi
+
+      - name: Check Wazuh manager start
+        run: |
+          services="$(kubectl -n wazuh exec -it wazuh-manager-master-0 -- curl -k -s -X GET "https://localhost:55000/manager/status?pretty=true" -H  "Authorization: Bearer ${{env.TOKEN}}")"
+          if [[ $($service | jq -r .data.affected_items | grep running | wc -l) -gt 9 ]]; then
+            echo "Wazuh Manager Services: ${services}"
+            echo "OK"
+          else
+            echo "Wazuh indexer nodes: ${env.NODES}"
+            echo "$services" | jq -r .data.affected_items
+            exit 1
+          fi
+        env:
+          TOKEN: $(kubectl -n wazuh exec -it wazuh-manager-master-0 -- curl -s -u wazuh-wui:MyS3cr37P450r.*- -k -X GET "https://localhost:55000/security/user/authenticate?raw=true")
+
+      - name: Check Wazuh dashboard service URL
+        run: |
+          status=$(kubectl -n wazuh exec -it ${{ env.DASHBOARD_POD }} -- curl -XGET --silent  https://localhost/app/status -k -u admin:admin -I -s | grep -E "^HTTP" | awk  '{print $2}')
+          echo "Wazuh dashboard status: ${status}"
+          if [[ $status -ne 200 ]]; then
+            exit 1
+          fi
