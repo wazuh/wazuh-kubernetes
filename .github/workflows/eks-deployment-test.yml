@@ -15,7 +15,7 @@ permissions:
 
 env:
   AWS_REGION: us-west-1
-  CLUSTER_NAMME: test-eks-deploy${{ github.event.number }}
+  CLUSTER_NAME: test-eks-deploy${{ github.event.number }}
   ECR_REGISTRY: 966237403726.dkr.ecr.us-west-1.amazonaws.com/
 
 jobs:
@@ -45,7 +45,7 @@ jobs:
       - name: Deploy eks cluster
         run: |
           eksctl create cluster \
-          --name ${{ env.CLUSTER_NAMME }} \
+          --name ${{ env.CLUSTER_NAME }} \
           --with-oidc \
           --region ${{ env.AWS_REGION }} \
           --nodes-min 6 \
@@ -61,8 +61,8 @@ jobs:
           --name ebs-csi-controller-sa \
           --region ${{ env.AWS_REGION }}  \
           --namespace kube-system \
-          --cluster ${{ env.CLUSTER_NAMME }} \
-          --role-name eksctl-EBS-CSI-DriverRole-${{ env.CLUSTER_NAMME }} \
+          --cluster ${{ env.CLUSTER_NAME }} \
+          --role-name eksctl-EBS-CSI-DriverRole-${{ env.CLUSTER_NAME }} \
           --role-only \
           --attach-policy-arn arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy \
           --approve
@@ -71,9 +71,9 @@ jobs:
         run: |
           eksctl create addon \
           --name aws-ebs-csi-driver \
-          --cluster ${{ env.CLUSTER_NAMME }} \
+          --cluster ${{ env.CLUSTER_NAME }} \
           --region ${{ env.AWS_REGION }} \
-          --service-account-role-arn arn:aws:iam::966237403726:role/eksctl-EBS-CSI-DriverRole-${{ env.CLUSTER_NAMME }} \
+          --service-account-role-arn arn:aws:iam::966237403726:role/eksctl-EBS-CSI-DriverRole-${{ env.CLUSTER_NAME }} \
           --force
 
       - name: Install yq
@@ -226,7 +226,7 @@ jobs:
         if: always()
         run: |
           eksctl delete cluster \
-          --name ${{ env.CLUSTER_NAMME }} \
+          --name ${{ env.CLUSTER_NAME }} \
           --region ${{ env.AWS_REGION }}
 
       - name: Delete EBS dynamic volumes
@@ -234,7 +234,7 @@ jobs:
         run: |
           for volume_id in $(aws ec2 describe-volumes \
                               --region ${{ env.AWS_REGION }} \
-                              --filters Name=tag:KubernetesCluster,Values="${{ env.CLUSTER_NAMME }}" \
+                              --filters Name=tag:KubernetesCluster,Values="${{ env.CLUSTER_NAME }}" \
                               --query "Volumes[].VolumeId" \
                               --output text); do
               echo "Eliminando volumen con ID: $volume_id"

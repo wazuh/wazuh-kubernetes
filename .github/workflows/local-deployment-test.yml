@@ -1,5 +1,5 @@
-run-name: Kubernetes EKS deployment test - Branch ${{ inputs.BRANCH_VERSION }} - Launched by @${{ github.actor }}
-name: Test Wazuh EKS deployment on Kubernetes
+run-name: Kubernetes Local deployment test - Branch ${{ inputs.BRANCH_VERSION }} - Launched by @${{ github.actor }}
+name: Test Wazuh Local deployment on Kubernetes
 
 on:
   pull_request:
@@ -16,7 +16,6 @@ permissions:
 
 env:
   AWS_REGION: us-west-1
-  CLUSTER_NAMME: test-eks-deploy${{ github.event.number }}
   ECR_REGISTRY: 966237403726.dkr.ecr.us-west-1.amazonaws.com
 
 jobs:
