@@ -6,7 +6,7 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
-- None
+- Added wazuh-kubernetes PR checks. ([#1273](https://github.com/wazuh/wazuh-kubernetes/pull/1273))
 
 ### Changed
 
