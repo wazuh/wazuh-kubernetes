@@ -122,6 +122,9 @@ jobs:
         run: |
           kubectl apply -f nginx/nginx-ingress-controller.yaml
 
+      - name: Wait 5 minutes for Wazuh stack startup
+        run: sleep 5m
+
       - name: Update Wazuh ingress DNS
         run: |
             INGRESS_DNS=$(kubectl -n ingress-nginx get service ingress-nginx-controller -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
@@ -238,6 +241,6 @@ jobs:
                               --filters Name=tag:KubernetesCluster,Values="${{ env.CLUSTER_NAME }}" \
                               --query "Volumes[].VolumeId" \
                               --output text); do
-              echo "Eliminando volumen con ID: $volume_id"
+              echo "Deleting Volume id: $volume_id"
               aws ec2 delete-volume --region ${{ env.AWS_REGION }} --volume-id $volume_id
           done
