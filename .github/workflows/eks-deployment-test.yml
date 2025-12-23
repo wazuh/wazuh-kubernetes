@@ -73,7 +73,7 @@ jobs:
           --name aws-ebs-csi-driver \
           --cluster ${{ env.CLUSTER_NAMME }} \
           --region ${{ env.AWS_REGION }} \
-          --service-account-role-arn arn:aws:iam::567970947422:role/eksctl-EBS-CSI-DriverRole-${{ env.CLUSTER_NAMME }} \
+          --service-account-role-arn arn:aws:iam::966237403726:role/eksctl-EBS-CSI-DriverRole-${{ env.CLUSTER_NAMME }} \
           --force
 
       - name: Install yq
