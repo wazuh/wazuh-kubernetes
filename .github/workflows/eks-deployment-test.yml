@@ -101,11 +101,11 @@ jobs:
 
       - name: Download Wazuh certificates tool
         run: |
-          curl -LO "https://packages-dev.wazuh.com/${{ env.WAZUH_MAJOR }}.${{ env.WAZUH_MINOR }}/wazuh-certs-tool.sh"
+          curl -LO "https://packages-dev.wazuh.com/${{ env.WAZUH_MINOR }}/wazuh-certs-tool.sh"
 
       - name: Download config files for Wazuh certificates tool
         run: |
-          curl -LO "https://packages-dev.wazuh.com/${{ env.WAZUH_MAJOR }}.${{ env.WAZUH_MINOR }}/config.yml"
+          curl -LO "https://packages-dev.wazuh.com/${{ env.WAZUH_MINOR }}/config.yml"
 
       - name: Update config.yml file
         run: |
