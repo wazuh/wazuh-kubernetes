@@ -2,7 +2,6 @@ run-name: Kubernetes EKS deployment test - Branch ${{ inputs.BRANCH_VERSION }} -
 name: Test Wazuh EKS deployment on Kubernetes
 
 on:
-  pull_request:
   workflow_dispatch:
     inputs:
       BRANCH_VERSION:
@@ -125,7 +124,7 @@ jobs:
       - name: Update Wazuh ingress DNS
         run: |
             INGRESS_DNS=$(kubectl -n ingress-nginx get service ingress-nginx-controller -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
-            yq e -i ".spec.rules[0].host = \"$INGRESS_DNS\"" wazuh/base/wazuh-ingress.yamlDNS)' wazuh/base/wazuh-ingress.yaml
+            yq e -i ".spec.rules[0].host = \"$INGRESS_DNS\"" wazuh/base/wazuh-ingress.yaml
             echo INGRESS_DNS=$INGRESS_DNS >> $GITHUB_ENV
 
       - name: Deploy Wazuh stack

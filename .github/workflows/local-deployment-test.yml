@@ -110,6 +110,10 @@ jobs:
         run: |
           sed -i 's/provisioner: microk8s.io\/hostpath/# provisioner: microk8s.io\/hostpath/; s/# provisioner: k8s.io\/minikube-hostpath/provisioner: k8s.io\/minikube-hostpath/' envs/local-env/storage-class.yaml
 
+      - name: Update Wazuh ingress DNS
+        run: |
+            yq e -i ".spec.rules[0].host = \"localhost\"" wazuh/base/wazuh-ingress.yaml
+
       - name: Deploy Wazuh stack
         run: kubectl apply -k envs/local-env/
 
