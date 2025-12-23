@@ -99,24 +99,23 @@ jobs:
           yq e -i '.spec.template.spec.initContainers[] |= select(.name == "init-wazuh-etc").image = "${{ env.ECR_REGISTRY }}wazuh/wazuh-manager:${{ env.WAZUH_VERSION }}"' wazuh/wazuh_managers/wazuh-worker-sts.yaml
           yq e -i '.spec.template.spec.containers[] |= select(.name == "wazuh-manager").image = "${{ env.ECR_REGISTRY }}wazuh/wazuh-manager:${{ env.WAZUH_VERSION }}"' wazuh/wazuh_managers/wazuh-worker-sts.yaml
 
-      - name: Download Wazuh certificates tool
+      - name: Download Wazuh certificates tool and config files
         run: |
+          cd wazuh/
           curl -LO "https://packages-dev.wazuh.com/${{ env.WAZUH_MINOR }}/wazuh-certs-tool.sh"
-
-      - name: Download config files for Wazuh certificates tool
-        run: |
           curl -LO "https://packages-dev.wazuh.com/${{ env.WAZUH_MINOR }}/config.yml"
 
       - name: Update config.yml file
         run: |
-          yq e -i '.nodes.indexer[0].name = "indexer"' config.yml
-          yq e -i '.nodes.indexer[0].ip = "127.0.0.1"' config.yml
-          yq e -i '.nodes.server[0].name = "server"' config.yml
-          yq e -i '.nodes.server[0].ip = "127.0.0.1"' config.yml
-          yq e -i '.nodes.dashboard[0].ip = "127.0.0.1"' config.yml
+          yq e -i '.nodes.indexer[0].name = "indexer"' wazuh/config.yml
+          yq e -i '.nodes.indexer[0].ip = "127.0.0.1"' wazuh/config.yml
+          yq e -i '.nodes.server[0].name = "server"' wazuh/config.yml
+          yq e -i '.nodes.server[0].ip = "127.0.0.1"' wazuh/config.yml
+          yq e -i '.nodes.dashboard[0].ip = "127.0.0.1"' wazuh/config.yml
 
       - name: Create Wazuh certificates
         run: |
+          cd wazuh/
           bash wazuh-certs-tool.sh -A
 
       - name: Deploy Nginx ingress controller
