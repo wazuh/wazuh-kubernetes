@@ -212,7 +212,7 @@ jobs:
 
       - name: Check Wazuh dashboard service URL
         run: |
-          status=$(curl -XGET --silent  ${{ env.INGRESS_DNS }}/app/status -k -u admin:admin -I -s | grep -E "^HTTP" | awk  '{print $2}')
+          status=$(curl -XGET --silent  https://${{ env.INGRESS_DNS }}/app/status -k -u admin:admin -I -s | grep -E "^HTTP" | awk  '{print $2}')
           echo "Wazuh dashboard status: ${status}"
           if [[ $status -ne 200 ]]; then
             exit 1
