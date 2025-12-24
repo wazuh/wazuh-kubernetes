@@ -6,10 +6,9 @@ Steps to perform a clean up of our deployments, services and volumes used in our
 
 To delete your Wazuh cluster just use `kubectl delete -k envs/<ENVIRONMENT>` from this repository directory. (being <ENVIRONMENT> one of `EKS` or `local-env`)
 
-## Delete the persistent volumes manually.
+## Delete the persistent volumes manually
 
 Since we use `reclaimPolicy: Retain` in the storage class definition you must delete volumes manually if you want to clean these as well.
-
 
 ```
 ubuntu@k8s-control-server:~$ kubectl get persistentvolume

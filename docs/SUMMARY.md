@@ -14,5 +14,7 @@
   - [Compatibility](ref/introduction/compatibility.md)
 - [Getting Started](ref/getting-started/getting-started.md)
   - [Requirements](ref/getting-started/requirements.md)
-- [Deployment](ref/deployment.md)
+  - [Usage](ref/getting-started/usage/usage.md)
+    - [Local environment](ref/getting-started/usage/local-environment.md)
+    - [Cleanup](ref/getting-started/usage/cleanup.md)
 - [Glossary](ref/glossary.md)

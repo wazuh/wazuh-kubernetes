@@ -11,6 +11,7 @@ Deploy a Wazuh cluster with a basic indexer and dashboard stack on Kubernetes.
 
 * `main` branch contains the latest code, be aware of possible bugs on this branch.
 
+<<<<<<< HEAD
 ## Documentation
 
 ## Amazon EKS development
@@ -90,6 +91,8 @@ To deploy a cluster on your local environment (like Minikube, Kind or Microk8s) 
             ├── wazuh-workers-svc.yaml
             └── wazuh-worker-sts.yaml
 
+=======
+>>>>>>> f31e654 (Add documentation files to the docs/ new directory)
 ## Contribute
 
 If you want to contribute to our project please don't hesitate to send a pull request. You can also join our users [mailing list](https://groups.google.com/d/forum/wazuh) or the [Wazuh Slack community channel](https://wazuh.com/community/join-us-on-slack/) to ask questions and participate in discussions.
