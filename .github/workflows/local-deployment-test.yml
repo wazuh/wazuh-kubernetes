@@ -181,17 +181,17 @@ jobs:
 
       - name: Check Wazuh manager start
         run: |
-          services="$(kubectl -n wazuh exec -it wazuh-manager-master-0 -- curl -k -s -X GET "https://localhost:55000/manager/status?pretty=true" -H  "Authorization: Bearer ${{env.TOKEN}}")"
-          echo "Wazuh Manager Services: ${services}"
-          if [[ $($service | jq -r .data.affected_items | grep running | wc -l) -gt 9 ]]; then
-            echo "Wazuh Manager is running properly"
+          services=$(kubectl -n wazuh exec -it wazuh-manager-master-0 -- /var/ossec/bin/wazuh-control status)
+          running_services=$(echo "$services" | grep "is running" | wc -l)
+          echo "Wazuh Manager services status:"
+          echo "$services"
+          echo "Running services: $running_services"
+          if [[ $running_services -ge 10 ]]; then
+            echo "OK"
           else
-            echo "Wazuh Manager services status:"
-            echo "$services" | jq -r .data.affected_items
+            echo "ERROR: Expected at least 10 running services, found $running_services"
             exit 1
           fi
-        env:
-          TOKEN: $(kubectl -n wazuh exec -it wazuh-manager-master-0 -- curl -s -u wazuh-wui:MyS3cr37P450r.*- -k -X GET "https://localhost:55000/security/user/authenticate?raw=true")
 
       - name: Check Wazuh dashboard service URL
         run: |
