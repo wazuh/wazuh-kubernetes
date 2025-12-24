@@ -203,7 +203,7 @@ jobs:
             echo "Wazuh Manager Services: ${services}"
             echo "OK"
           else
-            echo "Wazuh indexer nodes: ${env.NODES}"
+            echo "Wazuh Manager services status:"
             echo "$services" | jq -r .data.affected_items
             exit 1
           fi
