@@ -5,20 +5,22 @@
 # License (version 2) as published by the FSF - Free Software
 # Foundation.
 
-# Indexer service: API
+# Wazuh master Service: API and registration (authd)
 
 apiVersion: v1
 kind: Service
 metadata:
-  name: indexer
+  name: wazuh-api
   namespace: wazuh
   labels:
-    app: wazuh-indexer
+    app: wazuh-manager
+  annotations:
+    service.beta.kubernetes.io/aws-load-balancer-backend-protocol: tcp
 spec:
-  type: LoadBalancer
   selector:
-    app: wazuh-indexer
+    app: wazuh-manager
+    node-type: master
   ports:
-    - name: indexer-rest
-      port: 9200
-      targetPort: 9200
+    - name: api
+      port: 55000
+      targetPort: 55000

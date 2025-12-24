@@ -27,29 +27,40 @@ $ cd wazuh-kubernetes
 
 ### Setup SSL certificates
 
-You can generate self-signed certificates for the ODFE cluster using the script at `wazuh/certs/indexer_cluster/generate_certs.sh` or provide your own.
+Wazuh uses certificates to establish confidentiality and encrypt communications between its central components. Follow these steps to create certificates for the Wazuh central components.
 
-Since Dashboard has HTTPS enabled it will require its own certificates, these may be generated with: `openssl req -x509 -batch -nodes -days 365 -newkey rsa:2048 -keyout key.pem -out cert.pem`, there is an utility script at `wazuh/certs/dashboard_http/generate_certs.sh` to help with this.
+Download the `wazuh-certs-tool.sh` script. This creates the certificates that encrypt communications between the Wazuh central components.
+
+```BASH
+cd wazuh/
+curl -sO https://packages.wazuh.com/5.0/wazuh-certs-tool.sh
+```
+
+Run `wazuh-certs-tool.sh` to create the certificates.
+
+```BASH
+bash wazuh-certs-tool.sh -A
+```
 
 The required certificates are imported via secretGenerator on the `kustomization.yml` file:
 
     secretGenerator:
-    - name: indexer-ssl-certs
+    - name: indexer-certs
         files:
-        - certs/indexer_cluster/root-ca.pem
-        - certs/indexer_cluster/root-ca-key.pem
-        - certs/indexer_cluster/node.pem
-        - certs/indexer_cluster/node-key.pem
-        - certs/indexer_cluster/dashboard.pem
-        - certs/indexer_cluster/dashboard-key.pem
-        - certs/indexer_cluster/admin.pem
-        - certs/indexer_cluster/admin-key.pem
-        - certs/indexer_cluster/filebeat.pem
-        - certs/indexer_cluster/filebeat-key.pem
+        - wazuh-certificates/root-ca.pem
+        - wazuh-certificates/indexer.pem
+        - wazuh-certificates/indexer-key.pem
+        - wazuh-certificates/dashboard.pem
+        - wazuh-certificates/dashboard-key.pem
+        - wazuh-certificates/admin.pem
+        - wazuh-certificates/admin-key.pem
+        - wazuh-certificates/server.pem
+        - wazuh-certificates/server-key.pem
     - name: dashboard-certs
         files:
-        - certs/dashboard_http/cert.pem
-        - certs/dashboard_http/key.pem
+        - wazuh-certificates/dashboard.pem
+        - wazuh-certificates/dashboard-key.pem
+        - wazuh-certificates/root-ca.pem
 
 ### Tune storage class with custom provisioner
 
@@ -67,6 +78,33 @@ microk8s-hostpath (default)   microk8s.io/hostpath   Delete          Immediate  
 ```
 
 The provisioner column displays `microk8s.io/hostpath`, you must edit the file `envs/local-env/storage-class.yaml` and setup this provisioner.
+
+### Change Wazuh ingress host
+
+To deploy correctly in a local environment, it is necessary to change the parameter `<UPDATE-WITH-THE-FQDN-OF-THE-INGRESS>` to `localhost` in the file `wazuh/base/wazuh-ingress.yaml`, for example:
+
+```
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: wazuh-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-passthrough: "true"
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: localhost
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: dashboard
+            port:
+              number: 443
+
+```
 
 ### Apply all manifests using kustomize
 
@@ -89,3 +127,14 @@ $ kubectl -n wazuh port-forward service/dashboard 8443:443
 ```
 
 Dashboard will be accesible on ``https://localhost:8443``.
+
+#### Exposing Wazuh server ports
+
+```BASH
+$ kubectl -n wazuh port-forward service/wazuh-events 1514:1514
+```
+```BASH
+$ kubectl -n wazuh port-forward service/wazuh-registration 1515:1515
+```
+> **Note**: You can run the process in background adding `&` to the port-forward command, for example: kubectl -n wazuh port-forward service/wazuh-events 1514:1514 &
+

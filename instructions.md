@@ -112,35 +112,129 @@ $ cd wazuh-kubernetes
 
 ### Step 3.1: Setup SSL certificates
 
-You can generate self-signed certificates for the Wazuh indexer cluster using the script at `wazuh/certs/indexer_cluster/generate_certs.sh` or provide your own.
+Wazuh uses certificates to establish confidentiality and encrypt communications between its central components. Follow these steps to create certificates for the Wazuh central components.
 
-Since Wazuh dashboard has HTTPS enabled it will require its own certificates, these may be generated with: `openssl req -x509 -batch -nodes -days 365 -newkey rsa:2048 -keyout key.pem -out cert.pem`, there is an utility script at `wazuh/certs/dashboard_http/generate_certs.sh` to help with this.
+Download the `wazuh-certs-tool.sh` script. This creates the certificates that encrypt communications between the Wazuh central components.
+
+#### 3.1.1 Download the Wazuh certificates tool script and config.yml file:
+```
+$ curl -sO https://packages.wazuh.com/5.0/wazuh-certs-tool.sh
+$ curl -sO https://packages.wazuh.com/5.0/config.yml
+```
+
+#### 3.1.2 Edit the config.yml file with the configuration of the Wazuh components to be deployed
+```
+nodes:
+  # Wazuh indexer nodes
+  indexer:
+    - name: indexer
+      ip: "127.0.0.1"
+
+  server:
+    - name: server
+      ip: "127.0.0.1"
+
+  # Wazuh dashboard nodes
+  dashboard:
+    - name: dashboard
+      ip: "127.0.0.1"
+```
+
+#### 3.1.3 Run the Wazuh certificates tool script:
+```
+bash wazuh-certs-tool.sh -A
+```
 
 The required certificates are imported via secretGenerator on the `kustomization.yml` file:
 
     secretGenerator:
-    - name: indexer-certs
+      - name: indexer-certs
         files:
-        - certs/indexer_cluster/root-ca.pem
-        - certs/indexer_cluster/node.pem
-        - certs/indexer_cluster/node-key.pem
-        - certs/indexer_cluster/dashboard.pem
-        - certs/indexer_cluster/dashboard-key.pem
-        - certs/indexer_cluster/admin.pem
-        - certs/indexer_cluster/admin-key.pem
-        - certs/indexer_cluster/filebeat.pem
-        - certs/indexer_cluster/filebeat-key.pem
-    - name: dashboard-certs
+          - wazuh-certificates/root-ca.pem
+          - wazuh-certificates/indexer.pem
+          - wazuh-certificates/indexer-key.pem
+          - wazuh-certificates/dashboard.pem
+          - wazuh-certificates/dashboard-key.pem
+          - wazuh-certificates/admin.pem
+          - wazuh-certificates/admin-key.pem
+          - wazuh-certificates/server.pem
+          - wazuh-certificates/server-key.pem
+      - name: dashboard-certs
         files:
-        - certs/dashboard_http/cert.pem
-        - certs/dashboard_http/key.pem
+          - wazuh-certificates/dashboard.pem
+          - wazuh-certificates/dashboard-key.pem
+          - wazuh-certificates/root-ca.pem
 
-### Step 3.2: Apply all manifests using kustomize
+### Step 3.2: Apply Nginx ingress controller
+
+To expose services outside the `EKS` cluster, we are using the Nginx ingress controller. To deploy it, we must run the following:
+
+```BASH
+$ kubectl apply -f nginx/nginx-ingress-controler.yaml
+namespace/ingress-nginx created
+serviceaccount/ingress-nginx created
+serviceaccount/ingress-nginx-admission created
+role.rbac.authorization.k8s.io/ingress-nginx created
+role.rbac.authorization.k8s.io/ingress-nginx-admission created
+clusterrole.rbac.authorization.k8s.io/ingress-nginx created
+clusterrole.rbac.authorization.k8s.io/ingress-nginx-admission created
+rolebinding.rbac.authorization.k8s.io/ingress-nginx created
+rolebinding.rbac.authorization.k8s.io/ingress-nginx-admission created
+clusterrolebinding.rbac.authorization.k8s.io/ingress-nginx created
+clusterrolebinding.rbac.authorization.k8s.io/ingress-nginx-admission created
+configmap/ingress-nginx-controller created
+service/ingress-nginx-controller created
+service/ingress-nginx-controller-admission created
+configmap/wazuh-server-tcp created
+deployment.apps/ingress-nginx-controller created
+job.batch/ingress-nginx-admission-create created
+job.batch/ingress-nginx-admission-patch created
+ingressclass.networking.k8s.io/nginx created
+validatingwebhookconfiguration.admissionregistration.k8s.io/ingress-nginx-admission created
+```
+
+```BASH
+$ kubectl -n ingress-nginx get svc
+NAME                                 TYPE           CLUSTER-IP      EXTERNAL-IP                                                                     PORT(S)                                                    AGE
+ingress-nginx-controller             LoadBalancer   10.100.228.67   a0c363db4315d484fa38751820a9e89b-e1811181631efef0.elb.us-west-1.amazonaws.com   80:30561/TCP,443:32533/TCP,1514:31784/TCP,1515:31274/TCP   36s
+ingress-nginx-controller-admission   ClusterIP      10.100.118.85   <none>                                                                          443/TCP                                                    35s
+```
+
+### Step 3.3: Apply all manifests using kustomize
 
 We are using the overlay feature of kustomize to create two variants: `eks` and `local-env`, in this guide we're using `eks`. (For a deployment on a local environment check the guide on [local-environment.md](local-environment.md))
 
 You can adjust resources for the cluster on `envs/eks/`, you can tune cpu, memory as well as storage for persistent volumes of each of the cluster objects.
 
+### Step 3.3.1: Update the Ingress host
+
+For TLS Passthrough to work correctly, it is necessary to modify the ingress host `wazuh-ingress` with the `FQDN` of the load balancer obtained in the command `kubectl -n ingress-nginx get svc`
+
+for example:
+
+```
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: wazuh-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-passthrough: "true"
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: a0c363db4315d484fa38751820a9e89b-e1811181631efef0.elb.us-west-1.amazonaws.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: dashboard
+            port:
+              number: 443
+```
+
+### Step 3.3.2: Deploy Wazuh cluster
 
 By using the kustomization file on the `eks` variant we can now deploy the whole cluster with a single command:
 
@@ -161,13 +255,14 @@ wazuh         Active    12m
 
 ```BASH
 $ kubectl get services -n wazuh
-NAME            TYPE           CLUSTER-IP       EXTERNAL-IP             PORT(S)                          AGE
-dashboard       LoadBalancer   10.100.55.244    <entrypoint_assigned>   443:31670/TCP                    4h13m
-indexer         LoadBalancer   10.100.199.148   <entrypoint_assigned>   9200:32270/TCP                   4h13m
-wazuh           LoadBalancer   10.100.176.82    <entrypoint_assigned>   1515:32602/TCP,55000:32116/TCP   4h13m
-wazuh-cluster   ClusterIP      None             <none>                  1516/TCP                         4h13m
-wazuh-indexer   ClusterIP      None             <none>                  9300/TCP                         4h13m
-wazuh-workers   LoadBalancer   10.100.165.20    <entrypoint_assigned>   1514:30128/TCP                   4h13m
+NAME                 TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)             AGE
+dashboard            ClusterIP   10.100.196.140   <none>        443/TCP             23m
+wazuh-api            ClusterIP   10.100.58.98     <none>        55000/TCP           23m
+wazuh-cluster        ClusterIP   None             <none>        1516/TCP            23m
+wazuh-events         ClusterIP   10.100.63.117    <none>        1514/TCP            23m
+wazuh-indexer        ClusterIP   None             <none>        9300/TCP,9200/TCP   23m
+wazuh-registration   ClusterIP   10.100.40.83     <none>        1515/TCP            23m
+
 ```
 
 #### Deployments
@@ -206,10 +301,11 @@ wazuh-manager-worker-1             1/1     Running   0          4h17m
 
 In case you created domain names for the services, you should be able to access Wazuh dashboard using the proposed domain name: https://wazuh.your-domain.com.
 
-Also, you can access using the External-IP (from the VPC): https://internal-xxx-yyy.us-east-1.elb.amazonaws.com:443
+Also, you can access using the External-IP (from the VPC): https://xxx-yyy-zzz.us-east-1.elb.amazonaws.com:443
 
 ```BASH
-$ kubectl get services -o wide -n wazuh
-NAME        TYPE           CLUSTER-IP       EXTERNAL-IP                                                              PORT(S)        AGE     SELECTOR
-dashboard   LoadBalancer   10.100.55.244    a91dadfdf2d33493dad0a267eb85b352-1129724810.us-west-1.elb.amazonaws.com  443:31670/TCP  4h19m   app=wazuh-dashboard
+$ kubectl -n ingress-nginx get svc
+NAME                                 TYPE           CLUSTER-IP      EXTERNAL-IP                                                                     PORT(S)                                                    AGE
+ingress-nginx-controller             LoadBalancer   10.100.228.67   a0c363db4315d484fa38751820a9e89b-e1811181631efef0.elb.us-west-1.amazonaws.com   80:30561/TCP,443:32533/TCP,1514:31784/TCP,1515:31274/TCP   36s
+ingress-nginx-controller-admission   ClusterIP      10.100.118.85   <none>                                                                          443/TCP                                                    35s
 ```

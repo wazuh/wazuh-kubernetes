@@ -28,10 +28,7 @@ spec:
       name: wazuh-manager-master
     spec:
       volumes:
-        - name: config
-          configMap:
-            name: wazuh-conf
-        - name: filebeat-certs
+        - name: wazuh-server-certs
           secret:
             secretName: indexer-certs
         - name: wazuh-authd-pass
@@ -39,9 +36,23 @@ spec:
             secretName: wazuh-authd-pass
       securityContext:
         fsGroup: 101
+      initContainers:
+        - name: init-wazuh-etc
+          image: 'wazuh/wazuh-manager:5.0.0'
+          command:
+            - /bin/sh
+            - -c
+            - |
+              if [ -z "$(ls -A /pvc-etc)" ]; then
+                cp -a /var/ossec/etc/* /pvc-etc/
+              fi
+          volumeMounts:
+            - name: wazuh-manager-master
+              mountPath: /pvc-etc
+              subPath: wazuh/var/ossec/etc
       containers:
         - name: wazuh-manager
-          image: 'wazuh/wazuh-manager:4.14.3'
+          image: 'wazuh/wazuh-manager:5.0.0'
           resources:
             limits:
               cpu: 400m
@@ -50,22 +61,6 @@ spec:
             capabilities:
               add: ["SYS_CHROOT"]
           volumeMounts:
-            - name: config
-              mountPath: /wazuh-config-mount/etc/ossec.conf
-              subPath: master.conf
-              readOnly: true
-            - name: filebeat-certs
-              mountPath: /etc/ssl/root-ca.pem
-              readOnly: true
-              subPath: root-ca.pem
-            - name: filebeat-certs
-              mountPath: /etc/ssl/filebeat.pem
-              subPath: filebeat.pem
-              readOnly: true
-            - name: filebeat-certs
-              mountPath: /etc/ssl/filebeat.key
-              subPath: filebeat-key.pem
-              readOnly: true
             - name: wazuh-authd-pass
               mountPath: /wazuh-config-mount/etc/authd.pass
               subPath: authd.pass
@@ -76,6 +71,18 @@ spec:
             - name: wazuh-manager-master
               mountPath: /var/ossec/etc
               subPath: wazuh/var/ossec/etc
+            - name: wazuh-server-certs
+              mountPath: /var/ossec/etc/certs/root-ca.pem
+              readOnly: true
+              subPath: root-ca.pem
+            - name: wazuh-server-certs
+              mountPath: /var/ossec/etc/certs/server.pem
+              subPath: server.pem
+              readOnly: true
+            - name: wazuh-server-certs
+              mountPath: /var/ossec/etc/certs/server-key.pem
+              subPath: server-key.pem
+              readOnly: true
             - name: wazuh-manager-master
               mountPath: /var/ossec/logs
               subPath: wazuh/var/ossec/logs
@@ -86,23 +93,11 @@ spec:
               mountPath: /var/ossec/var/multigroups
               subPath: wazuh/var/ossec/var/multigroups
             - name: wazuh-manager-master
-              mountPath: /var/ossec/integrations
-              subPath: wazuh/var/ossec/integrations
-            - name: wazuh-manager-master
               mountPath: /var/ossec/active-response/bin
               subPath: wazuh/var/ossec/active-response/bin
             - name: wazuh-manager-master
-              mountPath: /var/ossec/agentless
-              subPath: wazuh/var/ossec/agentless
-            - name: wazuh-manager-master
               mountPath: /var/ossec/wodles
               subPath: wazuh/var/ossec/wodles
-            - name: wazuh-manager-master
-              mountPath: /etc/filebeat
-              subPath: filebeat/etc/filebeat
-            - name: wazuh-manager-master
-              mountPath: /var/lib/filebeat
-              subPath: filebeat/var/lib/filebeat
           ports:
             - containerPort: 1515
               name: registration
@@ -111,8 +106,16 @@ spec:
             - containerPort: 55000
               name: api
           env:
-            - name: INDEXER_URL
-              value: 'https://indexer:9200'
+            - name: WAZUH_INDEXER_HOSTS
+              value: 'wazuh-indexer:9200'
+            - name: WAZUH_NODE_NAME
+              value: 'master'
+            - name: WAZUH_NODE_TYPE
+              value: 'master'
+            - name: WAZUH_CLUSTER_BIND_ADDR
+              value: '0.0.0.0'
+            - name: WAZUH_CLUSTER_NODES
+              value: 'wazuh-cluster'
             - name: INDEXER_USERNAME
               valueFrom:
                 secretKeyRef:
@@ -123,14 +126,12 @@ spec:
                 secretKeyRef:
                   name: indexer-cred
                   key: password
-            - name: FILEBEAT_SSL_VERIFICATION_MODE
-              value: 'full'
             - name: SSL_CERTIFICATE_AUTHORITIES
-              value: /etc/ssl/root-ca.pem
+              value: /var/ossec/etc/certs/root-ca.pem
             - name: SSL_CERTIFICATE
-              value: /etc/ssl/filebeat.pem
+              value: /var/ossec/etc/certs/server.pem
             - name: SSL_KEY
-              value: /etc/ssl/filebeat.key
+              value: /var/ossec/etc/certs/server-key.pem
             - name: API_USERNAME
               valueFrom:
                 secretKeyRef:
