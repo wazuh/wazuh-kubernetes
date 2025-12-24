@@ -148,33 +148,25 @@ jobs:
         run: |
           status="$(kubectl -n wazuh exec -it wazuh-indexer-0 -- curl -XGET "https://localhost:9200/_cluster/health" -u admin:admin -k -s)"
           echo "$status"
-          #if ! echo "$status" | grep -q green; then
-          #  exit 1
-          #fi
+          if ! echo "$status" | grep -q green; then
+            exit 1
+          fi
           index="$(kubectl -n wazuh exec -it wazuh-indexer-0 -- curl -XGET "https://localhost:9200/_cat/indices" -u admin:admin -k -s)"
           echo "$index"
           lines_total=$(echo "$index" | wc -l)
           lines_green=$(echo "$index" | grep "green" | wc -l)
-          #if [[ $lines_total -ne $lines_green ]]; then
-          #  exit 1
-          #fi
+          if [[ $lines_total -ne $lines_green ]]; then
+            exit 1
+          fi
 
       - name: Check Wazuh indexer nodes
         run: |
           NODES="$(kubectl -n wazuh exec -it wazuh-indexer-0 -- curl -XGET "https://localhost:9200/_cat/nodes" -u admin:admin -k -s | grep -E "indexer" | wc -l)"
           echo "Wazuh indexer nodes: ${NODES}"
-          #if [[ ${NODES} -ne 3 ]]; then
-          #  exit 1
-          #fi
+          if [[ ${NODES} -ne 3 ]]; then
+            exit 1
+          fi
           echo NODES=$NODES >> $GITHUB_ENV
-
-      - name: Check documents into wazuh-alerts index
-        run: |
-          docs="$(kubectl -n wazuh exec -it wazuh-indexer-0 -- curl -XGET "https://localhost:9200/wazuh-alerts*/_count" -u admin:admin -k -s | jq -r ".count")"
-          echo "wazuh-alerts index documents: ${docs}"
-          #if [[ $docs -eq 0 ]]; then
-          #  exit 1
-          #fi
 
       - name: Check Wazuh templates
         run: |
@@ -183,20 +175,20 @@ jobs:
           templates="$(echo "$templates_command" | grep -P "wazuh|wazuh-agent|wazuh-statistics")"
           echo "wazuh templates:"
           echo "${templates}"
-          #if [[ $qty_templates -le 3 ]]; then
-          #  exit 1
-          #fi
+          if [[ $qty_templates -le 3 ]]; then
+            exit 1
+          fi
 
       - name: Check Wazuh manager start
         run: |
           services="$(kubectl -n wazuh exec -it wazuh-manager-master-0 -- curl -k -s -X GET "https://localhost:55000/manager/status?pretty=true" -H  "Authorization: Bearer ${{env.TOKEN}}")"
+          echo "Wazuh Manager Services: ${services}"
           if [[ $($service | jq -r .data.affected_items | grep running | wc -l) -gt 9 ]]; then
-            echo "Wazuh Manager Services: ${services}"
-            echo "OK"
+            echo "Wazuh Manager is running properly"
           else
-            echo "Wazuh indexer nodes: ${{ env.NODES }}"
+            echo "Wazuh Manager services status:"
             echo "$services" | jq -r .data.affected_items
-            #exit 1
+            exit 1
           fi
         env:
           TOKEN: $(kubectl -n wazuh exec -it wazuh-manager-master-0 -- curl -s -u wazuh-wui:MyS3cr37P450r.*- -k -X GET "https://localhost:55000/security/user/authenticate?raw=true")
@@ -205,6 +197,6 @@ jobs:
         run: |
           status=$(kubectl -n wazuh exec -it ${{ env.DASHBOARD_POD }} -- curl -XGET --silent  https://localhost/app/status -k -u admin:admin -I -s | grep -E "^HTTP" | awk  '{print $2}')
           echo "Wazuh dashboard status: ${status}"
-          #if [[ $status -ne 200 ]]; then
-          #  exit 1
-          #fi
+          if [[ $status -ne 200 ]]; then
+            exit 1
+          fi

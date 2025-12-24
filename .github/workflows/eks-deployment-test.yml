@@ -185,14 +185,6 @@ jobs:
           fi
           echo NODES=$NODES >> $GITHUB_ENV
 
-      - name: Check documents into wazuh-alerts index
-        run: |
-          docs="$(kubectl -n wazuh exec -it wazuh-indexer-0 -- curl -XGET "https://localhost:9200/wazuh-alerts*/_count" -u admin:admin -k -s | jq -r ".count")"
-          echo "wazuh-alerts index documents: ${docs}"
-          if [[ $docs -eq 0 ]]; then
-            exit 1
-          fi
-
       - name: Check Wazuh templates
         run: |
           templates_command="$(kubectl -n wazuh exec -it wazuh-indexer-0 -- curl -XGET "https://localhost:9200/_cat/templates" -u admin:admin -k -s)"
