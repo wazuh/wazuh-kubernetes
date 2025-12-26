@@ -2,7 +2,6 @@ run-name: Kubernetes EKS deployment test - Branch ${{ inputs.BRANCH_VERSION }} -
 name: Test Wazuh EKS deployment on Kubernetes
 
 on:
-  pull_request:
   workflow_dispatch:
     inputs:
       BRANCH_VERSION:
