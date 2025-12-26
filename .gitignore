@@ -11,3 +11,4 @@ wazuh/wazuh-certificates
 wazuh/wazuh-certificates/*
 wazuh/wazuh-certificates-tool.log
 tests/__pycache__/
+.pytest_cache/

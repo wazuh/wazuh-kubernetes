@@ -37,7 +37,7 @@ jobs:
       - name: Install pytest
         run: |
           sudo apt install -y python3-pytest
-  
+
       - name: Install eksctl
         run: |
           ARCH=amd64
@@ -167,7 +167,7 @@ jobs:
 
       - name: Run pytest
         run: |
-          pytest tests/k8s_pytest.py -v --deployment eks --dashboard-url "${{ env.INGRESS_DNS }}"
+          pytest tests/k8s_pytest.py -v --deployment-type eks --dashboard-url "${{ env.INGRESS_DNS }}"
 
       - name: Delete eks cluster
         if: always()

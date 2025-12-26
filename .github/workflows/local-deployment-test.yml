@@ -150,4 +150,4 @@ jobs:
 
       - name: Run pytest
         run: |
-          pytest tests/k8s_pytest.py -v --deployment local
+          pytest tests/k8s_pytest.py -v --deployment-type local

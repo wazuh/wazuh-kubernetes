@@ -43,7 +43,7 @@ class TestWazuhKubernetes:
 
     def test_indexer_nodes_count(self, namespace, request):
         """Check if there are the expected number of Wazuh indexer nodes"""
-        deployment_type = request.config.getoption("--deployment", default="local")
+        deployment_type = request.config.getoption("--deployment-type", default="local")
         expected_nodes = 3 if deployment_type == "eks" else 1
 
         cmd = f'kubectl -n {namespace} exec -it wazuh-indexer-0 -- curl -XGET "https://localhost:9200/_cat/nodes" -u {ADMIN_USER}:{ADMIN_PASSWORD} -k -s'
