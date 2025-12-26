@@ -33,6 +33,10 @@ jobs:
           role-to-assume: ${{ secrets.AWS_IAM_ROLE }}
           aws-region: "${{ env.AWS_REGION }}"
 
+      - name: Install pytest
+        run: |
+          sudo apt install -y python3-pytest
+
       - name: Free Disk Space (Ubuntu)
         uses: jlumbroso/free-disk-space@main
 
