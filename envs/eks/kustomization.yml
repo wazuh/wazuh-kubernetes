@@ -9,18 +9,9 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
 - ../../wazuh
-- network-policies/Allow-DNS-np.yaml
 - network-policies/allow-ingress-to-dashboard.yaml
 - network-policies/allow-ingress-to-manager-master.yaml
 - network-policies/allow-ingress-to-manager-worker.yaml
-- network-policies/dashboard-egress.yaml
-- network-policies/default-deny-all.yaml
-- network-policies/indexer-egress.yaml
-- network-policies/indexer-ingress.yaml
-- network-policies/manager-egress.yaml
-- network-policies/manager-egress-external.yaml
-- network-policies/wazuh-master-ingress.yaml
-- network-policies/wazuh-worker-egress.yaml
 
 patches:
 - path: storage-class.yaml

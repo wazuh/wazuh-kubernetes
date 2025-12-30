@@ -54,7 +54,7 @@ jobs:
           sudo install minikube-linux-amd64 /usr/local/bin/minikube && rm minikube-linux-amd64
 
       - name: Start Minikube cluster
-        run: minikube start
+        run: minikube start --network-plugin=cni --cni=calico
 
       - name: Get Wazuh version
         run: |
