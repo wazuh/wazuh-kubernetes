@@ -23,6 +23,10 @@ The installation of the CSI driver is mandatory for new and old deployments if y
 
 To deploy a cluster on your local environment (like Minikube, Kind or Microk8s) read the instructions on [local-environment.md](local-environment.md).
 
+## Diagram
+
+![Wazuh Kubernetes Architecture](wazuh-namespace.png)
+
 ## Directory structure
 
     ├── CHANGELOG.md
