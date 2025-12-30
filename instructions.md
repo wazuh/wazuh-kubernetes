@@ -11,6 +11,7 @@ This guide describes the necessary steps to deploy Wazuh on Kubernetes.
 - Having at least two Kubernetes nodes in order to meet the *podAntiAffinity* policy.
 - For Kubernetes version 1.23 or higher, the assignment of an IAM Role is necessary for the CSI driver to function correctly. Within the AWS documentation you can find the instructions for the assignment: https://docs.aws.amazon.com/eks/latest/userguide/ebs-csi.html
 - The installation of the CSI driver is necessary for new and old deployments, since it is a Kubernetes feature.
+- Wazuh deployment includes Network policy configurations to restrict communication between pods. Verify if the EKS cluster configuration has Network policy configuration enabled.
 
 
 ## Overview
@@ -80,6 +81,32 @@ Details:
 - wazuh-cluster:
   - Communication for Wazuh manager nodes.
 
+### Network policies
+
+- allow-dns
+  - Allows DNS traffic within the cluster.
+- allow-ingress-to-dashboard
+  - Allows incoming traffic from the ingress controller to port 443 of wazuh-dashboard
+- allow-ingress-to-manager-master
+  - Allows incoming traffic from the ingress controller to port 1515 of wazuh-manager (master)
+- allow-ingress-to-manager-worker
+  - Allows incoming traffic from the ingress controller to port 1514 of wazuh-manager (worker)
+- dashboard-egress
+  - Allows outgoing traffic from wazuh-dashboard pods to ports 9200 of wazuh-indexer and 55000 of wazuh-manager (master)
+- default-deny-all
+  - Denies all incoming and outgoing traffic not explicitly declared in a network policy
+- indexer-egress
+  - Allows outgoing traffic from wazuh-indexer pods to the Ports 9200 and 9300 of wazuh-indexer nodes
+- indexer-ingress
+  - Allows incoming traffic from wazuh-dashboard (9200), wazuh-manager (9200), and wazuh-indexer (9300) pods to wazuh-indexer pods
+- manager-egress-external
+  - Allows outgoing traffic from wazuh-manager pods to the internet (for downloading CTI)
+- manager-egress
+  - Allows outgoing traffic from wazuh-manager pods to wazuh-indexer port 9200
+- wazuh-api-ingress
+  - Allows incoming traffic from wazuh-dashboard (55000) and other wazuh-manager pods to port 1516
+- wazuh-worker-egress
+  - Allows outgoing traffic from the wazuh-manager pods (workers) to wazuh-manager ports 1516 and 55000
 
 ## Deploy
 
@@ -295,6 +322,25 @@ wazuh-indexer-2                    1/1     Running   0          4h17m
 wazuh-manager-master-0             1/1     Running   0          4h17m
 wazuh-manager-worker-0             1/1     Running   0          4h17m
 wazuh-manager-worker-1             1/1     Running   0          4h17m
+```
+
+#### Network Policies
+
+```BASH
+$ kubectl -n wazuh get networkpolicy
+NAME                              POD-SELECTOR                         AGE
+allow-dns                         <none>                               51s
+allow-ingress-to-dashboard        app=wazuh-dashboard                  50s
+allow-ingress-to-manager-master   app=wazuh-manager,node-type=master   49s
+allow-ingress-to-manager-worker   app=wazuh-manager,node-type=worker   48s
+dashboard-egress                  app=wazuh-dashboard                  47s
+default-deny-all                  <none>                               46s
+indexer-egress                    app=wazuh-indexer                    45s
+indexer-ingress                   app=wazuh-indexer                    44s
+manager-egress                    app=wazuh-manager,node-type=master   43s
+manager-egress-external           app=wazuh-manager                    42s
+wazuh-api-ingress                 app=wazuh-manager,node-type=master   42s
+wazuh-worker-egress               app=wazuh-manager,node-type=worker   41s
 ```
 
 #### Accessing Wazuh dashboard
