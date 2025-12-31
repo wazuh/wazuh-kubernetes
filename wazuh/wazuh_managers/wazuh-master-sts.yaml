@@ -38,7 +38,7 @@ spec:
         fsGroup: 101
       initContainers:
         - name: init-wazuh-etc
-          image: 'wazuh/wazuh-manager:5.0.0'
+          image: 'wazuh/wazuh-manager:5.0.0-alpha0'
           command:
             - /bin/sh
             - -c
@@ -52,7 +52,7 @@ spec:
               subPath: wazuh/var/ossec/etc
       containers:
         - name: wazuh-manager
-          image: 'wazuh/wazuh-manager:5.0.0'
+          image: 'wazuh/wazuh-manager:5.0.0-alpha0'
           resources:
             limits:
               cpu: 400m
