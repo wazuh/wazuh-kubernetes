@@ -43,7 +43,7 @@ spec:
             secretName: indexer-certs
       initContainers:
         - name: init-wazuh-etc
-          image: 'wazuh/wazuh-manager:5.0.0'
+          image: 'wazuh/wazuh-manager:5.0.0-alpha0'
           command:
             - /bin/sh
             - -c
@@ -59,7 +59,7 @@ spec:
         fsGroup: 101
       containers:
         - name: wazuh-manager
-          image: 'wazuh/wazuh-manager:5.0.0'
+          image: 'wazuh/wazuh-manager:5.0.0-alpha0'
           resources:
             limits:
               cpu: 400m
