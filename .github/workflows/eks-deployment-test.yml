@@ -119,12 +119,12 @@ jobs:
       - name: Replace image registry to ECR
         run: |
           ECR_REGISTRY="${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com"
-          yq e -i '.spec.template.spec.containers[] |= select(.name == "wazuh-dashboard").image = "$ECR_REGISTRY/wazuh/wazuh-dashboard:${{ env.WAZUH_VERSION }}"' wazuh/indexer_stack/wazuh-dashboard/dashboard-deploy.yaml
-          yq e -i '.spec.template.spec.containers[] |= select(.name == "wazuh-indexer").image = "$ECR_REGISTRY/wazuh/wazuh-indexer:${{ env.WAZUH_VERSION }}"' wazuh/indexer_stack/wazuh-indexer/cluster/indexer-sts.yaml
-          yq e -i '.spec.template.spec.initContainers[] |= select(.name == "init-wazuh-etc").image = "$ECR_REGISTRY/wazuh/wazuh-manager:${{ env.WAZUH_VERSION }}"' wazuh/wazuh_managers/wazuh-master-sts.yaml
-          yq e -i '.spec.template.spec.containers[] |= select(.name == "wazuh-manager").image = "$ECR_REGISTRY/wazuh/wazuh-manager:${{ env.WAZUH_VERSION }}"' wazuh/wazuh_managers/wazuh-master-sts.yaml
-          yq e -i '.spec.template.spec.initContainers[] |= select(.name == "init-wazuh-etc").image = "$ECR_REGISTRY/wazuh/wazuh-manager:${{ env.WAZUH_VERSION }}"' wazuh/wazuh_managers/wazuh-worker-sts.yaml
-          yq e -i '.spec.template.spec.containers[] |= select(.name == "wazuh-manager").image = "$ECR_REGISTRY/wazuh/wazuh-manager:${{ env.WAZUH_VERSION }}"' wazuh/wazuh_managers/wazuh-worker-sts.yaml
+          yq e -i ".spec.template.spec.containers[] |= select(.name == \"wazuh-dashboard\").image = \"$ECR_REGISTRY/wazuh/wazuh-dashboard:${{ env.WAZUH_VERSION }}\"" wazuh/indexer_stack/wazuh-dashboard/dashboard-deploy.yaml
+          yq e -i ".spec.template.spec.containers[] |= select(.name == \"wazuh-indexer\").image = \"$ECR_REGISTRY/wazuh/wazuh-indexer:${{ env.WAZUH_VERSION }}\"" wazuh/indexer_stack/wazuh-indexer/cluster/indexer-sts.yaml
+          yq e -i ".spec.template.spec.initContainers[] |= select(.name == \"init-wazuh-etc\").image = \"$ECR_REGISTRY/wazuh/wazuh-manager:${{ env.WAZUH_VERSION }}\"" wazuh/wazuh_managers/wazuh-master-sts.yaml
+          yq e -i ".spec.template.spec.containers[] |= select(.name == \"wazuh-manager\").image = \"$ECR_REGISTRY/wazuh/wazuh-manager:${{ env.WAZUH_VERSION }}\"" wazuh/wazuh_managers/wazuh-master-sts.yaml
+          yq e -i ".spec.template.spec.initContainers[] |= select(.name == \"init-wazuh-etc\").image = \"$ECR_REGISTRY/wazuh/wazuh-manager:${{ env.WAZUH_VERSION }}\"" wazuh/wazuh_managers/wazuh-worker-sts.yaml
+          yq e -i ".spec.template.spec.containers[] |= select(.name == \"wazuh-manager\").image = \"$ECR_REGISTRY/wazuh/wazuh-manager:${{ env.WAZUH_VERSION }}\"" wazuh/wazuh_managers/wazuh-worker-sts.yaml
 
       - name: Download Wazuh certificates tool and config files
         run: |
