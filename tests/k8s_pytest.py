@@ -85,7 +85,10 @@ class TestWazuhKubernetes:
     def test_dashboard_service_url(self, namespace, dashboard_pod, request):
         """Check if Wazuh dashboard service returns HTTP 200"""
         dashboard_url = request.config.getoption("--dashboard-url", "localhost")
-        cmd = f'kubectl -n {namespace} exec -it {dashboard_pod} -- curl -XGET --silent https://{dashboard_url}/app/status -k -u {ADMIN_USER}:{ADMIN_PASSWORD} -I -s'
+        if dashboard_url == "localhost":
+            cmd = f'kubectl -n {namespace} exec -it {dashboard_pod} -- curl -XGET --silent https://{dashboard_url}/app/status -k -u {ADMIN_USER}:{ADMIN_PASSWORD} -I -s'
+        else:
+            cmd = f'curl -XGET --silent https://{dashboard_url}/app/status -k -u {ADMIN_USER}:{ADMIN_PASSWORD} -I -s'
         result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
 
         status_match = re.search(r'^HTTP.*?\s+(\d+)', result.stdout, re.MULTILINE)
