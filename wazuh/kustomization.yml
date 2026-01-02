@@ -33,6 +33,8 @@ resources:
   - base/wazuh-ns.yaml
   - base/storage-class.yaml
   - base/wazuh-ingress.yaml
+  - base/Allow-DNS-np.yaml
+  - base/default-deny-all.yaml
 
   - secrets/wazuh-api-cred-secret.yaml
   - secrets/wazuh-authd-pass-secret.yaml
@@ -46,9 +48,16 @@ resources:
   - wazuh_managers/wazuh-api-svc.yaml
   - wazuh_managers/wazuh-master-sts.yaml
   - wazuh_managers/wazuh-worker-sts.yaml
+  - wazuh_managers/manager-egress.yaml
+  - wazuh_managers/manager-egress-external.yaml
+  - wazuh_managers/wazuh-master-ingress.yaml
+  - wazuh_managers/wazuh-worker-egress.yaml
 
   - indexer_stack/wazuh-indexer/indexer-svc.yaml
+  - indexer_stack/wazuh-indexer/indexer-egress.yaml
+  - indexer_stack/wazuh-indexer/indexer-ingress.yaml
   - indexer_stack/wazuh-indexer/cluster/indexer-sts.yaml
 
   - indexer_stack/wazuh-dashboard/dashboard-deploy.yaml
   - indexer_stack/wazuh-dashboard/dashboard-svc.yaml
+  - indexer_stack/wazuh-dashboard/dashboard-egress.yaml

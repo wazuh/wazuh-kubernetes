@@ -3,6 +3,7 @@
 This guide describes the necessary steps to deploy Wazuh on a local Kubernetes environment (Microk8s, Minikube, Kind).
 
 Here we will describe the steps unique for a deployment on a local development scenario. For general knowledge read [instructions.md](instructions.md) as well which describes a deployment in more detail using an EKS cluster.
+Wazuh deployment includes Network policy configurations to restrict communication between pods. This guide was created using MiniKube and Calico as the CNI.
 
 ## Pre-requisites
 
@@ -111,6 +112,8 @@ spec:
 We are using the overlay feature of kustomize two create two variants: `eks` and `local-env`, in this guide we're using `local-env`. (For a production deployment on EKS check the guide on [instructions.md](instructions.md))
 
 It is possible to adjust resources for the cluster by editing patches on `envs/local-env/`, the number of replicas for Elasticsearch nodes and Wazuh workers are reduced on the `local-env` variant to save resources. This could be undone by removing these patches from the `kustomization.yaml` or alter the patches themselves with different values.
+
+> **Note**: This guide was created using MiniKube and Calico as the CNI.
 
 By using the kustomization file on the `local-env` variant we can now deploy the whole cluster with a single command:
 

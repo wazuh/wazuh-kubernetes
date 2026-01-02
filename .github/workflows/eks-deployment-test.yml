@@ -16,7 +16,6 @@ permissions:
 env:
   AWS_REGION: us-west-1
   CLUSTER_NAME: test-eks-deploy${{ github.event.number }}
-  ECR_REGISTRY: 966237403726.dkr.ecr.us-west-1.amazonaws.com/
 
 jobs:
   EKS_deployment_test:
@@ -77,8 +76,32 @@ jobs:
           --name aws-ebs-csi-driver \
           --cluster ${{ env.CLUSTER_NAME }} \
           --region ${{ env.AWS_REGION }} \
-          --service-account-role-arn arn:aws:iam::966237403726:role/eksctl-EBS-CSI-DriverRole-${{ env.CLUSTER_NAME }} \
+          --service-account-role-arn arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/eksctl-EBS-CSI-DriverRole-${{ env.CLUSTER_NAME }} \
           --force
+
+      - name: Create sa for aws-node
+        run: |
+          eksctl create iamserviceaccount \
+          --cluster ${{ env.CLUSTER_NAME }} \
+          --namespace kube-system \
+          --name aws-node \
+          --attach-policy-arn arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy \
+          --role-name AmazonEKSVPCCNIRole \
+          --override-existing-serviceaccounts \
+          --approve \
+          --region ${{ env.AWS_REGION }}
+
+      - name: Enable Network Policies in the EKS cluster
+        run: |
+          ADDON_VERSION=$(kubectl describe daemonset aws-node --namespace kube-system | grep amazon-k8s-cni: | cut -d : -f 3)
+          aws eks update-addon \
+          --cluster-name ${{ env.CLUSTER_NAME }} \
+          --addon-name vpc-cni \
+          --addon-version $ADDON_VERSION \
+          --service-account-role-arn arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/AmazonEKSVPCCNIRole \
+          --resolve-conflicts OVERWRITE \
+          --configuration-values '{"enableNetworkPolicy": "true"}' \
+          --region ${{ env.AWS_REGION }}
 
       - name: Install yq
         run: |
@@ -95,12 +118,13 @@ jobs:
 
       - name: Replace image registry to ECR
         run: |
-          yq e -i '.spec.template.spec.containers[] |= select(.name == "wazuh-dashboard").image = "${{ env.ECR_REGISTRY }}wazuh/wazuh-dashboard:${{ env.WAZUH_VERSION }}"' wazuh/indexer_stack/wazuh-dashboard/dashboard-deploy.yaml
-          yq e -i '.spec.template.spec.containers[] |= select(.name == "wazuh-indexer").image = "${{ env.ECR_REGISTRY }}wazuh/wazuh-indexer:${{ env.WAZUH_VERSION }}"' wazuh/indexer_stack/wazuh-indexer/cluster/indexer-sts.yaml
-          yq e -i '.spec.template.spec.initContainers[] |= select(.name == "init-wazuh-etc").image = "${{ env.ECR_REGISTRY }}wazuh/wazuh-manager:${{ env.WAZUH_VERSION }}"' wazuh/wazuh_managers/wazuh-master-sts.yaml
-          yq e -i '.spec.template.spec.containers[] |= select(.name == "wazuh-manager").image = "${{ env.ECR_REGISTRY }}wazuh/wazuh-manager:${{ env.WAZUH_VERSION }}"' wazuh/wazuh_managers/wazuh-master-sts.yaml
-          yq e -i '.spec.template.spec.initContainers[] |= select(.name == "init-wazuh-etc").image = "${{ env.ECR_REGISTRY }}wazuh/wazuh-manager:${{ env.WAZUH_VERSION }}"' wazuh/wazuh_managers/wazuh-worker-sts.yaml
-          yq e -i '.spec.template.spec.containers[] |= select(.name == "wazuh-manager").image = "${{ env.ECR_REGISTRY }}wazuh/wazuh-manager:${{ env.WAZUH_VERSION }}"' wazuh/wazuh_managers/wazuh-worker-sts.yaml
+          ECR_REGISTRY="${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com"
+          yq e -i ".spec.template.spec.containers[] |= select(.name == \"wazuh-dashboard\").image = \"$ECR_REGISTRY/wazuh/wazuh-dashboard:${{ env.WAZUH_VERSION }}\"" wazuh/indexer_stack/wazuh-dashboard/dashboard-deploy.yaml
+          yq e -i ".spec.template.spec.containers[] |= select(.name == \"wazuh-indexer\").image = \"$ECR_REGISTRY/wazuh/wazuh-indexer:${{ env.WAZUH_VERSION }}\"" wazuh/indexer_stack/wazuh-indexer/cluster/indexer-sts.yaml
+          yq e -i ".spec.template.spec.initContainers[] |= select(.name == \"init-wazuh-etc\").image = \"$ECR_REGISTRY/wazuh/wazuh-manager:${{ env.WAZUH_VERSION }}\"" wazuh/wazuh_managers/wazuh-master-sts.yaml
+          yq e -i ".spec.template.spec.containers[] |= select(.name == \"wazuh-manager\").image = \"$ECR_REGISTRY/wazuh/wazuh-manager:${{ env.WAZUH_VERSION }}\"" wazuh/wazuh_managers/wazuh-master-sts.yaml
+          yq e -i ".spec.template.spec.initContainers[] |= select(.name == \"init-wazuh-etc\").image = \"$ECR_REGISTRY/wazuh/wazuh-manager:${{ env.WAZUH_VERSION }}\"" wazuh/wazuh_managers/wazuh-worker-sts.yaml
+          yq e -i ".spec.template.spec.containers[] |= select(.name == \"wazuh-manager\").image = \"$ECR_REGISTRY/wazuh/wazuh-manager:${{ env.WAZUH_VERSION }}\"" wazuh/wazuh_managers/wazuh-worker-sts.yaml
 
       - name: Download Wazuh certificates tool and config files
         run: |

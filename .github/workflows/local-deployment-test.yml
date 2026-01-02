@@ -16,7 +16,7 @@ permissions:
 
 env:
   AWS_REGION: us-west-1
-  ECR_REGISTRY: 966237403726.dkr.ecr.us-west-1.amazonaws.com
+  ECR_REGISTRY: ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.us-west-1.amazonaws.com
 
 jobs:
   Local_deployment_test:
@@ -54,7 +54,7 @@ jobs:
           sudo install minikube-linux-amd64 /usr/local/bin/minikube && rm minikube-linux-amd64
 
       - name: Start Minikube cluster
-        run: minikube start
+        run: minikube start --network-plugin=cni --cni=calico
 
       - name: Get Wazuh version
         run: |
