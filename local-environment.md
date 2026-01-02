@@ -22,7 +22,7 @@ To deploy the `local-env` variant the Kubernetes cluster should have at least th
 ### Clone this repository.
 
 ```BASH
-$ git clone https://github.com/wazuh/wazuh-kubernetes.git
+$ git clone https://github.com/wazuh/wazuh-kubernetes.git -b v5.0.0 --depth=1
 $ cd wazuh-kubernetes
 ```
 

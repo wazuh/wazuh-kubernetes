@@ -133,7 +133,7 @@ Note: You can skip this step and the services will be accessible using the Load 
 Clone this repository to deploy the necessary services and pods.
 
 ```BASH
-$ git clone https://github.com/wazuh/wazuh-kubernetes.git
+$ git clone https://github.com/wazuh/wazuh-kubernetes.git -b v5.0.0 --depth=1
 $ cd wazuh-kubernetes
 ```
 
