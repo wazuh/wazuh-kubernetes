@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
+- Add git cloning options to the documentation. ([#1280](https://github.com/wazuh/wazuh-kubernetes/pull/1280))
 - Added wazuh-kubernetes PR checks. ([#1273](https://github.com/wazuh/wazuh-kubernetes/pull/1273))
 
 ### Changed
