@@ -5,14 +5,14 @@ This guide describes the necessary steps to deploy Wazuh on Kubernetes.
 ## Pre-requisites
 
 - Kubernetes cluster already deployed.
-- Kubernetes can run on a wide range of Cloud providers and bare-metal environments, this repository focuses on [AWS](https://aws.amazon.com/). It was tested using [Amazon EKS](https://docs.aws.amazon.com/eks). You should be able to:
-    - Create Persistent Volumes on top of AWS EBS when using a volumeClaimTemplates
-    - Create a record set in AWS Route 53 from a Kubernetes LoadBalancer.
+  - Kubernetes can run on a wide range of Cloud providers and bare-metal environments, this documentation section focuses on [AWS](https://aws.amazon.com/). It was tested using [Amazon EKS](https://docs.aws.amazon.com/eks).
+- You should be able to:
+  - Create Persistent Volumes on top of AWS EBS when using a volumeClaimTemplates
+  - Create a record set in AWS Route 53 from a Kubernetes LoadBalancer.
 - Having at least two Kubernetes nodes in order to meet the *podAntiAffinity* policy.
 - For Kubernetes version 1.23 or higher, the assignment of an IAM Role is necessary for the CSI driver to function correctly. Within the AWS documentation you can find the instructions for the assignment: https://docs.aws.amazon.com/eks/latest/userguide/ebs-csi.html
 - The installation of the CSI driver is necessary for new and old deployments, since it is a Kubernetes feature.
-- Wazuh deployment includes Network policy configurations to restrict communication between pods. Verify if the EKS cluster configuration has Network policy configuration enabled.
-
+- Wazuh deployment includes Network policy configurations to filter communication between pods. Verify if the EKS cluster configuration has Network policy configuration enabled.
 
 ## Overview
 
@@ -65,58 +65,60 @@ Details:
 #### Indexer stack
 
 - wazuh-indexer:
-  - Communication for Wazuh indexer nodes.
-- indexer:
-  - Wazuh indexer API. Used by Wazuh dashboard to write/read alerts.
+  - Internal service for Wazuh indexer pods.
+  - Exposes ports 9200 (REST API) and 9300 (cluster transport) inside the Kubernetes cluster.
 - dashboard:
-  - Wazuh dashboard service. https://wazuh.your-domain.com:443
+  - Internal service for the Wazuh dashboard on port 443.
+  - Exposed externally through the Nginx ingress controller (wazuh-ingress) at the configured FQDN.
 
 #### Wazuh
 
-- wazuh:
-  - Wazuh API: wazuh-master.your-domain.com:55000
-  - Agent registration service (authd): wazuh-master.your-domain.com:1515
-- wazuh-workers:
-  - Reporting service: wazuh-manager.your-domain.com:1514
+- wazuh-api:
+  - Internal service for the Wazuh API on port 55000.
+  - Consumed by the Wazuh dashboard and by external clients through the ingress TCP mappings.
+- wazuh-events:
+  - Internal service for agent event traffic on port 1514.
+- wazuh-registration:
+  - Internal service for agent enrollment (authd) on port 1515.
 - wazuh-cluster:
-  - Communication for Wazuh manager nodes.
+  - Headless service for internal communication between Wazuh manager nodes on port 1516.
 
 ### Network policies
 
 - allow-dns
   - Allows DNS traffic within the cluster.
 - allow-ingress-to-dashboard
-  - Allows incoming traffic from the ingress controller to port 443 of wazuh-dashboard
+  - Allows incoming traffic from the ingress controller to port 443 of wazuh-dashboard.
 - allow-ingress-to-manager-master
-  - Allows incoming traffic from the ingress controller to port 1515 of wazuh-manager (master)
+  - Allows incoming traffic from the ingress controller to port 1515 of wazuh-manager (master).
 - allow-ingress-to-manager-worker
-  - Allows incoming traffic from the ingress controller to port 1514 of wazuh-manager (worker)
+  - Allows incoming traffic from the ingress controller to port 1514 of wazuh-manager (worker).
 - dashboard-egress
-  - Allows outgoing traffic from wazuh-dashboard pods to ports 9200 of wazuh-indexer and 55000 of wazuh-manager (master)
+  - Allows outgoing traffic from wazuh-dashboard pods to port 9200 of wazuh-indexer and port 55000 of wazuh-manager (master).
 - default-deny-all
-  - Denies all incoming and outgoing traffic not explicitly declared in a network policy
+  - Denies all incoming and outgoing traffic not explicitly declared in a network policy.
 - indexer-egress
-  - Allows outgoing traffic from wazuh-indexer pods to the Ports 9200 and 9300 of wazuh-indexer nodes
+  - Allows outgoing traffic from wazuh-indexer pods to ports 9200 and 9300 of wazuh-indexer nodes.
 - indexer-ingress
-  - Allows incoming traffic from wazuh-dashboard (9200), wazuh-manager (9200), and wazuh-indexer (9300) pods to wazuh-indexer pods
+  - Allows incoming traffic from wazuh-dashboard (9200), wazuh-manager (9200), and wazuh-indexer (9300) pods to wazuh-indexer pods.
 - manager-egress-external
-  - Allows outgoing traffic from wazuh-manager pods to the internet (for downloading CTI)
+  - Allows outgoing traffic from wazuh-manager pods to the internet (for downloading CTI and external resources).
 - manager-egress
-  - Allows outgoing traffic from wazuh-manager pods to wazuh-indexer port 9200
+  - Allows outgoing traffic from wazuh-manager pods to wazuh-indexer on port 9200.
 - wazuh-api-ingress
-  - Allows incoming traffic from wazuh-dashboard (55000) and other wazuh-manager pods to port 1516
+  - Allows incoming traffic from wazuh-dashboard (55000) and other wazuh-manager pods to port 1516 of the manager master.
 - wazuh-worker-egress
-  - Allows outgoing traffic from the wazuh-manager pods (workers) to wazuh-manager ports 1516 and 55000
+  - Allows outgoing traffic from wazuh-manager worker pods to wazuh-manager ports 1516 and 55000.
+
+Base policies (such as default-deny-all and DNS) are always applied with the Wazuh namespace. Additional ingress policies for the dashboard and managers are added by the EKS overlay to integrate with the Nginx ingress controller.
 
 ## Deploy
-
 
 ### Step 1: Deploy Kubernetes
 
 Deploying the Kubernetes cluster is out of the scope of this guide.
 
 This repository focuses on [AWS](https://aws.amazon.com/) but it should be easy to adapt it to another Cloud provider. In case you are using AWS, we recommend [EKS](https://docs.aws.amazon.com/en_us/eks/latest/userguide/getting-started.html).
-
 
 ### Step 2: Create domains to access the services
 
@@ -132,9 +134,9 @@ Note: You can skip this step and the services will be accessible using the Load 
 
 Clone this repository to deploy the necessary services and pods.
 
-```BASH
-$ git clone https://github.com/wazuh/wazuh-kubernetes.git -b v5.0.0 --depth=1
-$ cd wazuh-kubernetes
+```bash
+git clone https://github.com/wazuh/wazuh-kubernetes.git -b v5.0.0 --depth=1
+cd wazuh-kubernetes
 ```
 
 ### Step 3.1: Setup SSL certificates
@@ -144,19 +146,23 @@ Wazuh uses certificates to establish confidentiality and encrypt communications 
 Download the `wazuh-certs-tool.sh` script. This creates the certificates that encrypt communications between the Wazuh central components.
 
 #### 3.1.1 Download the Wazuh certificates tool script and config.yml file:
-```
-$ curl -sO https://packages.wazuh.com/5.0/wazuh-certs-tool.sh
-$ curl -sO https://packages.wazuh.com/5.0/config.yml
+
+```bash
+cd wazuh
+curl -sO https://packages.wazuh.com/5.0/wazuh-certs-tool.sh
+curl -sO https://packages.wazuh.com/5.0/config.yml
 ```
 
 #### 3.1.2 Edit the config.yml file with the configuration of the Wazuh components to be deployed
-```
+
+```yaml
 nodes:
   # Wazuh indexer nodes
   indexer:
     - name: indexer
       ip: "127.0.0.1"
 
+  # Wazuh server nodes
   server:
     - name: server
       ip: "127.0.0.1"
@@ -168,36 +174,46 @@ nodes:
 ```
 
 #### 3.1.3 Run the Wazuh certificates tool script:
-```
+
+```bash
 bash wazuh-certs-tool.sh -A
 ```
 
 The required certificates are imported via secretGenerator on the `kustomization.yml` file:
 
-    secretGenerator:
-      - name: indexer-certs
-        files:
-          - wazuh-certificates/root-ca.pem
-          - wazuh-certificates/indexer.pem
-          - wazuh-certificates/indexer-key.pem
-          - wazuh-certificates/dashboard.pem
-          - wazuh-certificates/dashboard-key.pem
-          - wazuh-certificates/admin.pem
-          - wazuh-certificates/admin-key.pem
-          - wazuh-certificates/server.pem
-          - wazuh-certificates/server-key.pem
-      - name: dashboard-certs
-        files:
-          - wazuh-certificates/dashboard.pem
-          - wazuh-certificates/dashboard-key.pem
-          - wazuh-certificates/root-ca.pem
+```yaml
+secretGenerator:
+  - name: indexer-certs
+    files:
+      - wazuh-certificates/root-ca.pem
+      - wazuh-certificates/indexer.pem
+      - wazuh-certificates/indexer-key.pem
+      - wazuh-certificates/dashboard.pem
+      - wazuh-certificates/dashboard-key.pem
+      - wazuh-certificates/admin.pem
+      - wazuh-certificates/admin-key.pem
+      - wazuh-certificates/server.pem
+      - wazuh-certificates/server-key.pem
+  - name: dashboard-certs
+    files:
+      - wazuh-certificates/dashboard.pem
+      - wazuh-certificates/dashboard-key.pem
+      - wazuh-certificates/root-ca.pem
+```
 
 ### Step 3.2: Apply Nginx ingress controller
 
 To expose services outside the `EKS` cluster, we are using the Nginx ingress controller. To deploy it, we must run the following:
 
-```BASH
-$ kubectl apply -f nginx/nginx-ingress-controler.yaml
+```bash
+cd ..
+kubectl apply -f nginx/nginx-ingress-controller.yaml
+```
+
+Expected output:
+
+```bash
+$ kubectl apply -f nginx/nginx-ingress-controller.yaml
 namespace/ingress-nginx created
 serviceaccount/ingress-nginx created
 serviceaccount/ingress-nginx-admission created
@@ -220,7 +236,15 @@ ingressclass.networking.k8s.io/nginx created
 validatingwebhookconfiguration.admissionregistration.k8s.io/ingress-nginx-admission created
 ```
 
-```BASH
+Wait until the load balancer is created, you can check it with the following command:
+
+```bash
+kubectl -n ingress-nginx get svc
+```
+
+Expected output:
+
+```bash
 $ kubectl -n ingress-nginx get svc
 NAME                                 TYPE           CLUSTER-IP      EXTERNAL-IP                                                                     PORT(S)                                                    AGE
 ingress-nginx-controller             LoadBalancer   10.100.228.67   a0c363db4315d484fa38751820a9e89b-e1811181631efef0.elb.us-west-1.amazonaws.com   80:30561/TCP,443:32533/TCP,1514:31784/TCP,1515:31274/TCP   36s
@@ -233,13 +257,15 @@ We are using the overlay feature of kustomize to create two variants: `eks` and 
 
 You can adjust resources for the cluster on `envs/eks/`, you can tune cpu, memory as well as storage for persistent volumes of each of the cluster objects.
 
+Follow the steps below:
+
 ### Step 3.3.1: Update the Ingress host
 
-For TLS Passthrough to work correctly, it is necessary to modify the ingress host `wazuh-ingress` with the `FQDN` of the load balancer obtained in the command `kubectl -n ingress-nginx get svc`
+For TLS Passthrough to work correctly, it is necessary to modify the ingress host `wazuh-ingress` in `wazuh/base/wazuh-ingress.yaml` with the `FQDN` of the load balancer obtained in the command `kubectl -n ingress-nginx get svc`
 
 for example:
 
-```
+```yaml
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
@@ -265,23 +291,23 @@ spec:
 
 By using the kustomization file on the `eks` variant we can now deploy the whole cluster with a single command:
 
-```BASH
-$ kubectl apply -k envs/eks/
+```bash
+kubectl apply -k envs/eks/
 ```
 
-### Verifying the deployment
+## Verifying the deployment
 
-#### Namespace
+### Namespace
 
-```BASH
-$ kubectl get namespaces | grep wazuh
+```bash
+kubectl get namespaces | grep wazuh
 wazuh         Active    12m
 ```
 
-#### Services
+### Services
 
-```BASH
-$ kubectl get services -n wazuh
+```bash
+kubectl get services -n wazuh
 NAME                 TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)             AGE
 dashboard            ClusterIP   10.100.196.140   <none>        443/TCP             23m
 wazuh-api            ClusterIP   10.100.58.98     <none>        55000/TCP           23m
@@ -292,28 +318,28 @@ wazuh-registration   ClusterIP   10.100.40.83     <none>        1515/TCP        
 
 ```
 
-#### Deployments
+### Deployments
 
-```BASH
-$ kubectl get deployments -n wazuh
+```bash
+kubectl get deployments -n wazuh
 NAME              READY   UP-TO-DATE   AVAILABLE   AGE
 wazuh-dashboard   1/1     1            1           4h16m
 ```
 
-#### Statefulsets
+### Statefulsets
 
-```BASH
-$ kubectl get statefulsets -n wazuh
+```bash
+kubectl get statefulsets -n wazuh
 NAME                   READY   AGE
 wazuh-indexer          3/3     4h17m
 wazuh-manager-master   1/1     4h17m
 wazuh-manager-worker   2/2     4h17m
 ```
 
-#### Pods
+### Pods
 
-```BASH
-$ kubectl get pods -n wazuh
+```bash
+kubectl get pods -n wazuh
 NAME                               READY   STATUS    RESTARTS   AGE
 wazuh-dashboard-57d455f894-ffwsk   1/1     Running   0          4h17m
 wazuh-indexer-0                    1/1     Running   0          4h17m
@@ -324,10 +350,10 @@ wazuh-manager-worker-0             1/1     Running   0          4h17m
 wazuh-manager-worker-1             1/1     Running   0          4h17m
 ```
 
-#### Network Policies
+### Network Policies
 
-```BASH
-$ kubectl -n wazuh get networkpolicy
+```bash
+kubectl -n wazuh get networkpolicy
 NAME                              POD-SELECTOR                         AGE
 allow-dns                         <none>                               51s
 allow-ingress-to-dashboard        app=wazuh-dashboard                  50s
@@ -343,14 +369,14 @@ wazuh-api-ingress                 app=wazuh-manager,node-type=master   42s
 wazuh-worker-egress               app=wazuh-manager,node-type=worker   41s
 ```
 
-#### Accessing Wazuh dashboard
+### Accessing Wazuh dashboard
 
 In case you created domain names for the services, you should be able to access Wazuh dashboard using the proposed domain name: https://wazuh.your-domain.com.
 
 Also, you can access using the External-IP (from the VPC): https://xxx-yyy-zzz.us-east-1.elb.amazonaws.com:443
 
-```BASH
-$ kubectl -n ingress-nginx get svc
+```bash
+kubectl -n ingress-nginx get svc
 NAME                                 TYPE           CLUSTER-IP      EXTERNAL-IP                                                                     PORT(S)                                                    AGE
 ingress-nginx-controller             LoadBalancer   10.100.228.67   a0c363db4315d484fa38751820a9e89b-e1811181631efef0.elb.us-west-1.amazonaws.com   80:30561/TCP,443:32533/TCP,1514:31784/TCP,1515:31274/TCP   36s
 ingress-nginx-controller-admission   ClusterIP      10.100.118.85   <none>                                                                          443/TCP                                                    35s

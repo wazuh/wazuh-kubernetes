@@ -9,12 +9,12 @@
 
 # Reference Manual
 
-- [Introduction](ref/introduction/introduction.md)
-  - [Description](ref/introduction/description.md)
-  - [Compatibility](ref/introduction/compatibility.md)
+- [Introduction](ref/introduction.md)
 - [Getting Started](ref/getting-started/getting-started.md)
   - [Requirements](ref/getting-started/requirements.md)
   - [Usage](ref/getting-started/usage/usage.md)
     - [Local environment](ref/getting-started/usage/local-environment.md)
+    - [Upgrade](ref/getting-started/usage/upgrade.md)
     - [Cleanup](ref/getting-started/usage/cleanup.md)
+- [Configuration](ref/getting-started/configuration.md)
 - [Glossary](ref/glossary.md)

@@ -1,0 +1,81 @@
+# Configuration
+
+This page describes the main configuration options for deploying Wazuh using this repository. It explains how to adjust the manifests for your environment before applying the Kustomize overlays
+
+## Configuration overview
+
+The deployment is organized in two layers:
+
+- **Base manifests**: Located in `wazuh/`. They define the Wazuh namespace, storage class, ingress, services, StatefulSets, Deployments, and Secrets
+- **Environment overlays**: Located in `envs/eks/` and `envs/local-env/`. They reuse the base manifests and apply environment‑specific patches (storage, resources, replicas)
+
+Select the overlay that matches your environment and customize the files in `envs/<environment>/` before running `kubectl apply -k`
+
+For deployment steps, refer to:
+
+- EKS: [Usage](usage/usage.md)
+- Local clusters: [Local environment](usage/local-environment.md)
+
+## Storage configuration
+
+Persistent volumes are provisioned through the `wazuh-storage` `StorageClass`
+
+- **Base definition**: The base StorageClass is defined in `wazuh/base/storage-class.yaml`
+- **EKS overlay**: `envs/eks/storage-class.yaml` configures `wazuh-storage` to use AWS EBS with encrypted volumes and a `Retain` reclaim policy
+- **Local overlay**: `envs/local-env/storage-class.yaml` configures `wazuh-storage` for local provisioners such as `microk8s.io/hostpath` or `k8s.io/minikube-hostpath`
+
+Before deployment:
+
+- Verify that the `provisioner` value matches a valid storage provisioner in your cluster (`kubectl get sc`), and in case of local deployment verify the contents of `envs/local-env/storage-class.yaml`
+
+## Resource requests and replicas
+
+CPU, memory, and storage settings are controlled via Kustomize patches under `envs/`
+
+- **Indexer resources**:
+  - EKS: `envs/eks/indexer-resources.yaml` adjusts `resources` and persistent volume size for the `wazuh-indexer` StatefulSet
+  - Local: `envs/local-env/indexer-resources.yaml` reduces replicas and keeps modest resource requests for local development
+
+- **Manager resources**:
+  - EKS: `envs/eks/wazuh-master-resources.yaml` and `envs/eks/wazuh-worker-resources.yaml` configure CPU, memory, and persistent volume size for the Wazuh manager master and worker StatefulSets
+  - Local: `envs/local-env/wazuh-resources.yaml` reduces the number of Wazuh manager worker replicas
+
+## Ingress and external access
+
+External access to the Wazuh dashboard is provided through an Ingress resource
+
+- The base ingress is defined in `wazuh/base/wazuh-ingress.yaml`
+- The `rules.host` field must be updated with the fully qualified domain name (FQDN) or host you will use to access the dashboard
+
+Typical values:
+
+- **EKS**: Set the host to the DNS name of the load balancer created by the ingress controller
+- **Local environment**: Set the host to `localhost` or another local hostname, as described in [Local environment](usage/local-environment.md)
+
+## Network policies
+
+Network policies restrict communication between pods to enforce security boundaries
+
+- **Base policies**: Located in `wazuh/base/`
+  - `default-deny-all.yaml`: Denies all ingress and egress traffic not explicitly allowed by other policies
+  - `Allow-DNS-np.yaml`: Permits DNS resolution traffic to `kube-dns` in the `kube-system` namespace
+
+- **EKS-specific policies**: Located in `envs/eks/network-policies/`
+  - `allow-ingress-to-dashboard.yaml`: Allows ingress controller traffic to the Wazuh dashboard
+  - `allow-ingress-to-manager-master.yaml`: Allows ingress controller traffic to the Wazuh manager master
+  - `allow-ingress-to-manager-worker.yaml`: Allows ingress controller traffic to the Wazuh manager workers
+
+Additional component-specific egress and ingress policies are defined alongside each workload in `wazuh/wazuh_managers/` and `wazuh/indexer_stack/`. For a complete list and detailed descriptions, refer to the [Network policies](usage/usage.md#network-policies) section in the EKS usage guide.
+
+## Credentials and secrets
+
+Default credentials and keys are provided as Kubernetes Secrets under `wazuh/secrets/`. These values are meant to be customized before any production deployment.
+
+Main secrets:
+
+- `wazuh/secrets/wazuh-api-cred-secret.yaml`
+  Wazuh API username and password.
+- `wazuh/secrets/dashboard-cred-secret.yaml`
+  Wazuh dashboard (Kibana) username and password.
+- `wazuh/secrets/indexer-cred-secret.yaml`
+  Wazuh indexer username and password.
