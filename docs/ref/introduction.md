@@ -13,7 +13,7 @@ This repository enables you to deploy a complete Wazuh stack on a Kubernetes clu
 - **High availability**: StatefulSet controllers for Wazuh managers and indexers with pod anti-affinity rules for distributing workloads across nodes
 - **Persistent storage**: Automatic provisioning of persistent volumes for data retention across pod restarts
 - **Secure by default**: TLS/SSL certificate management, secrets handling, and network isolation via Kubernetes namespaces
-- **Production-ready components**:
+- **Components**:
   - Wazuh manager cluster (master and worker nodes) for security event processing
   - Wazuh indexer cluster for data storage and search capabilities
   - Wazuh dashboard for visualization and management interface

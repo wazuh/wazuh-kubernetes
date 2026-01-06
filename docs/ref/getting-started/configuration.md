@@ -13,8 +13,8 @@ Select the overlay that matches your environment and customize the files in `env
 
 For deployment steps, refer to:
 
-- EKS: [Usage](usage/usage.md)
-- Local clusters: [Local environment](usage/local-environment.md)
+- EKS clusters: [Usage: EKS deployment](usage/deployment.md#usage-eks-deployment)
+- Local clusters: [Usage: Local deployment](usage/deployment.md#usage-local-deployment)
 
 ## Storage configuration
 
@@ -49,8 +49,8 @@ External access to the Wazuh dashboard is provided through an Ingress resource
 
 Typical values:
 
-- **EKS**: Set the host to the DNS name of the load balancer created by the ingress controller
-- **Local environment**: Set the host to `localhost` or another local hostname, as described in [Local environment](usage/local-environment.md)
+- **EKS**: DNS name of the load balancer created by the ingress controller
+- **Local environment**: `localhost` or another local hostname
 
 ## Network policies
 
@@ -64,8 +64,6 @@ Network policies restrict communication between pods to enforce security boundar
   - `allow-ingress-to-dashboard.yaml`: Allows ingress controller traffic to the Wazuh dashboard
   - `allow-ingress-to-manager-master.yaml`: Allows ingress controller traffic to the Wazuh manager master
   - `allow-ingress-to-manager-worker.yaml`: Allows ingress controller traffic to the Wazuh manager workers
-
-Additional component-specific egress and ingress policies are defined alongside each workload in `wazuh/wazuh_managers/` and `wazuh/indexer_stack/`. For a complete list and detailed descriptions, refer to the [Network policies](usage/usage.md#network-policies) section in the EKS usage guide.
 
 ## Credentials and secrets
 

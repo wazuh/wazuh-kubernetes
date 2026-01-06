@@ -27,7 +27,17 @@
 
 ## Resource requirements
 
-To deploy Wazuh on Kubernetes, the cluster should have at least the following resources available:
+### EKS
+
+To deploy Wazuh on Kubernetes on AWS EKS, the cluster should have at least the following resources available:
+
+- 2 CPU units
+- 5 Gi of memory
+- 2 Gi of storage
+
+### Locally
+
+To deploy Wazuh on Kubernetes locally, the cluster should have at least the following resources available:
 
 - 2 CPU units
 - 3 Gi of memory

@@ -23,10 +23,20 @@ For EKS deployments using Kubernetes 1.23 or higher, you must configure an IAM r
 
 ### Minimum Cluster Resources
 
-Your Kubernetes cluster must have at least the following resources available:
-
-- **CPU**: 2 CPU cores
-- **Memory**: 3 GiB RAM
-- **Storage**: 2 GiB persistent storage
-
 Production environments may require additional CPU, memory, and storage depending on the workload and number of monitored agents.
+
+#### EKS
+
+To deploy Wazuh on Kubernetes on AWS EKS, the cluster should have at least the following resources available:
+
+- 2 CPU units
+- 5 Gi of memory
+- 2 Gi of storage
+
+#### Locally
+
+To deploy Wazuh on Kubernetes locally, the cluster should have at least the following resources available:
+
+- 2 CPU units
+- 3 Gi of memory
+- 2 Gi of storage
