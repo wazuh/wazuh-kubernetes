@@ -12,6 +12,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
+- Update Wazuh Kubernetes repository documentation ([#1285](https://github.com/wazuh/wazuh-kubernetes/pull/1285))
 - Added Nginx ingress controller for Wazuh Kubernetes deployment. ([#1272](https://github.com/wazuh/wazuh-kubernetes/pull/1272))
 - Modify deployment configuration in Kubernetes. ([#1268](https://github.com/wazuh/wazuh-kubernetes/pull/1268))
 - Wazuh server clean-up ([#1213](https://github.com/wazuh/wazuh-kubernetes/pull/1213))

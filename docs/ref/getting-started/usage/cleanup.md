@@ -6,12 +6,31 @@ Steps to perform a clean up of our deployments, services and volumes used in our
 
 To delete your Wazuh cluster just use `kubectl delete -k envs/<ENVIRONMENT>` from this repository directory. (being <ENVIRONMENT> one of `EKS` or `local-env`)
 
-## Delete the persistent volumes manually.
+## Delete Nginx Ingress Controller
+
+To remove the Nginx Ingress Controller, run the following command from your repository directory:
+
+```sh
+kubectl delete -f nginx/nginx-ingress-controller.yaml
+```
+
+## Delete the persistent volumes manually
 
 Since we use `reclaimPolicy: Retain` in the storage class definition you must delete volumes manually if you want to clean these as well.
 
-
+```console
+kubectl get persistentvolume
 ```
+
+And then delete persistent volumes using:
+
+```console
+kubectl delete persistentvolume <PV_NAME>
+```
+
+Expected output:
+
+```console
 ubuntu@k8s-control-server:~$ kubectl get persistentvolume
 NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS        CLAIM                                                         STORAGECLASS             REASON    AGE
 pvc-024466da-f7c5-11e8-b9b8-022ada63b4ac   10Gi       RWO            Retain           Released      wazuh/wazuh-manager-worker-wazuh-manager-worker-1             wazuh-storage                      6d
@@ -20,7 +39,7 @@ pvc-fb821971-f7c4-11e8-b9b8-022ada63b4ac   10Gi       RWO            Retain     
 pvc-ffe7bf66-f7c4-11e8-b9b8-022ada63b4ac   10Gi       RWO            Retain           Released      wazuh/wazuh-manager-worker-wazuh-manager-worker-0             wazuh-storage                      6d
 ```
 
-```
+```console
 ubuntu@k8s-control-server:~$ kubectl delete persistentvolume pvc-b3226ad3-f7c4-11e8-b9b8-022ada63b4ac
 ```
 
