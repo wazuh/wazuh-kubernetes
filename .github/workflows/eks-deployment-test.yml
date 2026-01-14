@@ -1,0 +1,212 @@
+run-name: Kubernetes EKS deployment test - Branch ${{ inputs.BRANCH_VERSION }} - Launched by @${{ github.actor }}
+name: Test Wazuh EKS deployment on Kubernetes
+
+on:
+  workflow_dispatch:
+    inputs:
+      BRANCH_VERSION:
+        description: 'Branch version to deploy'
+        required: true
+        default: 'main'
+
+permissions:
+  id-token: write   # This is required for requesting the JWT
+  contents: read    # This is required for actions/checkout
+
+env:
+  AWS_REGION: us-west-1
+  CLUSTER_NAME: test-eks-deploy${{ github.event.number }}
+
+jobs:
+  EKS_deployment_test:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.BRANCH_VERSION }}
+
+      - name: Configure aws credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_IAM_ROLE }}
+          aws-region: "${{ env.AWS_REGION }}"
+
+      - name: Install pytest
+        run: |
+          sudo apt install -y python3-pytest
+
+      - name: Install eksctl
+        run: |
+          ARCH=amd64
+          PLATFORM=$(uname -s)_$ARCH
+          curl -sLO "https://github.com/eksctl-io/eksctl/releases/latest/download/eksctl_$PLATFORM.tar.gz"
+          curl -sL "https://github.com/eksctl-io/eksctl/releases/latest/download/eksctl_checksums.txt" | grep $PLATFORM | sha256sum --check
+          tar -xzf eksctl_$PLATFORM.tar.gz -C /tmp && rm eksctl_$PLATFORM.tar.gz
+          sudo mv /tmp/eksctl /usr/local/bin
+
+      - name: Deploy eks cluster
+        run: |
+          eksctl create cluster \
+          --name ${{ env.CLUSTER_NAME }} \
+          --with-oidc \
+          --region ${{ env.AWS_REGION }} \
+          --nodes-min 6 \
+          --nodes-max 6 \
+          --managed \
+          --spot \
+          -t t3a.medium \
+          --tags "issue=https://github.com/wazuh/wazuh-kubernetes/pull/${{ github.event.number }},team=devops,termination_date=2030-01-01 21:00:00"
+
+      - name: Create sa for ebs-csi-controller
+        run: |
+          eksctl create iamserviceaccount \
+          --name ebs-csi-controller-sa \
+          --region ${{ env.AWS_REGION }}  \
+          --namespace kube-system \
+          --cluster ${{ env.CLUSTER_NAME }} \
+          --role-name eksctl-EBS-CSI-DriverRole-${{ env.CLUSTER_NAME }} \
+          --role-only \
+          --attach-policy-arn arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy \
+          --approve
+
+      - name: Install addon aws-ebs-csi-driver into a eks cluster deployed
+        run: |
+          eksctl create addon \
+          --name aws-ebs-csi-driver \
+          --cluster ${{ env.CLUSTER_NAME }} \
+          --region ${{ env.AWS_REGION }} \
+          --service-account-role-arn arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/eksctl-EBS-CSI-DriverRole-${{ env.CLUSTER_NAME }} \
+          --force
+
+      - name: Create sa for aws-node
+        run: |
+          eksctl create iamserviceaccount \
+          --cluster ${{ env.CLUSTER_NAME }} \
+          --namespace kube-system \
+          --name aws-node \
+          --attach-policy-arn arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy \
+          --role-name AmazonEKSVPCCNIRole \
+          --override-existing-serviceaccounts \
+          --approve \
+          --region ${{ env.AWS_REGION }}
+
+      - name: Enable Network Policies in the EKS cluster
+        run: |
+          ADDON_VERSION=$(kubectl describe daemonset aws-node --namespace kube-system | grep amazon-k8s-cni: | cut -d : -f 3)
+          aws eks update-addon \
+          --cluster-name ${{ env.CLUSTER_NAME }} \
+          --addon-name vpc-cni \
+          --addon-version $ADDON_VERSION \
+          --service-account-role-arn arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/AmazonEKSVPCCNIRole \
+          --resolve-conflicts OVERWRITE \
+          --configuration-values '{"enableNetworkPolicy": "true"}' \
+          --region ${{ env.AWS_REGION }}
+
+      - name: Install yq
+        run: |
+          sudo wget https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -O /usr/local/bin/yq && sudo chmod +x /usr/local/bin/yq
+
+      - name: Get Wazuh version
+        run: |
+            WAZUH_VERSION=$(jq -r '.version' VERSION.json)
+            WAZUH_MAJOR=$(echo "$WAZUH_VERSION" | cut -d '.' -f 1)
+            WAZUH_MINOR=$(echo "$WAZUH_VERSION" | cut -d '.' -f 1-2)
+            echo WAZUH_VERSION=$WAZUH_VERSION >> $GITHUB_ENV
+            echo WAZUH_MAJOR=$WAZUH_MAJOR >> $GITHUB_ENV
+            echo WAZUH_MINOR=$WAZUH_MINOR >> $GITHUB_ENV
+
+      - name: Replace image registry to ECR
+        run: |
+          ECR_REGISTRY="${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com"
+          yq e -i ".spec.template.spec.containers[] |= select(.name == \"wazuh-dashboard\").image = \"$ECR_REGISTRY/wazuh/wazuh-dashboard:${{ env.WAZUH_VERSION }}\"" wazuh/indexer_stack/wazuh-dashboard/dashboard-deploy.yaml
+          yq e -i ".spec.template.spec.containers[] |= select(.name == \"wazuh-indexer\").image = \"$ECR_REGISTRY/wazuh/wazuh-indexer:${{ env.WAZUH_VERSION }}\"" wazuh/indexer_stack/wazuh-indexer/cluster/indexer-sts.yaml
+          yq e -i ".spec.template.spec.initContainers[] |= select(.name == \"init-wazuh-etc\").image = \"$ECR_REGISTRY/wazuh/wazuh-manager:${{ env.WAZUH_VERSION }}\"" wazuh/wazuh_managers/wazuh-master-sts.yaml
+          yq e -i ".spec.template.spec.containers[] |= select(.name == \"wazuh-manager\").image = \"$ECR_REGISTRY/wazuh/wazuh-manager:${{ env.WAZUH_VERSION }}\"" wazuh/wazuh_managers/wazuh-master-sts.yaml
+          yq e -i ".spec.template.spec.initContainers[] |= select(.name == \"init-wazuh-etc\").image = \"$ECR_REGISTRY/wazuh/wazuh-manager:${{ env.WAZUH_VERSION }}\"" wazuh/wazuh_managers/wazuh-worker-sts.yaml
+          yq e -i ".spec.template.spec.containers[] |= select(.name == \"wazuh-manager\").image = \"$ECR_REGISTRY/wazuh/wazuh-manager:${{ env.WAZUH_VERSION }}\"" wazuh/wazuh_managers/wazuh-worker-sts.yaml
+
+      - name: Download Wazuh certificates tool and config files
+        run: |
+          cd wazuh/
+          curl -LO "https://packages-dev.wazuh.com/${{ env.WAZUH_MINOR }}/wazuh-certs-tool.sh"
+          curl -LO "https://packages-dev.wazuh.com/${{ env.WAZUH_MINOR }}/config.yml"
+
+      - name: Update config.yml file
+        run: |
+          yq e -i '.nodes.indexer[0].name = "indexer"' wazuh/config.yml
+          yq e -i '.nodes.indexer[0].ip = "127.0.0.1"' wazuh/config.yml
+          yq e -i '.nodes.server[0].name = "server"' wazuh/config.yml
+          yq e -i '.nodes.server[0].ip = "127.0.0.1"' wazuh/config.yml
+          yq e -i '.nodes.dashboard[0].ip = "127.0.0.1"' wazuh/config.yml
+
+      - name: Create Wazuh certificates
+        run: |
+          cd wazuh/
+          bash wazuh-certs-tool.sh -A
+
+      - name: Deploy Nginx ingress controller
+        run: |
+          kubectl apply -f nginx/nginx-ingress-controller.yaml
+
+      - name: Wait 5 minutes for Wazuh stack startup
+        run: sleep 5m
+
+      - name: Update Wazuh ingress DNS
+        run: |
+            INGRESS_DNS=$(kubectl -n ingress-nginx get service ingress-nginx-controller -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
+            yq e -i ".spec.rules[0].host = \"$INGRESS_DNS\"" wazuh/base/wazuh-ingress.yaml
+            echo INGRESS_DNS=$INGRESS_DNS >> $GITHUB_ENV
+
+      - name: Deploy Wazuh stack
+        run: kubectl apply -k envs/eks/
+
+      - name: Wait 10 minutes for Wazuh stack startup
+        run: sleep 10m
+
+      - name: View stack status
+        run: kubectl get all -n wazuh -o wide
+
+      - name: View Wazuh dashboard logs
+        run: kubectl logs $(kubectl get pods -n wazuh | grep wazuh-dashboard | awk '{print $1;}') -n wazuh
+
+      - name: View Wazuh indexer 0 logs
+        run: kubectl logs wazuh-indexer-0 -n wazuh
+
+      - name: View Wazuh indexer 1 logs
+        run: kubectl logs wazuh-indexer-1 -n wazuh
+
+      - name: View Wazuh indexer 2 logs
+        run: kubectl logs wazuh-indexer-2 -n wazuh
+
+      - name: View Wazuh manager master logs
+        run: kubectl logs wazuh-manager-master-0 -n wazuh
+
+      - name: View Wazuh manager worker 0 logs
+        run: kubectl logs wazuh-manager-worker-0 -n wazuh
+
+      - name: View Wazuh manager worker 1 logs
+        run: kubectl logs wazuh-manager-worker-1 -n wazuh
+
+      - name: Run pytest
+        run: |
+          pytest tests/k8s_pytest.py -v --deployment-type eks --dashboard-url "${{ env.INGRESS_DNS }}"
+
+      - name: Delete eks cluster
+        if: always()
+        run: |
+          eksctl delete cluster \
+          --name ${{ env.CLUSTER_NAME }} \
+          --region ${{ env.AWS_REGION }}
+
+      - name: Delete EBS dynamic volumes
+        if: always()
+        run: |
+          for volume_id in $(aws ec2 describe-volumes \
+                              --region ${{ env.AWS_REGION }} \
+                              --filters Name=tag:KubernetesCluster,Values="${{ env.CLUSTER_NAME }}" \
+                              --query "Volumes[].VolumeId" \
+                              --output text); do
+              echo "Deleting Volume id: $volume_id"
+              aws ec2 delete-volume --region ${{ env.AWS_REGION }} --volume-id $volume_id
+          done
