@@ -13,7 +13,7 @@ metadata:
   name: wazuh-storage
 
 # Microk8s is our standard for local development
-provisioner: microk8s.io/hostpath
+provisioner: k8s.io/minikube-hostpath
 
 # In case you're running Minikube you can comment the line above and use this one
 # provisioner: k8s.io/minikube-hostpath

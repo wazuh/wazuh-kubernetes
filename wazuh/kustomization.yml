@@ -32,7 +32,10 @@ secretGenerator:
 resources:
   - base/wazuh-ns.yaml
   - base/storage-class.yaml
-  - base/wazuh-ingress.yaml
+  - base/middleware.yaml
+  - base/ingressRoute-tcp-dashboard.yaml
+  - base/ingressRoute-tcp-events.yaml
+  - base/ingressRoute-tcp-registration.yaml
   - base/Allow-DNS-np.yaml
   - base/default-deny-all.yaml
 
@@ -48,10 +51,10 @@ resources:
   - wazuh_managers/wazuh-api-svc.yaml
   - wazuh_managers/wazuh-master-sts.yaml
   - wazuh_managers/wazuh-worker-sts.yaml
-  - wazuh_managers/manager-egress.yaml
-  - wazuh_managers/manager-egress-external.yaml
-  - wazuh_managers/wazuh-master-ingress.yaml
-  - wazuh_managers/wazuh-worker-egress.yaml
+  - wazuh_managers/network-policies/manager-egress.yaml
+  - wazuh_managers/network-policies/manager-egress-external.yaml
+  - wazuh_managers/network-policies/wazuh-master-ingress.yaml
+  - wazuh_managers/network-policies/wazuh-worker-egress.yaml
 
   - indexer_stack/wazuh-indexer/indexer-svc.yaml
   - indexer_stack/wazuh-indexer/indexer-egress.yaml

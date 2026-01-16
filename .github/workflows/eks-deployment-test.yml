@@ -145,16 +145,17 @@ jobs:
           cd wazuh/
           bash wazuh-certs-tool.sh -A
 
-      - name: Deploy Nginx ingress controller
+      - name: Deploy Traefik ingress controller
         run: |
-          kubectl apply -f nginx/nginx-ingress-controller.yaml
+          kubectl apply -f traefik/crd/kubernetes-crd-definition-v1.yml
+          kubectl apply -k traefik/runtime/
 
-      - name: Wait 5 minutes for Wazuh stack startup
+      - name: Wait 5 minutes for Traefik startup
         run: sleep 5m
 
       - name: Update Wazuh ingress DNS
         run: |
-            INGRESS_DNS=$(kubectl -n ingress-nginx get service ingress-nginx-controller -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
+            INGRESS_DNS=$(kubectl -n traefik get service traefik -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
             yq e -i ".spec.rules[0].host = \"$INGRESS_DNS\"" wazuh/base/wazuh-ingress.yaml
             echo INGRESS_DNS=$INGRESS_DNS >> $GITHUB_ENV
 

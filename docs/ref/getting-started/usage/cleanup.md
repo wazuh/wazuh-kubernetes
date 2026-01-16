@@ -6,12 +6,13 @@ Steps to perform a clean up of our deployments, services and volumes used in our
 
 To delete your Wazuh cluster just use `kubectl delete -k envs/<ENVIRONMENT>` from this repository directory. (being <ENVIRONMENT> one of `EKS` or `local-env`)
 
-## Delete Nginx Ingress Controller
+## Delete Traefik Ingress Controller
 
-To remove the Nginx Ingress Controller, run the following command from your repository directory:
+To remove the Traefik Ingress Controller, run the following command from your repository directory:
 
 ```sh
-kubectl delete -f nginx/nginx-ingress-controller.yaml
+kubectl delete -k traefik/runtime/
+kubectl delete -f traefik/crd/kubernetes-crd-definition-v1.yml
 ```
 
 ## Delete the persistent volumes manually

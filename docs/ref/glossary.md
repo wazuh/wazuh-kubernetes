@@ -8,7 +8,7 @@ A Kubernetes resource that controls how pods are allowed to communicate with eac
 
 ## Ingress controller
 
-A Kubernetes component that processes Ingress resources and configures the underlying load balancer or proxy to route external traffic into the cluster. In this deployment, an Nginx-based Ingress controller exposes the Wazuh dashboard and related HTTP(S) endpoints to users outside the cluster.
+A Kubernetes component that processes Ingress resources and configures the underlying load balancer or proxy to route external traffic into the cluster. In this deployment, an Traefik Ingress controller exposes the Wazuh dashboard and related HTTP(S) endpoints to users outside the cluster.
 
 ## Ingress resource
 
