@@ -156,7 +156,7 @@ jobs:
       - name: Update Wazuh ingress DNS
         run: |
             INGRESS_DNS=$(kubectl -n traefik get service traefik -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
-            yq e -i ".spec.routes[0].match = \"HostSNI(`$INGRESS_DNS`)\"" wazuh/base/ingressRoute-tcp-dashboard.yaml
+            yq e -i '.spec.routes[0].match = "HostSNI(`$INGRESS_DNS`)"' wazuh/base/ingressRoute-tcp-dashboard.yaml
             echo INGRESS_DNS=$INGRESS_DNS >> $GITHUB_ENV
 
       - name: Deploy Wazuh stack

@@ -115,7 +115,11 @@ jobs:
 
       - name: Update Wazuh ingress DNS
         run: |
-            yq e -i ".spec.routes[0].match = \"HostSNI(`localhost`)\"" wazuh/base/ingressRoute-tcp-dashboard.yaml
+          yq e -i '.spec.routes[0].match = "HostSNI(`localhost`)"' wazuh/base/ingressRoute-tcp-dashboard.yaml
+
+      - name: Deploy Traefik CRD
+        run: |
+          kubectl apply -f traefik/crd/kubernetes-crd-definition-v1.yml
 
       - name: Deploy Wazuh stack
         run: kubectl apply -k envs/local-env/
