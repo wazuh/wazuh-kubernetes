@@ -120,6 +120,7 @@ jobs:
       - name: Deploy Traefik CRD
         run: |
           kubectl apply -f traefik/crd/kubernetes-crd-definition-v1.yml
+          kubectl apply -k traefik/runtime/
 
       - name: Deploy Wazuh stack
         run: kubectl apply -k envs/local-env/
