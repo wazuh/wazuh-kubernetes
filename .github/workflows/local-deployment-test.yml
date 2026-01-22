@@ -54,7 +54,7 @@ jobs:
           sudo install minikube-linux-amd64 /usr/local/bin/minikube && rm minikube-linux-amd64
 
       - name: Start Minikube cluster
-        run: minikube start --network-plugin=cni --cni=calico
+        run: minikube start --memory=8192 --cpus=4 --network-plugin=cni --cni=calico
 
       - name: Get Wazuh version
         run: |
@@ -129,9 +129,6 @@ jobs:
 
       - name: View stack status
         run: kubectl get all -n wazuh -o wide
-
-      - name: Wazuh indexer describe
-        run: kubectl describe pod wazuh-indexer-0 -n wazuh
 
       - name: Wazuh dashboard pod name
         run: |
