@@ -139,7 +139,7 @@ jobs:
         run: kubectl logs ${{ env.DASHBOARD_POD }} -n wazuh
 
       - name: View Wazuh indexer 0 logs
-        run: kubectl logs wazuh-indexer-0 -n wazuh -p
+        run: kubectl logs wazuh-indexer-0 -n wazuh
 
       - name: View Wazuh manager master logs
         run: kubectl logs wazuh-manager-master-0 -n wazuh
