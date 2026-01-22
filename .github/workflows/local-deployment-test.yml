@@ -120,7 +120,6 @@ jobs:
       - name: Deploy Traefik CRD
         run: |
           kubectl apply -f traefik/crd/kubernetes-crd-definition-v1.yml
-          kubectl apply -k traefik/runtime/
 
       - name: Deploy Wazuh stack
         run: kubectl apply -k envs/local-env/
@@ -128,13 +127,11 @@ jobs:
       - name: Wait 10 minutes for Wazuh stack startup
         run: sleep 10m
 
-      - name: Start minikube tunnel
-        run: |
-          minikube tunnel &> /dev/null &
-          sleep 30
-
       - name: View stack status
         run: kubectl get all -n wazuh -o wide
+
+      - name: Wazuh indexer describe
+        run: kubectl describe pod wazuh-indexer-0 -n wazuh
 
       - name: Wazuh dashboard pod name
         run: |
