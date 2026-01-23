@@ -17,6 +17,23 @@ All notable changes to this project will be documented in this file.
 - Modify deployment configuration in Kubernetes. ([#1268](https://github.com/wazuh/wazuh-kubernetes/pull/1268))
 - Wazuh server clean-up ([#1213](https://github.com/wazuh/wazuh-kubernetes/pull/1213))
 - Replace OpenSearch deprecated settings ([#1109](https://github.com/wazuh/wazuh-kubernetes/pull/1109))
+### Fixed
+
+- None
+
+### Deleted
+
+- None
+
+## [4.14.4]
+
+### Added
+
+- None
+
+### Changed
+
+- None
 
 ### Fixed
 
