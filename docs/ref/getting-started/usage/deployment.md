@@ -24,7 +24,7 @@ Like a Deployment, a StatefulSet manages Pods that are based on an identical con
 
 It is useful for stateful applications like databases that save the data to a persistent storage. The states of each Wazuh manager as well as Wazuh indexer are desirable to maintain, so we declare them using StatefulSet to ensure that they maintain their states in every startup.
 
-Deployments are intended for stateless use and are quite lightweight and seem to be appropriate for Wazuh dashboard and Nginx, where it is not necessary to maintain the states.
+Deployments are intended for stateless use and are quite lightweight and seem to be appropriate for Wazuh dashboard and Traefik, where it is not necessary to maintain the states.
 
 #### Pods
 
@@ -74,7 +74,7 @@ Details:
   - Exposes ports 9200 (REST API) and 9300 (cluster transport) inside the Kubernetes cluster.
 - dashboard:
   - Internal service for the Wazuh dashboard on port 443.
-  - Exposed externally through the Nginx ingress controller (wazuh-ingress) at the configured FQDN.
+  - Exposed externally through the Traefik ingress controller (ingressRoute-tcp-dashboard) at the configured FQDN.
 
 **Wazuh Server stack**:
 
@@ -115,7 +115,7 @@ Details:
 - wazuh-worker-egress
   - Allows outgoing traffic from wazuh-manager worker pods to wazuh-manager ports 1516 and 55000.
 
-Base policies (such as default-deny-all and DNS) are always applied with the Wazuh namespace. Additional ingress policies for the dashboard and managers are added by the EKS overlay to integrate with the Nginx ingress controller.
+Base policies (such as default-deny-all and DNS) are always applied with the Wazuh namespace. Additional ingress policies for the dashboard and managers are added by the EKS overlay to integrate with the Traefik ingress controller.
 
 ### Deploy
 
@@ -206,54 +206,61 @@ secretGenerator:
       - wazuh-certificates/root-ca.pem
 ```
 
-#### Step 3.2: Apply Nginx ingress controller
+#### Step 3.2: Apply Traefik ingress controller
 
-To expose services outside the `EKS` cluster, we are using the Nginx ingress controller. To deploy it, we must run the following:
+To expose services outside the `EKS` cluster, we are using the Traefik ingress controller. We need to deploy the Traefik CRD first:
 
 ```bash
 cd ..
-kubectl apply -f nginx/nginx-ingress-controller.yaml
+kubectl apply -f traefik/crd/kubernetes-crd-definition-v1.yml
 ```
 
 Expected output:
 
 ```bash
-$ kubectl apply -f nginx/nginx-ingress-controller.yaml
-namespace/ingress-nginx created
-serviceaccount/ingress-nginx created
-serviceaccount/ingress-nginx-admission created
-role.rbac.authorization.k8s.io/ingress-nginx created
-role.rbac.authorization.k8s.io/ingress-nginx-admission created
-clusterrole.rbac.authorization.k8s.io/ingress-nginx created
-clusterrole.rbac.authorization.k8s.io/ingress-nginx-admission created
-rolebinding.rbac.authorization.k8s.io/ingress-nginx created
-rolebinding.rbac.authorization.k8s.io/ingress-nginx-admission created
-clusterrolebinding.rbac.authorization.k8s.io/ingress-nginx created
-clusterrolebinding.rbac.authorization.k8s.io/ingress-nginx-admission created
-configmap/ingress-nginx-controller created
-service/ingress-nginx-controller created
-service/ingress-nginx-controller-admission created
-configmap/wazuh-server-tcp created
-deployment.apps/ingress-nginx-controller created
-job.batch/ingress-nginx-admission-create created
-job.batch/ingress-nginx-admission-patch created
-ingressclass.networking.k8s.io/nginx created
-validatingwebhookconfiguration.admissionregistration.k8s.io/ingress-nginx-admission created
+$ kubectl apply -f traefik/crd/kubernetes-crd-definition-v1.yml
+customresourcedefinition.apiextensions.k8s.io/ingressroutes.traefik.io created
+customresourcedefinition.apiextensions.k8s.io/ingressroutetcps.traefik.io created
+customresourcedefinition.apiextensions.k8s.io/ingressrouteudps.traefik.io created
+customresourcedefinition.apiextensions.k8s.io/middlewares.traefik.io created
+customresourcedefinition.apiextensions.k8s.io/middlewaretcps.traefik.io created
+customresourcedefinition.apiextensions.k8s.io/serverstransports.traefik.io created
+customresourcedefinition.apiextensions.k8s.io/serverstransporttcps.traefik.io created
+customresourcedefinition.apiextensions.k8s.io/tlsoptions.traefik.io created
+customresourcedefinition.apiextensions.k8s.io/tlsstores.traefik.io created
+customresourcedefinition.apiextensions.k8s.io/traefikservices.traefik.io created
+```
+
+Then, que can deploy the Traefik runtime for the ingress controller:
+
+```bash
+kubectl apply -k traefik/runtime/
+```
+
+Expected output:
+
+```bash
+$ kubectl apply -k traefik/runtime/
+namespace/traefik created
+serviceaccount/traefik created
+clusterrole.rbac.authorization.k8s.io/traefik created
+clusterrolebinding.rbac.authorization.k8s.io/traefik created
+service/traefik created
+deployment.apps/traefik created
 ```
 
 Wait until the load balancer is created, you can check it with the following command:
 
 ```bash
-kubectl -n ingress-nginx get svc
+kubectl -n traefik get svc
 ```
 
 Expected output:
 
 ```bash
-$ kubectl -n ingress-nginx get svc
-NAME                                 TYPE           CLUSTER-IP      EXTERNAL-IP                                                                     PORT(S)                                                    AGE
-ingress-nginx-controller             LoadBalancer   10.100.228.67   a0c363db4315d484fa38751820a9e89b-e1811181631efef0.elb.us-west-1.amazonaws.com   80:30561/TCP,443:32533/TCP,1514:31784/TCP,1515:31274/TCP   36s
-ingress-nginx-controller-admission   ClusterIP      10.100.118.85   <none>                                                                          443/TCP                                                    35s
+$ kubectl -n traefik get svc
+NAME      TYPE           CLUSTER-IP     EXTERNAL-IP                                                              PORT(S)                                       AGE
+traefik   LoadBalancer   10.100.34.51   a7ffe29bfcf38420988fd52a698be422-862207742.us-west-1.elb.amazonaws.com   443:30725/TCP,1514:32036/TCP,1515:30354/TCP   6m29s
 ```
 
 #### Step 3.3: Apply all manifests using kustomize
@@ -266,30 +273,28 @@ Follow the steps below:
 
 #### Step 3.3.1: Update the Ingress host
 
-For TLS Passthrough to work correctly, it is necessary to modify the ingress host `wazuh-ingress` in `wazuh/base/wazuh-ingress.yaml` with the `FQDN` of the load balancer obtained in the command `kubectl -n ingress-nginx get svc`
+For TLS Passthrough to work correctly, it is necessary to modify the ingress host `wazuh-ingress` in `wazuh/base/ingressRoute-tcp-dashboard.yaml` with the `FQDN` of the load balancer obtained in the command `kubectl -n traefik get svc`
 
 for example:
 
 ```yaml
-apiVersion: networking.k8s.io/v1
-kind: Ingress
+apiVersion: traefik.io/v1alpha1
+kind: IngressRouteTCP
 metadata:
-  name: wazuh-ingress
-  annotations:
-    nginx.ingress.kubernetes.io/ssl-passthrough: "true"
+  name: wazuh-dashboard
+  namespace: wazuh
 spec:
-  ingressClassName: nginx
-  rules:
-  - host: a0c363db4315d484fa38751820a9e89b-e1811181631efef0.elb.us-west-1.amazonaws.com
-    http:
-      paths:
-      - path: /
-        pathType: Prefix
-        backend:
-          service:
-            name: dashboard
-            port:
-              number: 443
+  entryPoints:
+    - websecure
+  routes:
+  - match: HostSNI(`a7f3cfbd27cee45559254f08b24651ed-448249308.us-west-1.elb.amazonaws.com`)
+    middlewares:
+    - name: ip-allowlist
+    services:
+    - name: dashboard
+      port: 443
+  tls:
+    passthrough: true
 ```
 
 #### Step 3.3.2: Deploy Wazuh cluster
@@ -434,28 +439,26 @@ The provisioner column displays `microk8s.io/hostpath`, you must edit the file `
 
 #### Change Wazuh ingress host
 
-To deploy correctly in a local environment, it is necessary to change the parameter `<UPDATE-WITH-THE-FQDN-OF-THE-INGRESS>` to `localhost` in the file `wazuh/base/wazuh-ingress.yaml`, for example:
+To deploy correctly in a local environment, it is necessary to change the parameter `<UPDATE-WITH-THE-FQDN-OF-THE-INGRESS>` to `localhost` in the file `wazuh/base/ingressRoute-tcp-dashboard.yaml`, for example:
 
 ```yaml
-apiVersion: networking.k8s.io/v1
-kind: Ingress
+apiVersion: traefik.io/v1alpha1
+kind: IngressRouteTCP
 metadata:
-  name: wazuh-ingress
-  annotations:
-    nginx.ingress.kubernetes.io/ssl-passthrough: "true"
+  name: wazuh-dashboard
+  namespace: wazuh
 spec:
-  ingressClassName: nginx
-  rules:
-  - host: localhost
-    http:
-      paths:
-      - path: /
-        pathType: Prefix
-        backend:
-          service:
-            name: dashboard
-            port:
-              number: 443
+  entryPoints:
+    - websecure
+  routes:
+  - match: HostSNI(`localhost`)
+    middlewares:
+    - name: ip-allowlist
+    services:
+    - name: dashboard
+      port: 443
+  tls:
+    passthrough: true
 
 ```
 
@@ -466,6 +469,30 @@ We are using the overlay feature of kustomize to create two variants: `eks` and 
 It is possible to adjust resources for the cluster by editing patches on `envs/local-env/`, the number of replicas for Wazuh Indexer nodes and Wazuh Server workers are reduced on the `local-env` variant to save resources. This could be undone by removing these patches from the `kustomization.yaml` or alter the patches themselves with different values.
 
 > **Note**: This guide was created using Minikube and Calico as the CNI.
+
+Deploy Traefik CRD
+
+```bash
+$ kubectl apply -f traefik/crd/
+
+```
+
+Expected output:
+
+```bash
+$ kubectl apply -f traefik/crd/
+customresourcedefinition.apiextensions.k8s.io/ingressroutes.traefik.io created
+customresourcedefinition.apiextensions.k8s.io/ingressroutetcps.traefik.io created
+customresourcedefinition.apiextensions.k8s.io/ingressrouteudps.traefik.io created
+Warning: unrecognized format "int64"
+customresourcedefinition.apiextensions.k8s.io/middlewares.traefik.io created
+customresourcedefinition.apiextensions.k8s.io/middlewaretcps.traefik.io created
+customresourcedefinition.apiextensions.k8s.io/serverstransports.traefik.io created
+customresourcedefinition.apiextensions.k8s.io/serverstransporttcps.traefik.io created
+customresourcedefinition.apiextensions.k8s.io/tlsoptions.traefik.io created
+customresourcedefinition.apiextensions.k8s.io/tlsstores.traefik.io created
+customresourcedefinition.apiextensions.k8s.io/traefikservices.traefik.io created
+```
 
 By using the kustomization file on the `local-env` variant we can now deploy the whole cluster with a single command:
 
@@ -618,14 +645,13 @@ In case you created domain names for the services, you should be able to access 
 Also, you can access using the External-IP (from the VPC): <https://xxx-yyy-zzz.us-east-1.elb.amazonaws.com:443>
 
 ```bash
-kubectl -n ingress-nginx get svc
+kubectl -n traefik get svc
 ```
 
 Expected output:
 
 ```bash
-$ kubectl -n ingress-nginx get svc
-NAME                                 TYPE           CLUSTER-IP      EXTERNAL-IP                                                                     PORT(S)                                                    AGE
-ingress-nginx-controller             LoadBalancer   10.100.228.67   a0c363db4315d484fa38751820a9e89b-e1811181631efef0.elb.us-west-1.amazonaws.com   80:30561/TCP,443:32533/TCP,1514:31784/TCP,1515:31274/TCP   36s
-ingress-nginx-controller-admission   ClusterIP      10.100.118.85   <none>                                                                          443/TCP                                                    35s
+$ kubectl -n traefik get svc
+NAME      TYPE           CLUSTER-IP     EXTERNAL-IP                                                              PORT(S)                                       AGE
+traefik   LoadBalancer   10.100.34.51   a7ffe29bfcf38420988fd52a698be422-862207742.us-west-1.elb.amazonaws.com   443:30725/TCP,1514:32036/TCP,1515:30354/TCP   6m29s
 ```

@@ -1,0 +1,63 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: traefik
+  namespace: traefik
+  labels:
+    app: traefik
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: traefik
+  template:
+    metadata:
+      labels:
+        app: traefik
+    spec:
+      serviceAccountName: traefik
+      containers:
+        - name: traefik
+          image: traefik:v3.6
+          args:
+            # Providers
+            - "--providers.kubernetescrd"
+            - "--providers.kubernetesingress=false"
+
+            # EntryPoints (TCP)
+            - "--entrypoints.websecure.address=:443"
+            - "--entrypoints.wazuh-1514.address=:1514"
+            - "--entrypoints.wazuh-1515.address=:1515"
+
+            # TCP passthrough requires this
+            - "--entrypoints.websecure.transport.respondingtimeouts.readtimeout=0"
+            - "--entrypoints.wazuh-1514.transport.respondingtimeouts.readtimeout=0"
+            - "--entrypoints.wazuh-1515.transport.respondingtimeouts.readtimeout=0"
+
+            # Logging (adjust as needed)
+            - "--log.level=INFO"
+
+            # Optional dashboard (DO NOT expose publicly)
+            - "--api.dashboard=true"
+            - "--api.insecure=true"
+
+          ports:
+            - name: websecure
+              containerPort: 443
+              protocol: TCP
+            - name: wazuh-1514
+              containerPort: 1514
+              protocol: TCP
+            - name: wazuh-1515
+              containerPort: 1515
+              protocol: TCP
+            - name: admin
+              containerPort: 8080
+              protocol: TCP
+
+          securityContext:
+            capabilities:
+              drop:
+                - ALL
+              add:
+                - NET_BIND_SERVICE
