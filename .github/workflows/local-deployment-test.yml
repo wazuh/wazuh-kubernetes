@@ -17,6 +17,7 @@ permissions:
 env:
   AWS_REGION: us-west-1
   ECR_REGISTRY: ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.us-west-1.amazonaws.com
+  WAZUH_REVISION: latest
 
 jobs:
   Local_deployment_test:
@@ -93,21 +94,21 @@ jobs:
       - name: Download Wazuh certificates tool and config files
         run: |
           cd wazuh/
-          curl -LO "https://packages-dev.wazuh.com/${{ env.WAZUH_MINOR }}/wazuh-certs-tool.sh"
-          curl -LO "https://packages-dev.wazuh.com/${{ env.WAZUH_MINOR }}/config.yml"
+          curl -LO "https://packages-dev.wazuh.com/${{ env.WAZUH_MINOR }}/wazuh-certs-tool-${{ env.WAZUH_VERSION }}-${{ env.WAZUH_REVISION }}.sh"
+          curl -LO "https://packages-dev.wazuh.com/${{ env.WAZUH_MINOR }}/config-${{ env.WAZUH_VERSION }}-${{ env.WAZUH_REVISION }}.yml"
 
-      - name: Update config.yml file
+      - name: Update config-${{ env.WAZUH_VERSION }}-${{ env.WAZUH_REVISION }}.yml file
         run: |
-          yq e -i '.nodes.indexer[0].name = "indexer"' wazuh/config.yml
-          yq e -i '.nodes.indexer[0].ip = "127.0.0.1"' wazuh/config.yml
-          yq e -i '.nodes.server[0].name = "server"' wazuh/config.yml
-          yq e -i '.nodes.server[0].ip = "127.0.0.1"' wazuh/config.yml
-          yq e -i '.nodes.dashboard[0].ip = "127.0.0.1"' wazuh/config.yml
+          yq e -i '.nodes.indexer[0].name = "indexer"' wazuh/config-${{ env.WAZUH_VERSION }}-${{ env.WAZUH_REVISION }}.yml
+          yq e -i '.nodes.indexer[0].ip = "127.0.0.1"' wazuh/config-${{ env.WAZUH_VERSION }}-${{ env.WAZUH_REVISION }}.yml
+          yq e -i '.nodes.server[0].name = "server"' wazuh/config-${{ env.WAZUH_VERSION }}-${{ env.WAZUH_REVISION }}.yml
+          yq e -i '.nodes.server[0].ip = "127.0.0.1"' wazuh/config-${{ env.WAZUH_VERSION }}-${{ env.WAZUH_REVISION }}.yml
+          yq e -i '.nodes.dashboard[0].ip = "127.0.0.1"' wazuh/config-${{ env.WAZUH_VERSION }}-${{ env.WAZUH_REVISION }}.yml
 
       - name: Create Wazuh certificates
         run: |
           cd wazuh/
-          bash wazuh-certs-tool.sh -A
+          bash wazuh-certs-tool-${{ env.WAZUH_VERSION }}-${{ env.WAZUH_REVISION }}.sh -A
 
       - name: Change provisioner for minikube
         run: |
