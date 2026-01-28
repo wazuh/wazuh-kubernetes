@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
+- Add version and revision on wazuh-certs-tool.sh and config.yml files. ([#1309](https://github.com/wazuh/wazuh-kubernetes/pull/1309))
 - Added Network Policies to Wazuh Kubernetes deployment. ([#1281](https://github.com/wazuh/wazuh-kubernetes/pull/1281))
 - Add git cloning options to the documentation. ([#1280](https://github.com/wazuh/wazuh-kubernetes/pull/1280))
 - Added wazuh-kubernetes PR checks. ([#1273](https://github.com/wazuh/wazuh-kubernetes/pull/1273))
