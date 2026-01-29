@@ -470,24 +470,25 @@ It is possible to adjust resources for the cluster by editing patches on `envs/l
 By using the kustomization file on the `local-env` variant we can now deploy the whole cluster with a single command:
 
 ```bash
+cd ..
 kubectl apply -k envs/local-env/
 ```
 
-If you are using Minikube, you will also need to start the Minikube tunnel to expose LoadBalancer services:
+##### Accessing dashboard
 
-```bash
-minikube tunnel
-```
-
-##### Accessing Dashboard
-
-To access the Dashboard interface you can use port-forward:
+To access the dashboard interface you can use port-forward:
 
 ```bash
 kubectl -n wazuh port-forward service/dashboard 8443:443
 ```
 
-Dashboard will be accessible on ``https://localhost:8443``.
+If you need to access the dashboard from another host (or register agents pointing to the Minikube host IP), you can bind the port-forward to a specific interface/IP address:
+
+```console
+kubectl -n wazuh port-forward service/dashboard 8443:443 --address 192.168.1.34 &
+```
+
+Access to Wazuh dashboard using <https://localhost:8443>
 
 ##### Exposing Wazuh server ports
 
