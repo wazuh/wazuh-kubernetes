@@ -9,13 +9,13 @@
 
 ## Amazon EKS development
 
-To deploy a cluster on Amazon EKS read the instructions on [Usage: EKS deployment](ref/getting-started/usage/deployment.md#usage-eks-deployment).
+To deploy a cluster on Amazon EKS read the instructions on [Usage: AWS EKS Deployment](ref/getting-started/usage/deployment/eks.md).
 Note: For Kubernetes version 1.23 or higher, the assignment of an IAM Role is necessary for the CSI driver to function correctly. Within the AWS documentation you can find the instructions for the assignment: https://docs.aws.amazon.com/eks/latest/userguide/ebs-csi.html
 The installation of the CSI driver is mandatory for new and old deployments if you are going to use Kubernetes 1.23 for the first time or you need to upgrade the cluster.
 
 ## Local development
 
-To deploy a cluster on your local environment (like Minikube, Kind or Microk8s) read the instructions on [Usage: Local deployment](ref/getting-started/usage/deployment.md#usage-local-deployment).
+To deploy a cluster on your local environment (like Minikube, Kind or Microk8s) read the instructions on [Usage: Local Deployment](ref/getting-started/usage/deployment/local.md).
 
 ## Diagram
 
