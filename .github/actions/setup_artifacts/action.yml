@@ -53,12 +53,15 @@ runs:
         mkdir -p "$(dirname "${{ inputs.artifact-urls-file-temp }}")"
         S3_KEY="deployment/artifact_urls.yml"
         aws s3 cp "s3://${{ inputs.s3-bucket-artifacts }}/$S3_KEY" "${{ inputs.artifact-urls-file-temp }}" --region ${{ inputs.aws-region }}
+        sed -i -e '/wazuh_certs_tool/b' -e '/wazuh_config_yml/b' -e 'd' "${{ inputs.artifact-urls-file-temp }}"
+        cat "${{ inputs.artifact-urls-file-temp }}"
 
     - name: Generate the variables file
       shell: bash
       env:
         WAZUH_VERSION: ${{ inputs.wazuh-version }}
         WAZUH_MAJOR: ${{ inputs.wazuh-major }}
+        AWS_REGION: ${{ inputs.aws-region }}
         ARTIFACT_URLS_FILE_TEMP: ${{ inputs.artifact-urls-file-temp }}
         ASSISTANT_REVISION: ${{ inputs.assistant_revision }}
         INDEXER_COMMIT: ${{ inputs.indexer_commit }}
@@ -132,14 +135,14 @@ runs:
             # Check if the object exists in S3
             BUCKET_NAME=$(echo "$PACKAGE_S3_URI" | cut -d '/' -f 3)
             OBJ_KEY=$(echo "$PACKAGE_S3_URI" | cut -d '/' -f 4-)
-            if ! aws s3api head-object --bucket "$BUCKET_NAME" --key "$OBJ_KEY" --region us-west-1 > /dev/null 2>&1; then
+            if ! aws s3api head-object --bucket "$BUCKET_NAME" --key "$OBJ_KEY" --region ${{ env.AWS_REGION }} > /dev/null 2>&1; then
               echo "Object $PACKAGE_S3_URI does not exist. Skipping..." >&2
               continue
             fi
 
             # Generate a pre-signed URL for the S3 URI
             echo "Generating pre-signed URL for $PACKAGE_NAME..."
-            PRESIGNED_URL=$(aws s3 presign "$PACKAGE_S3_URI" --expires-in 43200 --region us-west-1)
+            PRESIGNED_URL=$(aws s3 presign "$PACKAGE_S3_URI" --expires-in 43200 --region ${{ env.AWS_REGION }})
             presigned_url_line="$PACKAGE_NAME: \"$PRESIGNED_URL\""
 
             # Append the processed line to the output file
