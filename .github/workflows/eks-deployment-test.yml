@@ -49,7 +49,7 @@ jobs:
         uses: ./.github/actions/setup_artifacts
         with:
           aws-region: ${{ secrets.AWS_REGION }}
-          s3-bucket-artifacts: ${{ secrets.S3_BUCKET_ARTIFACTS }}
+          s3-bucket-artifacts: ${{ secrets.ARTIFACTS_S3_BUCKET }}
           artifact-urls-file-temp: ${{ env.ARTIFACT_URLS_FILE_TEMP }}
           wazuh-version: ${{ env.WAZUH_VERSION }}
           wazuh-major: ${{ env.WAZUH_MAJOR }}
