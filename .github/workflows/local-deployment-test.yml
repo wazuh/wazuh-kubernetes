@@ -122,21 +122,21 @@ jobs:
       - name: Download Wazuh certificates tool and config files
         run: |
           cd wazuh/
-          curl -o "wazuh-certs-tool-${{ env.WAZUH_VERSION }}-${{ env.WAZUH_REVISION }}.sh" ${{ env.wazuh_certs_tool }}
-          curl -o "config-${{ env.WAZUH_VERSION }}-${{ env.WAZUH_REVISION }}.yml" ${{ env.wazuh_config_yml }}
+          aws s3 cp ${{ env.wazuh_certs_tool }} "wazuh-certs-tool.sh" 
+          aws s3 cp ${{ env.wazuh_config_yml }} "config.yml"
 
       - name: Update config file
         run: |
-          yq e -i '.nodes.indexer[0].name = "indexer"' wazuh/config-${{ env.WAZUH_VERSION }}-${{ env.WAZUH_REVISION }}.yml
-          yq e -i '.nodes.indexer[0].ip = "127.0.0.1"' wazuh/config-${{ env.WAZUH_VERSION }}-${{ env.WAZUH_REVISION }}.yml
-          yq e -i '.nodes.server[0].name = "server"' wazuh/config-${{ env.WAZUH_VERSION }}-${{ env.WAZUH_REVISION }}.yml
-          yq e -i '.nodes.server[0].ip = "127.0.0.1"' wazuh/config-${{ env.WAZUH_VERSION }}-${{ env.WAZUH_REVISION }}.yml
-          yq e -i '.nodes.dashboard[0].ip = "127.0.0.1"' wazuh/config-${{ env.WAZUH_VERSION }}-${{ env.WAZUH_REVISION }}.yml
+          yq e -i '.nodes.indexer[0].name = "indexer"' wazuh/config.yml
+          yq e -i '.nodes.indexer[0].ip = "127.0.0.1"' wazuh/config.yml
+          yq e -i '.nodes.server[0].name = "server"' wazuh/config.yml
+          yq e -i '.nodes.server[0].ip = "127.0.0.1"' wazuh/config.yml
+          yq e -i '.nodes.dashboard[0].ip = "127.0.0.1"' wazuh/config.yml
 
       - name: Create Wazuh certificates
         run: |
           cd wazuh/
-          bash wazuh-certs-tool-${{ env.WAZUH_VERSION }}-${{ env.WAZUH_REVISION }}.sh -A
+          bash wazuh-certs-tool.sh -A
 
       - name: Change provisioner for minikube
         run: |
