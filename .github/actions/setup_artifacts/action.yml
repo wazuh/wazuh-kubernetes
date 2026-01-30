@@ -37,6 +37,9 @@ inputs:
   ova_revision:
     description: 'OVA revision'
     required: true
+  dev_s3_bucket:
+    description: 'Development S3 bucket name'
+    required: true
 
 runs:
   using: "composite"
@@ -60,6 +63,7 @@ runs:
         DASHBOARD_COMMIT: ${{ inputs.dashboard_commit }}
         AGENT_COMMIT: ${{ inputs.agent_commit }}
         OVA_REVISION: ${{ inputs.ova_revision }}
+        DEV_S3_BUCKET: ${{ inputs.dev_s3_bucket }}
       run: |
         OUTPUT_FILE="/tmp/wazuh-docker/artifact_urls_processed.yml"
         PRESIGNED_OUTPUT_FILE="/tmp/wazuh-docker/artifact_urls_presigned.yml"
@@ -83,7 +87,7 @@ runs:
           fi
 
           # Replace variables with their actual values
-          line=${line//\$\{\{ vars.AWS_S3_BUCKET_DEV \}\}/${{ vars.AWS_S3_BUCKET_DEV }}}
+          line=${line//\$\{\{ vars.AWS_S3_BUCKET_DEV \}\}/${{ env.DEV_S3_BUCKET }}}
           line=${line//\$\{\{ env.MAJOR \}\}/${{ env.WAZUH_MAJOR }}}
           line=${line//\$\{\{ env.WAZUH_VERSION \}\}/${{ env.WAZUH_VERSION }}}
 

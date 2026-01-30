@@ -63,6 +63,7 @@ jobs:
           dashboard_commit: ${{ env.DASHBOARD_COMMIT }}
           agent_commit: ${{ env.AGENT_COMMIT }}
           ova_revision: ${{ env.OVA_REVISION }}
+          dev_s3_bucket: $${{ vars.AWS_S3_BUCKET_DEV}}
 
       - name: Install pytest
         run: |
