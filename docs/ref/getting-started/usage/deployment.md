@@ -148,17 +148,17 @@ cd wazuh-kubernetes
 
 Wazuh uses certificates to establish confidentiality and encrypt communications between its central components. Follow these steps to create certificates for the Wazuh central components.
 
-Download the `wazuh-certs-tool.sh` script. This creates the certificates that encrypt communications between the Wazuh central components.
+Download the `wazuh-certs-tool-5.0.0-1.sh` script. This creates the certificates that encrypt communications between the Wazuh central components.
 
-**3.1.1 Download the Wazuh certificates tool script and config.yml file**:
+**3.1.1 Download the Wazuh certificates tool script and config-5.0.0-1.yml file**:
 
 ```bash
 cd wazuh
-curl -sO https://packages.wazuh.com/5.0/wazuh-certs-tool.sh
-curl -sO https://packages.wazuh.com/5.0/config.yml
+curl -sO https://packages.wazuh.com/5.0/wazuh-certs-tool-5.0.0-1.sh
+curl -sO https://packages.wazuh.com/5.0/config-5.0.0-1.yml
 ```
 
-**3.1.2 Edit the config.yml file with the configuration of the Wazuh components to be deployed**:
+**3.1.2 Edit the config-5.0.0-1.yml file with the configuration of the Wazuh components to be deployed**:
 
 ```yaml
 nodes:
@@ -181,7 +181,7 @@ nodes:
 **3.1.3 Run the Wazuh certificates tool script**:
 
 ```bash
-bash wazuh-certs-tool.sh -A
+bash wazuh-certs-tool-5.0.0-1.sh -A
 ```
 
 The required certificates are imported via secretGenerator on the `kustomization.yml` file:
@@ -356,15 +356,15 @@ cd wazuh-kubernetes
 
 Wazuh uses certificates to establish confidentiality and encrypt communications between its central components. Follow these steps to create certificates for the Wazuh central components.
 
-Download the `wazuh-certs-tool.sh` script. This creates the certificates that encrypt communications between the Wazuh central components.
+Download the `wazuh-certs-tool-5.0.0-1.sh` script. This creates the certificates that encrypt communications between the Wazuh central components.
 
 ```bash
 cd wazuh/
-curl -sO https://packages.wazuh.com/5.0/wazuh-certs-tool.sh
-curl -sO https://packages.wazuh.com/5.0/config.yml
+curl -sO https://packages.wazuh.com/5.0/wazuh-certs-tool-5.0.0-1.sh
+curl -sO https://packages.wazuh.com/5.0/config-5.0.0-1.yml
 ```
 
-Edit the `config.yml` file to set corresponding name and IP address for each Wazuh component.
+Edit the `config-5.0.0-1.yml` file to set corresponding name and IP address for each Wazuh component.
 For a local environment, you can use:
 
 ```yaml
@@ -385,10 +385,10 @@ nodes:
       ip: "127.0.0.1"
 ```
 
-Run `wazuh-certs-tool.sh` to create the certificates.
+Run `wazuh-certs-tool-5.0.0-1.sh` to create the certificates.
 
 ```bash
-bash wazuh-certs-tool.sh -A
+bash wazuh-certs-tool-5.0.0-1.sh -A
 ```
 
 **Note**:

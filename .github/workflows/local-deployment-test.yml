@@ -15,8 +15,11 @@ permissions:
   contents: read    # This is required for actions/checkout
 
 env:
-  AWS_REGION: us-west-1
-  ECR_REGISTRY: ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.us-west-1.amazonaws.com
+  ECR_REGISTRY: ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com
+  WAZUH_REVISION: latest
+  ARTIFACT_URLS_FILE_TEMP: "/tmp/wazuh-docker/artifact_urls.yml"
+  ARTIFACT_URLS_ENV_FILE: "/tmp/wazuh-docker/artifact_urls.sh"
+  ASSISTANT_REVISION: latest
 
 jobs:
   Local_deployment_test:
@@ -31,7 +34,32 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ secrets.AWS_IAM_ROLE }}
-          aws-region: "${{ env.AWS_REGION }}"
+          aws-region: "${{ secrets.AWS_REGION }}"
+
+      - name: Get Wazuh version
+        run: |
+            WAZUH_VERSION=$(jq -r '.version' VERSION.json)
+            WAZUH_MAJOR=$(echo "$WAZUH_VERSION" | cut -d '.' -f 1)
+            WAZUH_MINOR=$(echo "$WAZUH_VERSION" | cut -d '.' -f 1-2)
+            echo WAZUH_VERSION=$WAZUH_VERSION >> $GITHUB_ENV
+            echo WAZUH_MAJOR=$WAZUH_MAJOR >> $GITHUB_ENV
+            echo WAZUH_MINOR=$WAZUH_MINOR >> $GITHUB_ENV
+
+      - name: Setup Artifacts
+        uses: ./.github/actions/setup_artifacts
+        with:
+          aws-region: ${{ secrets.AWS_REGION }}
+          s3-bucket-artifacts: ${{ secrets.ARTIFACTS_S3_BUCKET }}
+          artifact-urls-file-temp: ${{ env.ARTIFACT_URLS_FILE_TEMP }}
+          wazuh-version: ${{ env.WAZUH_VERSION }}
+          wazuh-major: ${{ env.WAZUH_MAJOR }}
+          assistant_revision: ${{ env.ASSISTANT_REVISION }}
+          dev_s3_bucket: ${{ vars.AWS_S3_BUCKET_DEV}}
+          env_file_output: ${{ env.ARTIFACT_URLS_ENV_FILE }}
+
+      - name: Load artifact URLs environment variables onto GITHUB_ENV
+        run: |
+          cat ${{ env.ARTIFACT_URLS_ENV_FILE }} >> $GITHUB_ENV
 
       - name: Install pytest
         run: |
@@ -56,47 +84,38 @@ jobs:
       - name: Start Minikube cluster
         run: minikube start --memory=8192 --cpus=4 --network-plugin=cni --cni=calico
 
-      - name: Get Wazuh version
-        run: |
-            WAZUH_VERSION=$(jq -r '.version' VERSION.json)
-            WAZUH_MAJOR=$(echo "$WAZUH_VERSION" | cut -d '.' -f 1)
-            WAZUH_MINOR=$(echo "$WAZUH_VERSION" | cut -d '.' -f 1-2)
-            echo WAZUH_VERSION=$WAZUH_VERSION >> $GITHUB_ENV
-            echo WAZUH_MAJOR=$WAZUH_MAJOR >> $GITHUB_ENV
-            echo WAZUH_MINOR=$WAZUH_MINOR >> $GITHUB_ENV
-
       - name: Replace image registry to ECR
         run: |
-          yq e -i '.spec.template.spec.containers[] |= select(.name == "wazuh-dashboard").image = "${{ env.ECR_REGISTRY }}/wazuh/wazuh-dashboard:${{ env.WAZUH_VERSION }}"' wazuh/indexer_stack/wazuh-dashboard/dashboard-deploy.yaml
-          yq e -i '.spec.template.spec.containers[] |= select(.name == "wazuh-indexer").image = "${{ env.ECR_REGISTRY }}/wazuh/wazuh-indexer:${{ env.WAZUH_VERSION }}"' wazuh/indexer_stack/wazuh-indexer/cluster/indexer-sts.yaml
-          yq e -i '.spec.template.spec.initContainers[] |= select(.name == "init-wazuh-etc").image = "${{ env.ECR_REGISTRY }}/wazuh/wazuh-manager:${{ env.WAZUH_VERSION }}"' wazuh/wazuh_managers/wazuh-master-sts.yaml
-          yq e -i '.spec.template.spec.containers[] |= select(.name == "wazuh-manager").image = "${{ env.ECR_REGISTRY }}/wazuh/wazuh-manager:${{ env.WAZUH_VERSION }}"' wazuh/wazuh_managers/wazuh-master-sts.yaml
-          yq e -i '.spec.template.spec.initContainers[] |= select(.name == "init-wazuh-etc").image = "${{ env.ECR_REGISTRY }}/wazuh/wazuh-manager:${{ env.WAZUH_VERSION }}"' wazuh/wazuh_managers/wazuh-worker-sts.yaml
-          yq e -i '.spec.template.spec.containers[] |= select(.name == "wazuh-manager").image = "${{ env.ECR_REGISTRY }}/wazuh/wazuh-manager:${{ env.WAZUH_VERSION }}"' wazuh/wazuh_managers/wazuh-worker-sts.yaml
+          yq e -i '.spec.template.spec.containers[] |= select(.name == "wazuh-dashboard").image = "${{ env.ECR_REGISTRY }}/wazuh/wazuh-dashboard:${{ env.WAZUH_VERSION }}-${{ env.WAZUH_REVISION }}"' wazuh/indexer_stack/wazuh-dashboard/dashboard-deploy.yaml
+          yq e -i '.spec.template.spec.containers[] |= select(.name == "wazuh-indexer").image = "${{ env.ECR_REGISTRY }}/wazuh/wazuh-indexer:${{ env.WAZUH_VERSION }}-${{ env.WAZUH_REVISION }}"' wazuh/indexer_stack/wazuh-indexer/cluster/indexer-sts.yaml
+          yq e -i '.spec.template.spec.initContainers[] |= select(.name == "init-wazuh-etc").image = "${{ env.ECR_REGISTRY }}/wazuh/wazuh-manager:${{ env.WAZUH_VERSION }}-${{ env.WAZUH_REVISION }}"' wazuh/wazuh_managers/wazuh-master-sts.yaml
+          yq e -i '.spec.template.spec.containers[] |= select(.name == "wazuh-manager").image = "${{ env.ECR_REGISTRY }}/wazuh/wazuh-manager:${{ env.WAZUH_VERSION }}-${{ env.WAZUH_REVISION }}"' wazuh/wazuh_managers/wazuh-master-sts.yaml
+          yq e -i '.spec.template.spec.initContainers[] |= select(.name == "init-wazuh-etc").image = "${{ env.ECR_REGISTRY }}/wazuh/wazuh-manager:${{ env.WAZUH_VERSION }}-${{ env.WAZUH_REVISION }}"' wazuh/wazuh_managers/wazuh-worker-sts.yaml
+          yq e -i '.spec.template.spec.containers[] |= select(.name == "wazuh-manager").image = "${{ env.ECR_REGISTRY }}/wazuh/wazuh-manager:${{ env.WAZUH_VERSION }}-${{ env.WAZUH_REVISION }}"' wazuh/wazuh_managers/wazuh-worker-sts.yaml
 
       - name: Login to AWS ECR
         run: |
-          aws ecr get-login-password --region ${{ env.AWS_REGION }} | docker login --username AWS --password-stdin ${{ env.ECR_REGISTRY }}
+          aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin ${{ env.ECR_REGISTRY }}
 
       - name: Download Wazuh images
         run: |
-          docker pull ${{ env.ECR_REGISTRY }}/wazuh/wazuh-dashboard:${{ env.WAZUH_VERSION }}
-          docker pull ${{ env.ECR_REGISTRY }}/wazuh/wazuh-indexer:${{ env.WAZUH_VERSION }}
-          docker pull ${{ env.ECR_REGISTRY }}/wazuh/wazuh-manager:${{ env.WAZUH_VERSION }}
+          docker pull ${{ env.ECR_REGISTRY }}/wazuh/wazuh-dashboard:${{ env.WAZUH_VERSION }}-${{ env.WAZUH_REVISION }}
+          docker pull ${{ env.ECR_REGISTRY }}/wazuh/wazuh-indexer:${{ env.WAZUH_VERSION }}-${{ env.WAZUH_REVISION }}
+          docker pull ${{ env.ECR_REGISTRY }}/wazuh/wazuh-manager:${{ env.WAZUH_VERSION }}-${{ env.WAZUH_REVISION }}
 
       - name: Load Wazuh images into Minikube
         run: |
-          minikube image load ${{ env.ECR_REGISTRY }}/wazuh/wazuh-dashboard:${{ env.WAZUH_VERSION }}
-          minikube image load ${{ env.ECR_REGISTRY }}/wazuh/wazuh-indexer:${{ env.WAZUH_VERSION }}
-          minikube image load ${{ env.ECR_REGISTRY }}/wazuh/wazuh-manager:${{ env.WAZUH_VERSION }}
+          minikube image load ${{ env.ECR_REGISTRY }}/wazuh/wazuh-dashboard:${{ env.WAZUH_VERSION }}-${{ env.WAZUH_REVISION }}
+          minikube image load ${{ env.ECR_REGISTRY }}/wazuh/wazuh-indexer:${{ env.WAZUH_VERSION }}-${{ env.WAZUH_REVISION }}
+          minikube image load ${{ env.ECR_REGISTRY }}/wazuh/wazuh-manager:${{ env.WAZUH_VERSION }}-${{ env.WAZUH_REVISION }}
 
       - name: Download Wazuh certificates tool and config files
         run: |
           cd wazuh/
-          curl -LO "https://packages-dev.wazuh.com/${{ env.WAZUH_MINOR }}/wazuh-certs-tool.sh"
-          curl -LO "https://packages-dev.wazuh.com/${{ env.WAZUH_MINOR }}/config.yml"
+          aws s3 cp ${{ env.wazuh_certs_tool }} "wazuh-certs-tool.sh" 
+          aws s3 cp ${{ env.wazuh_config_yml }} "config.yml"
 
-      - name: Update config.yml file
+      - name: Update config file
         run: |
           yq e -i '.nodes.indexer[0].name = "indexer"' wazuh/config.yml
           yq e -i '.nodes.indexer[0].ip = "127.0.0.1"' wazuh/config.yml
