@@ -51,7 +51,7 @@ runs:
       shell: bash
       run: |
         mkdir -p "$(dirname "${{ inputs.artifact-urls-file-temp }}")"
-        S3_KEY="deployment/artifact_urls.yml"
+        S3_KEY="deployment/artifact_urls_test.yml"
         aws s3 cp "s3://${{ inputs.s3-bucket-artifacts }}/$S3_KEY" "${{ inputs.artifact-urls-file-temp }}" --region ${{ inputs.aws-region }}
         sed -i -e '/wazuh_certs_tool/b' -e '/wazuh_config_yml/b' -e 'd' "${{ inputs.artifact-urls-file-temp }}"
         cat "${{ inputs.artifact-urls-file-temp }}"

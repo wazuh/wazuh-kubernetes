@@ -17,7 +17,7 @@ env:
   CLUSTER_NAME: test-eks-deploy${{ github.event.number }}
   ECR_REGISTRY: "${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com"
   WAZUH_REVISION: latest
-  ARTIFACT_URLS_FILE_TEMP: "/tmp/wazuh-docker/artifact_urls_test.yml"
+  ARTIFACT_URLS_FILE_TEMP: "/tmp/wazuh-docker/artifact_urls.yml"
   ARTIFACT_URLS_ENV_FILE: "/tmp/wazuh-docker/artifact_urls.sh"
   ASSISTANT_REVISION: latest
   INDEXER_COMMIT: latest
