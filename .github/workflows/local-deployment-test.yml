@@ -125,7 +125,7 @@ jobs:
           curl -o "wazuh-certs-tool-${{ env.WAZUH_VERSION }}-${{ env.WAZUH_REVISION }}.sh" "${{ env.wazuh_certs_tool }}"
           curl -o "config-${{ env.WAZUH_VERSION }}-${{ env.WAZUH_REVISION }}.yml" "${{ env.wazuh_config_yml }}"
 
-      - name: Update config-${{ env.WAZUH_VERSION }}-${{ env.WAZUH_REVISION }}.yml file
+      - name: Update config file
         run: |
           yq e -i '.nodes.indexer[0].name = "indexer"' wazuh/config-${{ env.WAZUH_VERSION }}-${{ env.WAZUH_REVISION }}.yml
           yq e -i '.nodes.indexer[0].ip = "127.0.0.1"' wazuh/config-${{ env.WAZUH_VERSION }}-${{ env.WAZUH_REVISION }}.yml
