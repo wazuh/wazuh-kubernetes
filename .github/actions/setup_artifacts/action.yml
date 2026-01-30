@@ -1,5 +1,5 @@
 name: 'Setup and Presign S3 Artifacts'
-description: 'Download the test artifacts URIs file from S3, process it to replace variables, and generate presigned URLs for each artifact.'
+description: 'Download the test artifacts URIs file from S3 and process it to replace variables.'
 
 inputs:
   aws-region:
@@ -73,12 +73,10 @@ runs:
         ENV_FILE_OUTPUT: ${{ inputs.env_file_output }}
       run: |
         OUTPUT_FILE="/tmp/wazuh-docker/artifact_urls_processed.yml"
-        PRESIGNED_OUTPUT_FILE="/tmp/wazuh-docker/artifact_urls_presigned.yml"
         
         mkdir -p "$(dirname "$OUTPUT_FILE")"
 
         : > "$OUTPUT_FILE"
-        : > "$PRESIGNED_OUTPUT_FILE"
 
         # Verify if the input file exists
         if [ ! -f "$ARTIFACT_URLS_FILE_TEMP" ]; then
@@ -118,51 +116,7 @@ runs:
           echo "Failed to create processed artifact_urls.yml file." >&2
           exit 1
         fi
-
-        # Generate the presigned URLs for each package
-        while IFS= read -r line || [ -n "$line" ]; do
-          # Skip empty lines and comments
-          if [[ -z "$line" || "$line" =~ ^[[:space:]]*# ]]; then
-            echo "$line" >> "$PRESIGNED_OUTPUT_FILE"
-            continue
-          fi
-
-          # Extract both package_name and package_s3_uri from the line
-          if [[ "$line" =~ ^([a-zA-Z0-9_]+):[[:space:]]*\"?s3://([^\"[:space:]]+) ]]; then
-            PACKAGE_NAME="${BASH_REMATCH[1]}"
-            PACKAGE_S3_URI="s3://${BASH_REMATCH[2]}"
-
-            # Check if the object exists in S3
-            BUCKET_NAME=$(echo "$PACKAGE_S3_URI" | cut -d '/' -f 3)
-            OBJ_KEY=$(echo "$PACKAGE_S3_URI" | cut -d '/' -f 4-)
-            if ! aws s3api head-object --bucket "$BUCKET_NAME" --key "$OBJ_KEY" --region ${{ env.AWS_REGION }} > /dev/null 2>&1; then
-              echo "Object $PACKAGE_S3_URI does not exist. Skipping..." >&2
-              continue
-            fi
-
-            # Generate a pre-signed URL for the S3 URI
-            echo "Generating pre-signed URL for $PACKAGE_NAME..."
-            PRESIGNED_URL=$(aws s3 presign "$PACKAGE_S3_URI" --expires-in 43200 --region ${{ env.AWS_REGION }})
-            presigned_url_line="$PACKAGE_NAME: \"$PRESIGNED_URL\""
-
-            # Append the processed line to the output file
-            echo "$presigned_url_line" >> "$PRESIGNED_OUTPUT_FILE"
-          else
-            echo "$line" >> "$PRESIGNED_OUTPUT_FILE"
-
-            echo "Skipping line for presigning (no S3 URI found):"
-            echo "$line"
-          fi
-        done < "$OUTPUT_FILE"
-
-        # Verify the presigned urls file
-        if [ -f "$PRESIGNED_OUTPUT_FILE" ]; then
-          echo "Presigned URLs file created successfully at $PRESIGNED_OUTPUT_FILE."
-        else
-          echo "Failed to create presigned artifact_urls.yml file." >&2
-          exit 1
-        fi
         
         # Export variables to the environment
-        awk -F':' '!/^#/ && NF>1 {name=$1; val=substr($0,length(name)+3); gsub(/[-.]/,"_",name); print name "=" val}' $PRESIGNED_OUTPUT_FILE > "${{ env.ENV_FILE_OUTPUT }}"
+        awk -F':' '!/^#/ && NF>1 {name=$1; val=substr($0,length(name)+3); gsub(/[-.]/,"_",name); print name "=" val}' $OUTPUT_FILE > "${{ env.ENV_FILE_OUTPUT }}"
         cat "${{ env.ENV_FILE_OUTPUT }}"
