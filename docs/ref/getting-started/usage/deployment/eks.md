@@ -208,8 +208,15 @@ secretGenerator:
 
 To expose services outside the `EKS` cluster, we are using the Traefik ingress controller. We need to deploy the Traefik CRD first:
 
+First, return to the root of the repository.
+
 ```bash
 cd ..
+```
+
+Then, apply the Traefik CRD definitions:
+
+```bash
 kubectl apply -f traefik/crd/kubernetes-crd-definition-v1.yml
 ```
 
@@ -229,7 +236,7 @@ customresourcedefinition.apiextensions.k8s.io/tlsstores.traefik.io created
 customresourcedefinition.apiextensions.k8s.io/traefikservices.traefik.io created
 ```
 
-Then, que can deploy the Traefik runtime for the ingress controller:
+Then, you can deploy the Traefik runtime for the ingress controller:
 
 ```bash
 kubectl apply -k traefik/runtime/

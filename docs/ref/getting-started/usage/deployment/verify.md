@@ -108,11 +108,11 @@ wazuh-api-ingress                 app=wazuh-manager,node-type=master   42s
 wazuh-worker-egress               app=wazuh-manager,node-type=worker   41s
 ```
 
-## Accessing Wazuh dashboard
+## Accessing Wazuh dashboard (EKS)
 
 In case you created domain names for the services, you should be able to access Wazuh dashboard using the proposed domain name: <https://wazuh.your-domain.com>.
-
 Also, you can access using the External-IP (from the VPC): <https://xxx-yyy-zzz.us-east-1.elb.amazonaws.com:443>
+To access the Wazuh dashboard of a local deployment, please refer to [local.md](local.md#accessing-dashboard).
 
 ```bash
 kubectl -n traefik get svc

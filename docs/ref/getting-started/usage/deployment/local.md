@@ -83,6 +83,12 @@ Run `wazuh-certs-tool.sh` to create the certificates.
 bash wazuh-certs-tool.sh -A
 ```
 
+Return to the root of the repository.
+
+```bash
+cd ..
+```
+
 **Note**:
 
 The required certificates are imported via secretGenerator on the `kustomization.yml` file:
@@ -131,7 +137,7 @@ The provisioner column displays `microk8s.io/hostpath`, you must edit the file `
 
 ### Change Wazuh ingress host
 
-To deploy correctly in a local environment, it is necessary to change the parameter `<UPDATE-WITH-THE-FQDN-OF-THE-INGRESS>` to `localhost` in the file `wazuh/base/ingressRoute-tcp-dashboard.yaml`, for example:
+<!-- To deploy correctly in a local environment, it is necessary to change the parameter `<UPDATE-WITH-THE-FQDN-OF-THE-INGRESS>` to `localhost` in the file `wazuh/base/ingressRoute-tcp-dashboard.yaml`, for example:
 
 ```yaml
 apiVersion: traefik.io/v1alpha1
@@ -152,6 +158,12 @@ spec:
   tls:
     passthrough: true
 
+``` -->
+
+The `wazuh/base/ingressRoute-tcp-dashboard.yaml` file configures the Wazuh Dashboard ingress and is primarily intended for EKS deployments. To prevent this file from affecting your local deployment, it is recommended to either delete its contents or leave it empty.
+
+```bash
+echo "" > wazuh/base/ingressRoute-tcp-dashboard.yaml
 ```
 
 ### Apply all manifests using kustomize
@@ -166,7 +178,6 @@ Deploy Traefik CRD
 
 ```bash
 kubectl apply -f traefik/crd/
-
 ```
 
 Expected output:
@@ -200,7 +211,13 @@ To access the Dashboard interface you can use port-forward:
 kubectl -n wazuh port-forward service/dashboard 8443:443
 ```
 
-Dashboard will be accessible on ``https://localhost:8443``.
+Access to Wazuh dashboard using <https://localhost:8443>
+
+If you need to access the dashboard from another host (or register agents pointing to the Minikube host IP), you can bind the port-forward to a specific interface/IP address:
+
+```bash
+kubectl -n wazuh port-forward service/dashboard 8443:443 --address 192.168.1.34 &
+```
 
 #### Exposing Wazuh server ports
 
@@ -218,4 +235,4 @@ kubectl -n wazuh port-forward service/wazuh-registration 1515:1515
 
 At this point, the Wazuh stack should be deployed in your local Kubernetes cluster.
 
-To validate the deployment and open the web UI, follow the steps in the **Accessing Wazuh dashboard** section: [verify.md](verify.md#accessing-wazuh-dashboard).
+To validate the deployment and its created resources check the following section: [verify.md](verify.md).
