@@ -5,13 +5,20 @@
 # License (version 2) as published by the FSF - Free Software
 # Foundation.
 
-# Wazuh API credentials secret
+# Wazuh workers service: Agent reporting
 
 apiVersion: v1
-kind: Secret
+kind: Service
 metadata:
-  name: wazuh-api-cred
+  name: wazuh-events
   namespace: wazuh
-data:
-  username: d2F6dWgtd3Vp # string "wazuh-wui" base64 encoded
-  password: TXlTM2NyMzdQNDUwci4qLQ==  # string "MyS3cr37P450r.*-" base64 encoded
+  labels:
+    app: wazuh-manager
+spec:
+  selector:
+    app: wazuh-manager
+    node-type: worker
+  ports:
+    - name: agents-events
+      port: 1514
+      targetPort: 1514

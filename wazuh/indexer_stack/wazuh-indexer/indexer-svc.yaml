@@ -21,4 +21,7 @@ spec:
     - name: indexer-nodes
       port: 9300
       targetPort: 9300
+    - name: indexer-rest
+      port: 9200
+      targetPort: 9200
   clusterIP: None

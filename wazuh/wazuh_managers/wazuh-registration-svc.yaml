@@ -5,13 +5,20 @@
 # License (version 2) as published by the FSF - Free Software
 # Foundation.
 
-# Wazuh API credentials secret
+# Wazuh master Service: API and registration (authd)
 
 apiVersion: v1
-kind: Secret
+kind: Service
 metadata:
-  name: wazuh-api-cred
+  name: wazuh-registration
   namespace: wazuh
-data:
-  username: d2F6dWgtd3Vp # string "wazuh-wui" base64 encoded
-  password: TXlTM2NyMzdQNDUwci4qLQ==  # string "MyS3cr37P450r.*-" base64 encoded
+  labels:
+    app: wazuh-manager
+spec:
+  selector:
+    app: wazuh-manager
+    node-type: master
+  ports:
+    - name: registration
+      port: 1515
+      targetPort: 1515

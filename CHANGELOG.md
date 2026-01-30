@@ -2,6 +2,30 @@
 
 All notable changes to this project will be documented in this file.
 
+## [5.0.0]
+
+### Added
+
+- Added Network Policies to Wazuh Kubernetes deployment. ([#1281](https://github.com/wazuh/wazuh-kubernetes/pull/1281))
+- Add git cloning options to the documentation. ([#1280](https://github.com/wazuh/wazuh-kubernetes/pull/1280))
+- Added wazuh-kubernetes PR checks. ([#1273](https://github.com/wazuh/wazuh-kubernetes/pull/1273))
+
+### Changed
+
+- Changed Nginx ingress controller to Traefik ingress controller. ([#1304](https://github.com/wazuh/wazuh-kubernetes/pull/1304))
+- Update Wazuh Kubernetes repository documentation ([#1285](https://github.com/wazuh/wazuh-kubernetes/pull/1285))
+- Added Nginx ingress controller for Wazuh Kubernetes deployment. ([#1272](https://github.com/wazuh/wazuh-kubernetes/pull/1272))
+- Modify deployment configuration in Kubernetes. ([#1268](https://github.com/wazuh/wazuh-kubernetes/pull/1268))
+- Wazuh server clean-up ([#1213](https://github.com/wazuh/wazuh-kubernetes/pull/1213))
+- Replace OpenSearch deprecated settings ([#1109](https://github.com/wazuh/wazuh-kubernetes/pull/1109))
+### Fixed
+
+- None
+
+### Deleted
+
+- None
+
 ## [4.14.4]
 
 ### Added
@@ -85,6 +109,24 @@ All notable changes to this project will be documented in this file.
 - Remove dashboard chat setting ([#1209](https://github.com/wazuh/wazuh-kubernetes/pull/1209))
 - Rollback data source setting ([#1188](https://github.com/wazuh/wazuh-kubernetes/pull/1188))
 - Dashboard settings added ([#1187](https://github.com/wazuh/wazuh-kubernetes/pull/1187))
+
+### Fixed
+
+- None
+
+### Deleted
+
+- None
+
+## [4.14.0]
+
+### Added
+
+- None
+
+### Changed
+
+- None
 
 ### Fixed
 

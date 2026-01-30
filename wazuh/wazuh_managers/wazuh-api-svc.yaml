@@ -5,19 +5,22 @@
 # License (version 2) as published by the FSF - Free Software
 # Foundation.
 
-# Dashboard service
+# Wazuh master Service: API and registration (authd)
 
 apiVersion: v1
 kind: Service
 metadata:
-  name: dashboard
+  name: wazuh-api
   namespace: wazuh
   labels:
-    app: wazuh-dashboard
+    app: wazuh-manager
+  annotations:
+    service.beta.kubernetes.io/aws-load-balancer-backend-protocol: tcp
 spec:
   selector:
-    app: wazuh-dashboard
+    app: wazuh-manager
+    node-type: master
   ports:
-    - name: dashboard
-      port: 443
-      targetPort: 443
+    - name: api
+      port: 55000
+      targetPort: 55000

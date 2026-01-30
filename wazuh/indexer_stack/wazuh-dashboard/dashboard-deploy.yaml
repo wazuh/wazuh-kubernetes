@@ -32,34 +32,30 @@ spec:
             secretName: dashboard-certs
       containers:
         - name: wazuh-dashboard
-          image: 'wazuh/wazuh-dashboard:4.14.4'
+          image: 'wazuh/wazuh-dashboard:5.0.0'
           resources:
             limits:
               cpu: 500m
               memory: 1Gi
           volumeMounts:
-            - name: config
-              mountPath: /usr/share/wazuh-dashboard/config/opensearch_dashboards.yml
-              subPath: opensearch_dashboards.yml
-              readOnly: false
             - name: dashboard-certs
-              mountPath: /usr/share/wazuh-dashboard/certs/cert.pem
+              mountPath: /usr/share/wazuh-dashboard/config/certs/dashboard.pem
               readOnly: true
-              subPath: cert.pem
+              subPath: dashboard.pem
             - name: dashboard-certs
-              mountPath: /usr/share/wazuh-dashboard/certs/key.pem
+              mountPath: /usr/share/wazuh-dashboard/config/certs/dashboard-key.pem
               readOnly: true
-              subPath: key.pem
+              subPath: dashboard-key.pem
             - name: dashboard-certs
-              mountPath: /usr/share/wazuh-dashboard/certs/root-ca.pem
+              mountPath: /usr/share/wazuh-dashboard/config/certs/root-ca.pem
               subPath: root-ca.pem
               readOnly: true
           ports:
-            - containerPort: 5601
+            - containerPort: 443
               name: dashboard
           env:
-            - name: INDEXER_URL
-              value: 'https://indexer:9200'
+            - name: OPENSEARCH_HOSTS
+              value: 'https://wazuh-indexer:9200'
             - name: INDEXER_USERNAME
               valueFrom:
                 secretKeyRef:
@@ -83,11 +79,13 @@ spec:
             - name: SERVER_SSL_ENABLED
               value: "true"
             - name: SERVER_SSL_CERTIFICATE
-              value: /usr/share/wazuh-dashboard/certs/cert.pem
+              value: /usr/share/wazuh-dashboard/config/certs/dashboard.pem
             - name: SERVER_SSL_KEY
-              value: /usr/share/wazuh-dashboard/certs/key.pem
+              value: /usr/share/wazuh-dashboard/config/certs/dashboard-key.pem
+            - name: OPENSEARCH_SSL_CERTIFICATE_AUTHORITIES
+              value: /usr/share/wazuh-dashboard/config/certs/root-ca.pem
             - name: WAZUH_API_URL
-              value: https://wazuh-manager-master-0.wazuh-cluster
+              value: https://wazuh-api
             - name: API_USERNAME
               valueFrom:
                 secretKeyRef:

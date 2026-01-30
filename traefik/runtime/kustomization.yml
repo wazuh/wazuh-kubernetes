@@ -7,10 +7,14 @@
 
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
-resources:
-- ../../wazuh
 
-patches:
-- path: storage-class.yaml
-- path: indexer-resources.yaml
-- path: wazuh-resources.yaml
+# Adds traefik namespace to all resources.
+namespace: traefik
+
+resources:
+  - traefik-ns.yaml
+  - traefik-cluster-role.yaml
+  - traefik-cluster-role-binding.yaml
+  - traefik-sa.yaml
+  - traefik-deployment.yaml
+  - traefik-service.yaml
