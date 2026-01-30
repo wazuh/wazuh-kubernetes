@@ -165,3 +165,4 @@ runs:
         
         # Export variables to the environment
         awk -F':' '!/^#/ && NF>1 {name=$1; val=substr($0,length(name)+3); gsub(/[-.]/,"_",name); print name "=" val}' $PRESIGNED_OUTPUT_FILE > "${{ env.ENV_FILE_OUTPUT }}"
+        cat "${{ env.ENV_FILE_OUTPUT }}"
