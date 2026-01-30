@@ -40,6 +40,9 @@ inputs:
   dev_s3_bucket:
     description: 'Development S3 bucket name'
     required: true
+  env_file_output:
+    description: 'Output file path for environment variables'
+    required: true
 
 runs:
   using: "composite"
@@ -64,9 +67,11 @@ runs:
         AGENT_COMMIT: ${{ inputs.agent_commit }}
         OVA_REVISION: ${{ inputs.ova_revision }}
         DEV_S3_BUCKET: ${{ inputs.dev_s3_bucket }}
+        ENV_FILE_OUTPUT: ${{ inputs.env_file_output }}
       run: |
         OUTPUT_FILE="/tmp/wazuh-docker/artifact_urls_processed.yml"
         PRESIGNED_OUTPUT_FILE="/tmp/wazuh-docker/artifact_urls_presigned.yml"
+        
         mkdir -p "$(dirname "$OUTPUT_FILE")"
 
         : > "$OUTPUT_FILE"
@@ -156,4 +161,4 @@ runs:
         fi
         
         # Export variables to the environment
-        awk -F':' '!/^#/ && NF>1 {name=$1; val=substr($0,length(name)+3); gsub(/[-.]/,"_",name); print name "=" val}' $PRESIGNED_OUTPUT_FILE >> $GITHUB_ENV
+        awk -F':' '!/^#/ && NF>1 {name=$1; val=substr($0,length(name)+3); gsub(/[-.]/,"_",name); print name "=" val}' $PRESIGNED_OUTPUT_FILE > "${{ env.ENV_FILE_OUTPUT }}"

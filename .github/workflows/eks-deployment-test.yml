@@ -18,6 +18,7 @@ env:
   ECR_REGISTRY: "${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com"
   WAZUH_REVISION: latest
   ARTIFACT_URLS_FILE_TEMP: "/tmp/wazuh-docker/artifact_urls.yml"
+  ARTIFACT_URLS_ENV_FILE: "/tmp/wazuh-docker/artifact_urls.sh"
   ASSISTANT_REVISION: latest
   INDEXER_COMMIT: latest
   MANAGER_COMMIT: latest
@@ -63,7 +64,12 @@ jobs:
           dashboard_commit: ${{ env.DASHBOARD_COMMIT }}
           agent_commit: ${{ env.AGENT_COMMIT }}
           ova_revision: ${{ env.OVA_REVISION }}
-          dev_s3_bucket: $${{ vars.AWS_S3_BUCKET_DEV}}
+          dev_s3_bucket: ${{ vars.AWS_S3_BUCKET_DEV}}
+          env_file_output: ${{ env.ARTIFACT_URLS_ENV_FILE }}
+
+      - name: Load artifact URLs environment variables onto GITHUB_ENV
+        run: |
+          cat ${{ env.ARTIFACT_URLS_ENV_FILE }} >> $GITHUB_ENV
 
       - name: Install pytest
         run: |
