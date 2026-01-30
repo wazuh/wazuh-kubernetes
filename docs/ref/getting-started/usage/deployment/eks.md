@@ -1,10 +1,8 @@
-# Usage
+# EKS deployment
 
-This guide describes the necessary steps to deploy Wazuh on Kubernetes either on AWS EKS.
+This guide provides instructions for deploying Wazuh on a Kubernetes cluster in Amazon EKS.
 
-## Usage: EKS deployment
-
-### Pre-requisites
+## Pre-requisites
 
 - Kubernetes cluster already deployed.
   - Kubernetes can run on a wide range of Cloud providers and bare-metal environments, this documentation section focuses on [AWS](https://aws.amazon.com/). It was tested using [Amazon EKS](https://docs.aws.amazon.com/eks).
@@ -13,12 +11,12 @@ This guide describes the necessary steps to deploy Wazuh on Kubernetes either on
   - Create a record set in AWS Route 53 from a Kubernetes LoadBalancer.
 - Having at least two Kubernetes nodes in order to meet the *podAntiAffinity* policy.
 - For Kubernetes version 1.23 or higher, the assignment of an IAM Role is necessary for the CSI driver to function correctly. Within the AWS documentation you can find the instructions for the assignment: <https://docs.aws.amazon.com/eks/latest/userguide/ebs-csi.html>
-- The installation of the CSI driver is necessary for new and old deployments, since it is a Kubernetes feature.
-- Wazuh deployment includes Network policy configurations to filter communication between pods. Verify if the EKS cluster configuration has Network policy configuration enabled.
+  - The installation of the CSI driver is necessary for new and old deployments, since it is a Kubernetes feature.
+- Wazuh deployment includes Network policy configurations to filter communication between pods. Verify EKS cluster configuration has Network policy configuration enabled.
 
-### Overview
+## Overview
 
-#### StateFulSet and Deployments Controllers
+### StateFulSet and Deployments Controllers
 
 Like a Deployment, a StatefulSet manages Pods that are based on an identical container specification, but it maintains an identity attached to each of its pods. These pods are created from the same specification, but they are not interchangeable: each one has a persistent identifier maintained across any rescheduling.
 
@@ -26,7 +24,7 @@ It is useful for stateful applications like databases that save the data to a pe
 
 Deployments are intended for stateless use and are quite lightweight and seem to be appropriate for Wazuh dashboard and Nginx, where it is not necessary to maintain the states.
 
-#### Pods
+### Pods
 
 **Wazuh master**:
 
@@ -65,7 +63,7 @@ Details:
 - image: Docker Hub 'wazuh/wazuh-dashboard'
 - Controller: Deployment
 
-#### Services
+### Services
 
 **Wazuh Indexer stack**:
 
@@ -88,7 +86,7 @@ Details:
 - wazuh-cluster:
   - Headless service for internal communication between Wazuh manager nodes on port 1516.
 
-#### Network policies
+### Network policies
 
 - allow-dns
   - Allows DNS traffic within the cluster.
@@ -117,15 +115,15 @@ Details:
 
 Base policies (such as default-deny-all and DNS) are always applied with the Wazuh namespace. Additional ingress policies for the dashboard and managers are added by the EKS overlay to integrate with the Nginx ingress controller.
 
-### Deploy
+## Deploy
 
-#### Step 1: Deploy Kubernetes
+### Step 1: Deploy Kubernetes
 
 Deploying the Kubernetes cluster is out of the scope of this guide.
 
 This repository focuses on [AWS](https://aws.amazon.com/) but it should be easy to adapt it to another Cloud provider. In case you are using AWS, we recommend [EKS](https://docs.aws.amazon.com/en_us/eks/latest/userguide/getting-started.html).
 
-#### Step 2: Create domains to access the services
+### Step 2: Create domains to access the services
 
 We recommend creating domains and certificates to access the services. Examples:
 
@@ -135,7 +133,7 @@ We recommend creating domains and certificates to access the services. Examples:
 
 Note: You can skip this step and the services will be accessible using the Load balancer DNS from the VPC.
 
-#### Step 3: Deployment
+### Step 3: Deployment
 
 Clone this repository to deploy the necessary services and pods.
 
@@ -144,7 +142,7 @@ git clone https://github.com/wazuh/wazuh-kubernetes.git -b v5.0.0 --depth=1
 cd wazuh-kubernetes
 ```
 
-#### Step 3.1: Setup SSL certificates
+### Step 3.1: Setup SSL certificates
 
 Wazuh uses certificates to establish confidentiality and encrypt communications between its central components. Follow these steps to create certificates for the Wazuh central components.
 
@@ -206,7 +204,7 @@ secretGenerator:
       - wazuh-certificates/root-ca.pem
 ```
 
-#### Step 3.2: Apply Nginx ingress controller
+### Step 3.2: Apply Nginx ingress controller
 
 To expose services outside the `EKS` cluster, we are using the Nginx ingress controller. To deploy it, we must run the following:
 
@@ -256,7 +254,7 @@ ingress-nginx-controller             LoadBalancer   10.100.228.67   a0c363db4315
 ingress-nginx-controller-admission   ClusterIP      10.100.118.85   <none>                                                                          443/TCP                                                    35s
 ```
 
-#### Step 3.3: Apply all manifests using kustomize
+### Step 3.3: Apply all manifests using kustomize
 
 We are using the overlay feature of kustomize to create two variants: `eks` and `local-env`, in this guide we're using `eks`.
 
@@ -264,7 +262,7 @@ You can adjust resources for the cluster on `envs/eks/`, you can tune cpu, memor
 
 Follow the steps below:
 
-#### Step 3.3.1: Update the Ingress host
+### Step 3.3.1: Update the Ingress host
 
 For TLS Passthrough to work correctly, it is necessary to modify the ingress host `wazuh-ingress` in `wazuh/base/wazuh-ingress.yaml` with the `FQDN` of the load balancer obtained in the command `kubectl -n ingress-nginx get svc`
 
@@ -292,10 +290,16 @@ spec:
               number: 443
 ```
 
-#### Step 3.3.2: Deploy Wazuh cluster
+### Step 3.3.2: Deploy Wazuh cluster
 
 By using the kustomization file on the `eks` variant we can now deploy the whole cluster with a single command:
 
 ```bash
 kubectl apply -k envs/eks/
 ```
+
+### Conclusion
+
+At this point, the Wazuh stack should be deployed in your EKS cluster.
+
+To validate the deployment and open the web UI, follow the steps in the **Accessing Wazuh dashboard** section: [verify.md](verify.md#accessing-wazuh-dashboard).

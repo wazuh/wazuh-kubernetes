@@ -1,19 +1,14 @@
-# Usage
+# Local deployment
 
-This guide describes the necessary steps to deploy Wazuh on Kubernetes either on a local environment.
+This guide describes the necessary steps to deploy Wazuh on local Kubernetes environment using Minikube and Calico as the CNI.
+As an important additional isolation layer, this deployment includes NetworkPolicy configurations to restrict communication between pods.
 
-## Usage: Local deployment
-
-Here it is described the necessary steps to deploy Wazuh on a local Kubernetes environment.
-
-Wazuh deployment includes Network policy configurations to restrict communication between pods. This guide was created using Minikube and Calico as the CNI.
-
-### Pre-requisites
+## Pre-requisites
 
 - Kubernetes cluster running
 - kubectl installed and configured to connect to the cluster
 
-#### Resource requirements
+### Resource requirements
 
 To deploy the `local-env` variant the Kubernetes cluster should have at least the following resources **available**:
 
@@ -21,7 +16,7 @@ To deploy the `local-env` variant the Kubernetes cluster should have at least th
 - 3 Gi of memory
 - 2 Gi of storage
 
-### Deployment
+## Deployment
 
 **Note**:
 
@@ -42,14 +37,14 @@ minikube image load wazuh/wazuh-manager:5.0.0
 minikube image load wazuh/wazuh-dashboard:5.0.0
 ```
 
-#### Clone this repository
+### Clone this repository
 
 ```bash
 git clone https://github.com/wazuh/wazuh-kubernetes.git -b v5.0.0 --depth=1
 cd wazuh-kubernetes
 ```
 
-#### Setup SSL certificates
+### Setup SSL certificates
 
 Wazuh uses certificates to establish confidentiality and encrypt communications between its central components. Follow these steps to create certificates for the Wazuh central components.
 
@@ -112,7 +107,7 @@ secretGenerator:
       - wazuh-certificates/root-ca.pem
 ```
 
-#### Tune storage class with custom provisioner
+### Tune storage class with custom provisioner
 
 Depending on the type of cluster you're running for local development the Storage Class may have a different provisioner.
 
@@ -134,7 +129,7 @@ microk8s-hostpath (default)   microk8s.io/hostpath   Delete          Immediate  
 
 The provisioner column displays `microk8s.io/hostpath`, you must edit the file `envs/local-env/storage-class.yaml` and setup this provisioner.
 
-#### Change Wazuh ingress host
+### Change Wazuh ingress host
 
 To deploy correctly in a local environment, it is necessary to change the parameter `<UPDATE-WITH-THE-FQDN-OF-THE-INGRESS>` to `localhost` in the file `wazuh/base/wazuh-ingress.yaml`, for example:
 
@@ -161,7 +156,7 @@ spec:
 
 ```
 
-#### Apply all manifests using kustomize
+### Apply all manifests using kustomize
 
 We are using the overlay feature of kustomize to create two variants: `eks` and `local-env`, in this guide we're using `local-env`.
 
@@ -176,7 +171,7 @@ cd ..
 kubectl apply -k envs/local-env/
 ```
 
-##### Accessing dashboard
+#### Accessing dashboard
 
 To access the dashboard interface you can use port-forward:
 
@@ -192,7 +187,7 @@ kubectl -n wazuh port-forward service/dashboard 8443:443 --address 192.168.1.34 
 
 Access to Wazuh dashboard using <https://localhost:8443>
 
-##### Exposing Wazuh server ports
+#### Exposing Wazuh server ports
 
 ```bash
 kubectl -n wazuh port-forward service/wazuh-events 1514:1514
@@ -203,3 +198,9 @@ kubectl -n wazuh port-forward service/wazuh-registration 1515:1515
 ```
 
 > **Note**: You can run the process in background adding `&` to the port-forward command, for example: kubectl -n wazuh port-forward service/wazuh-events 1514:1514 &
+
+### Conclusion
+
+At this point, the Wazuh stack should be deployed in your local Kubernetes cluster.
+
+To validate the deployment and open the web UI, follow the steps in the **Accessing Wazuh dashboard** section: [verify.md](verify.md#accessing-wazuh-dashboard).
