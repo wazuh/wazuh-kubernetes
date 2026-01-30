@@ -32,7 +32,7 @@ The EKS workflow (eks-deployment-test.yml) performs a full end-to-end test on AW
 1. Deploys a temporary multi-node EKS cluster
 2. Configures AWS EBS CSI driver and network policies
 3. Generates SSL certificates for Wazuh components
-4. Deploys the Nginx ingress controller
+4. Deploys the Traefik ingress controller
 5. Deploys the Wazuh stack using the eks overlay
 6. Runs the complete test suite with `--deployment-type eks`
 7. Cleans up all resources (cluster and EBS volumes)

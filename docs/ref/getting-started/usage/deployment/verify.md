@@ -1,4 +1,3 @@
-
 # Verifying the deployment
 
 ## Namespace
@@ -116,14 +115,13 @@ In case you created domain names for the services, you should be able to access 
 Also, you can access using the External-IP (from the VPC): <https://xxx-yyy-zzz.us-east-1.elb.amazonaws.com:443>
 
 ```bash
-kubectl -n ingress-nginx get svc
+kubectl -n traefik get svc
 ```
 
 Expected output:
 
 ```bash
-$ kubectl -n ingress-nginx get svc
-NAME                                 TYPE           CLUSTER-IP      EXTERNAL-IP                                                                     PORT(S)                                                    AGE
-ingress-nginx-controller             LoadBalancer   10.100.228.67   a0c363db4315d484fa38751820a9e89b-e1811181631efef0.elb.us-west-1.amazonaws.com   80:30561/TCP,443:32533/TCP,1514:31784/TCP,1515:31274/TCP   36s
-ingress-nginx-controller-admission   ClusterIP      10.100.118.85   <none>                                                                          443/TCP                                                    35s
+$ kubectl -n traefik get svc
+NAME      TYPE           CLUSTER-IP     EXTERNAL-IP                                                              PORT(S)                                       AGE
+traefik   LoadBalancer   10.100.34.51   a7ffe29bfcf38420988fd52a698be422-862207742.us-west-1.elb.amazonaws.com   443:30725/TCP,1514:32036/TCP,1515:30354/TCP   6m29s
 ```

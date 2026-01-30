@@ -22,4 +22,7 @@ spec:
               memory: 1Gi
             limits:
               cpu: 1
-              memory: 2Gi
+              memory: 3Gi
+          env:
+            - name: discovery.seed_hosts
+              value: "wazuh-indexer-0.wazuh-indexer"

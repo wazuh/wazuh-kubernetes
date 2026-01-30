@@ -131,28 +131,26 @@ The provisioner column displays `microk8s.io/hostpath`, you must edit the file `
 
 ### Change Wazuh ingress host
 
-To deploy correctly in a local environment, it is necessary to change the parameter `<UPDATE-WITH-THE-FQDN-OF-THE-INGRESS>` to `localhost` in the file `wazuh/base/wazuh-ingress.yaml`, for example:
+To deploy correctly in a local environment, it is necessary to change the parameter `<UPDATE-WITH-THE-FQDN-OF-THE-INGRESS>` to `localhost` in the file `wazuh/base/ingressRoute-tcp-dashboard.yaml`, for example:
 
 ```yaml
-apiVersion: networking.k8s.io/v1
-kind: Ingress
+apiVersion: traefik.io/v1alpha1
+kind: IngressRouteTCP
 metadata:
-  name: wazuh-ingress
-  annotations:
-    nginx.ingress.kubernetes.io/ssl-passthrough: "true"
+  name: wazuh-dashboard
+  namespace: wazuh
 spec:
-  ingressClassName: nginx
-  rules:
-  - host: localhost
-    http:
-      paths:
-      - path: /
-        pathType: Prefix
-        backend:
-          service:
-            name: dashboard
-            port:
-              number: 443
+  entryPoints:
+    - websecure
+  routes:
+  - match: HostSNI(`localhost`)
+    middlewares:
+    - name: ip-allowlist
+    services:
+    - name: dashboard
+      port: 443
+  tls:
+    passthrough: true
 
 ```
 
@@ -164,28 +162,45 @@ It is possible to adjust resources for the cluster by editing patches on `envs/l
 
 > **Note**: This guide was created using Minikube and Calico as the CNI.
 
+Deploy Traefik CRD
+
+```bash
+kubectl apply -f traefik/crd/
+
+```
+
+Expected output:
+
+```bash
+$ kubectl apply -f traefik/crd/
+customresourcedefinition.apiextensions.k8s.io/ingressroutes.traefik.io created
+customresourcedefinition.apiextensions.k8s.io/ingressroutetcps.traefik.io created
+customresourcedefinition.apiextensions.k8s.io/ingressrouteudps.traefik.io created
+Warning: unrecognized format "int64"
+customresourcedefinition.apiextensions.k8s.io/middlewares.traefik.io created
+customresourcedefinition.apiextensions.k8s.io/middlewaretcps.traefik.io created
+customresourcedefinition.apiextensions.k8s.io/serverstransports.traefik.io created
+customresourcedefinition.apiextensions.k8s.io/serverstransporttcps.traefik.io created
+customresourcedefinition.apiextensions.k8s.io/tlsoptions.traefik.io created
+customresourcedefinition.apiextensions.k8s.io/tlsstores.traefik.io created
+customresourcedefinition.apiextensions.k8s.io/traefikservices.traefik.io created
+```
+
 By using the kustomization file on the `local-env` variant we can now deploy the whole cluster with a single command:
 
 ```bash
-cd ..
 kubectl apply -k envs/local-env/
 ```
 
-#### Accessing dashboard
+#### Accessing Dashboard
 
-To access the dashboard interface you can use port-forward:
+To access the Dashboard interface you can use port-forward:
 
 ```bash
 kubectl -n wazuh port-forward service/dashboard 8443:443
 ```
 
-If you need to access the dashboard from another host (or register agents pointing to the Minikube host IP), you can bind the port-forward to a specific interface/IP address:
-
-```console
-kubectl -n wazuh port-forward service/dashboard 8443:443 --address 192.168.1.34 &
-```
-
-Access to Wazuh dashboard using <https://localhost:8443>
+Dashboard will be accessible on ``https://localhost:8443``.
 
 #### Exposing Wazuh server ports
 
@@ -199,7 +214,7 @@ kubectl -n wazuh port-forward service/wazuh-registration 1515:1515
 
 > **Note**: You can run the process in background adding `&` to the port-forward command, for example: kubectl -n wazuh port-forward service/wazuh-events 1514:1514 &
 
-### Conclusion
+## Conclusion
 
 At this point, the Wazuh stack should be deployed in your local Kubernetes cluster.
 

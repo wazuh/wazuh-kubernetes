@@ -13,11 +13,29 @@ All notable changes to this project will be documented in this file.
 ### Changed
 
 - Update kubernetes deployment documentation to attend #1305 ([#1314](https://github.com/wazuh/wazuh-kubernetes/pull/1314))
+- Changed Nginx ingress controller to Traefik ingress controller. ([#1304](https://github.com/wazuh/wazuh-kubernetes/pull/1304))
 - Update Wazuh Kubernetes repository documentation ([#1285](https://github.com/wazuh/wazuh-kubernetes/pull/1285))
 - Added Nginx ingress controller for Wazuh Kubernetes deployment. ([#1272](https://github.com/wazuh/wazuh-kubernetes/pull/1272))
 - Modify deployment configuration in Kubernetes. ([#1268](https://github.com/wazuh/wazuh-kubernetes/pull/1268))
 - Wazuh server clean-up ([#1213](https://github.com/wazuh/wazuh-kubernetes/pull/1213))
 - Replace OpenSearch deprecated settings ([#1109](https://github.com/wazuh/wazuh-kubernetes/pull/1109))
+### Fixed
+
+- None
+
+### Deleted
+
+- None
+
+## [4.14.4]
+
+### Added
+
+- None
+
+### Changed
+
+- None
 
 ### Fixed
 

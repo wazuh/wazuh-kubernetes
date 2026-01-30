@@ -41,6 +41,9 @@ To deploy a cluster on your local environment (like Minikube, Kind or Microk8s) 
 ├── envs
 │   ├── eks
 │   │   ├── network-policies
+│   │   │   ├── allow-ingress-to-dashboard.yaml
+│   │   │   ├── allow-ingress-to-manager-master.yaml
+│   │   │   └── allow-ingress-to-manager-worker.yaml
 │   │   ├── dashboard-resources.yaml
 │   │   ├── indexer-resources.yaml
 │   │   ├── kustomization.yml
@@ -52,8 +55,17 @@ To deploy a cluster on your local environment (like Minikube, Kind or Microk8s) 
 │       ├── kustomization.yml
 │       ├── storage-class.yaml
 │       └── wazuh-resources.yaml
-├── nginx
-│   └── nginx-ingress-controller.yaml
+├── traefik
+│   ├── crd
+│   │   └── kubernetes-crd-definition-v1.yml
+│   └── runtime
+│       ├── kustomization.yaml
+│       ├── traefik-cluster-role-binding.yaml
+│       ├── traefik-cluster-role.yaml
+│       ├── traefik-deployment.yaml
+│       ├── traefik-ns.yaml
+│       ├── traefik-sa.yaml
+│       └── traefik-service.yaml
 ├── tests
 │   ├── conftest.py
 │   └── k8s_pytest.py
@@ -63,8 +75,11 @@ To deploy a cluster on your local environment (like Minikube, Kind or Microk8s) 
 │   ├── base
 │   │   ├── Allow-DNS-np.yaml
 │   │   ├── default-deny-all.yaml
+│   │   ├── ingressRoute-tcp-dashboard.yaml
+│   │   ├── ingressRoute-tcp-events.yaml
+│   │   ├── ingressRoute-tcp-registration.yaml
+│   │   ├── middleware.yaml
 │   │   ├── storage-class.yaml
-│   │   ├── wazuh-ingress.yaml
 │   │   └── wazuh-ns.yaml
 │   ├── indexer_stack
 │   │   ├── wazuh-dashboard
@@ -76,15 +91,16 @@ To deploy a cluster on your local environment (like Minikube, Kind or Microk8s) 
 │   │   ├── wazuh-authd-pass-secret.yaml
 │   │   └── wazuh-cluster-key-secret.yaml
 │   ├── wazuh_managers
-│   │   ├── manager-egress-external.yaml
-│   │   ├── manager-egress.yaml
+│   │   ├── network-policies
+│   │   │   ├── manager-egress-external.yaml
+│   │   │   ├── manager-egress.yaml
+│   │   │   ├── wazuh-master-ingress.yaml
+│   │   │   └── wazuh-worker-egress.yaml
 │   │   ├── wazuh-api-svc.yaml
 │   │   ├── wazuh-cluster-svc.yaml
 │   │   ├── wazuh-events-svc.yaml
-│   │   ├── wazuh-master-ingress.yaml
 │   │   ├── wazuh-master-sts.yaml
 │   │   ├── wazuh-registration-svc.yaml
-│   │   ├── wazuh-worker-egress.yaml
 │   │   └── wazuh-worker-sts.yaml
 │   └── kustomization.yml
 ├── CHANGELOG.md

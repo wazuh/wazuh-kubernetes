@@ -54,7 +54,7 @@ jobs:
           sudo install minikube-linux-amd64 /usr/local/bin/minikube && rm minikube-linux-amd64
 
       - name: Start Minikube cluster
-        run: minikube start --network-plugin=cni --cni=calico
+        run: minikube start --memory=8192 --cpus=4 --network-plugin=cni --cni=calico
 
       - name: Get Wazuh version
         run: |
@@ -115,18 +115,17 @@ jobs:
 
       - name: Update Wazuh ingress DNS
         run: |
-            yq e -i ".spec.rules[0].host = \"localhost\"" wazuh/base/wazuh-ingress.yaml
+          yq e -i '.spec.routes[0].match = "HostSNI(`localhost`)"' wazuh/base/ingressRoute-tcp-dashboard.yaml
+
+      - name: Deploy Traefik CRD
+        run: |
+          kubectl apply -f traefik/crd/kubernetes-crd-definition-v1.yml
 
       - name: Deploy Wazuh stack
         run: kubectl apply -k envs/local-env/
 
       - name: Wait 10 minutes for Wazuh stack startup
         run: sleep 10m
-
-      - name: Start minikube tunnel
-        run: |
-          minikube tunnel &> /dev/null &
-          sleep 30
 
       - name: View stack status
         run: kubectl get all -n wazuh -o wide
