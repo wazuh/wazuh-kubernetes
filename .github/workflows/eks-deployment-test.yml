@@ -20,11 +20,6 @@ env:
   ARTIFACT_URLS_FILE_TEMP: "/tmp/wazuh-docker/artifact_urls.yml"
   ARTIFACT_URLS_ENV_FILE: "/tmp/wazuh-docker/artifact_urls.sh"
   ASSISTANT_REVISION: latest
-  INDEXER_COMMIT: latest
-  MANAGER_COMMIT: latest
-  DASHBOARD_COMMIT: latest
-  AGENT_COMMIT: latest
-  OVA_REVISION: latest
 
 jobs:
   EKS_deployment_test:
