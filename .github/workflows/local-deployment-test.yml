@@ -122,8 +122,8 @@ jobs:
       - name: Download Wazuh certificates tool and config files
         run: |
           cd wazuh/
-          curl -o "wazuh-certs-tool-${{ env.WAZUH_VERSION }}-${{ env.WAZUH_REVISION }}.sh" "${{ env.wazuh_certs_tool }}"
-          curl -o "config-${{ env.WAZUH_VERSION }}-${{ env.WAZUH_REVISION }}.yml" "${{ env.wazuh_config_yml }}"
+          curl -o "wazuh-certs-tool-${{ env.WAZUH_VERSION }}-${{ env.WAZUH_REVISION }}.sh" ${{ env.wazuh_certs_tool }}
+          curl -o "config-${{ env.WAZUH_VERSION }}-${{ env.WAZUH_REVISION }}.yml" ${{ env.wazuh_config_yml }}
 
       - name: Update config file
         run: |
