@@ -22,21 +22,6 @@ inputs:
   assistant_revision:
     description: 'Assistant revision'
     required: true
-  indexer_commit:
-    description: 'Indexer commit'
-    required: true
-  manager_commit:
-    description: 'Manager commit'
-    required: true
-  dashboard_commit:
-    description: 'Dashboard commit'
-    required: true
-  agent_commit:
-    description: 'Agent commit'
-    required: true
-  ova_revision:
-    description: 'OVA revision'
-    required: true
   dev_s3_bucket:
     description: 'Development S3 bucket name'
     required: true
@@ -53,6 +38,7 @@ runs:
         mkdir -p "$(dirname "${{ inputs.artifact-urls-file-temp }}")"
         S3_KEY="deployment/artifact_urls_test.yml"
         aws s3 cp "s3://${{ inputs.s3-bucket-artifacts }}/$S3_KEY" "${{ inputs.artifact-urls-file-temp }}" --region ${{ inputs.aws-region }}
+        sed -i 's/\r//g' "${{ inputs.artifact-urls-file-temp }}"
         sed -i -e '/wazuh_certs_tool/b' -e '/wazuh_config_yml/b' -e 'd' "${{ inputs.artifact-urls-file-temp }}"
         cat "${{ inputs.artifact-urls-file-temp }}"
 
@@ -64,11 +50,6 @@ runs:
         AWS_REGION: ${{ inputs.aws-region }}
         ARTIFACT_URLS_FILE_TEMP: ${{ inputs.artifact-urls-file-temp }}
         ASSISTANT_REVISION: ${{ inputs.assistant_revision }}
-        INDEXER_COMMIT: ${{ inputs.indexer_commit }}
-        MANAGER_COMMIT: ${{ inputs.manager_commit }}
-        DASHBOARD_COMMIT: ${{ inputs.dashboard_commit }}
-        AGENT_COMMIT: ${{ inputs.agent_commit }}
-        OVA_REVISION: ${{ inputs.ova_revision }}
         DEV_S3_BUCKET: ${{ inputs.dev_s3_bucket }}
         ENV_FILE_OUTPUT: ${{ inputs.env_file_output }}
       run: |
@@ -99,11 +80,6 @@ runs:
 
           # Replace component revisions
           line=${line//\$\{\{ env.ASSISTANT_REVISION \}\}/${{ env.ASSISTANT_REVISION }}}
-          line=${line//\$\{\{ env.INDEXER_REVISION \}\}/${{ env.INDEXER_COMMIT }}}
-          line=${line//\$\{\{ env.MANAGER_REVISION \}\}/${{ env.MANAGER_COMMIT }}}
-          line=${line//\$\{\{ env.DASHBOARD_REVISION \}\}/${{ env.DASHBOARD_COMMIT }}}
-          line=${line//\$\{\{ env.AGENT_REVISION \}\}/${{ env.AGENT_COMMIT }}}
-          line=${line//\$\{\{ env.OVA_REVISION \}\}/${{ env.OVA_REVISION }}}
 
           # Append the processed line to the output file
           echo "$line" >> "$OUTPUT_FILE"

@@ -59,11 +59,6 @@ jobs:
           wazuh-version: ${{ env.WAZUH_VERSION }}
           wazuh-major: ${{ env.WAZUH_MAJOR }}
           assistant_revision: ${{ env.ASSISTANT_REVISION }}
-          indexer_commit: ${{ env.INDEXER_COMMIT }}
-          manager_commit: ${{ env.MANAGER_COMMIT }}
-          dashboard_commit: ${{ env.DASHBOARD_COMMIT }}
-          agent_commit: ${{ env.AGENT_COMMIT }}
-          ova_revision: ${{ env.OVA_REVISION }}
           dev_s3_bucket: ${{ vars.AWS_S3_BUCKET_DEV}}
           env_file_output: ${{ env.ARTIFACT_URLS_ENV_FILE }}
 
