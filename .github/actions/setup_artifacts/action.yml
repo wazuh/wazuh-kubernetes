@@ -35,12 +35,18 @@ runs:
     - name: Download S3 package URIs file
       shell: bash
       run: |
+        # Create the directory for the temporary file
         mkdir -p "$(dirname "${{ inputs.artifact-urls-file-temp }}")"
+        
+        # Download the file from S3
         S3_KEY="deployment/artifact_urls_test.yml"
         aws s3 cp "s3://${{ inputs.s3-bucket-artifacts }}/$S3_KEY" "${{ inputs.artifact-urls-file-temp }}" --region ${{ inputs.aws-region }}
+
+        # Delete newline characters
         sed -i 's/\r//g' "${{ inputs.artifact-urls-file-temp }}"
+
+        # Remove unwanted entries
         sed -i -e '/wazuh_certs_tool/b' -e '/wazuh_config_yml/b' -e 'd' "${{ inputs.artifact-urls-file-temp }}"
-        cat "${{ inputs.artifact-urls-file-temp }}"
 
     - name: Generate the variables file
       shell: bash
@@ -95,4 +101,3 @@ runs:
         
         # Export variables to the environment
         awk -F':' '!/^#/ && NF>1 {name=$1; val=substr($0,length(name)+3); gsub(/[-.]/,"_",name); print name "=" val}' $OUTPUT_FILE > "${{ env.ENV_FILE_OUTPUT }}"
-        cat "${{ env.ENV_FILE_OUTPUT }}"
