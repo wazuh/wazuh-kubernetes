@@ -48,15 +48,15 @@ cd wazuh-kubernetes
 
 Wazuh uses certificates to establish confidentiality and encrypt communications between its central components. Follow these steps to create certificates for the Wazuh central components.
 
-Download the `wazuh-certs-tool.sh` script. This creates the certificates that encrypt communications between the Wazuh central components.
+Download the `wazuh-certs-tool-5.0.0-1.sh` script. This creates the certificates that encrypt communications between the Wazuh central components.
 
 ```bash
 cd wazuh/
-curl -sO https://packages.wazuh.com/5.0/wazuh-certs-tool.sh
-curl -sO https://packages.wazuh.com/5.0/config.yml
+curl -sO https://packages.wazuh.com/5.0/wazuh-certs-tool-5.0.0-1.sh
+curl -sO https://packages.wazuh.com/5.0/config-5.0.0-1.yml
 ```
 
-Edit the `config.yml` file to set corresponding name and IP address for each Wazuh component.
+Edit the `config-5.0.0-1.yml` file to set corresponding name and IP address for each Wazuh component.
 For a local environment, you can use:
 
 ```yaml
@@ -77,10 +77,10 @@ nodes:
       ip: "127.0.0.1"
 ```
 
-Run `wazuh-certs-tool.sh` to create the certificates.
+Run `wazuh-certs-tool-5.0.0-1.sh` to create the certificates.
 
 ```bash
-bash wazuh-certs-tool.sh -A
+bash wazuh-certs-tool-5.0.0-1.sh -A
 ```
 
 Return to the root of the repository.

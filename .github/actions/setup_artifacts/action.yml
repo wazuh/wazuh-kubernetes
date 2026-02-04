@@ -1,0 +1,103 @@
+name: 'Setup and Presign S3 Artifacts'
+description: 'Download the test artifacts URIs file from S3 and process it to replace variables.'
+
+inputs:
+  aws-region:
+    description: 'AWS region where the S3 bucket is located'
+    required: true
+    default: 'us-west-1'
+  s3-bucket-artifacts:
+    description: 'S3 bucket name where artifacts are stored'
+    required: true
+  artifact-urls-file-temp:
+    description: 'Temporary file path for artifact URLs'
+    required: true
+    default: '/tmp/artifact_urls.yml'
+  wazuh-version:
+    description: 'Wazuh version'
+    required: true
+  wazuh-major:
+    description: 'Wazuh major version'
+    required: true
+  assistant_revision:
+    description: 'Assistant revision'
+    required: true
+  dev_s3_bucket:
+    description: 'Development S3 bucket name'
+    required: true
+  env_file_output:
+    description: 'Output file path for environment variables'
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Download S3 package URIs file
+      shell: bash
+      run: |
+        # Create the directory for the temporary file
+        mkdir -p "$(dirname "${{ inputs.artifact-urls-file-temp }}")"
+        
+        # Download the file from S3
+        S3_KEY="deployment/artifact_urls_test.yml"
+        aws s3 cp "s3://${{ inputs.s3-bucket-artifacts }}/$S3_KEY" "${{ inputs.artifact-urls-file-temp }}" --region ${{ inputs.aws-region }}
+
+        # Delete newline characters
+        sed -i 's/\r//g' "${{ inputs.artifact-urls-file-temp }}"
+
+        # Remove unwanted entries
+        sed -i -e '/wazuh_certs_tool/b' -e '/wazuh_config_yml/b' -e 'd' "${{ inputs.artifact-urls-file-temp }}"
+
+    - name: Generate the variables file
+      shell: bash
+      env:
+        WAZUH_VERSION: ${{ inputs.wazuh-version }}
+        WAZUH_MAJOR: ${{ inputs.wazuh-major }}
+        AWS_REGION: ${{ inputs.aws-region }}
+        ARTIFACT_URLS_FILE_TEMP: ${{ inputs.artifact-urls-file-temp }}
+        ASSISTANT_REVISION: ${{ inputs.assistant_revision }}
+        DEV_S3_BUCKET: ${{ inputs.dev_s3_bucket }}
+        ENV_FILE_OUTPUT: ${{ inputs.env_file_output }}
+      run: |
+        OUTPUT_FILE="/tmp/wazuh-docker/artifact_urls_processed.yml"
+        
+        mkdir -p "$(dirname "$OUTPUT_FILE")"
+
+        : > "$OUTPUT_FILE"
+
+        # Verify if the input file exists
+        if [ ! -f "$ARTIFACT_URLS_FILE_TEMP" ]; then
+          echo "The input file $ARTIFACT_URLS_FILE_TEMP does not exist." >&2
+          exit 1
+        fi
+
+        # Process the file line by line (replacing ocurrences)
+        while IFS= read -r line || [ -n "$line" ]; do
+          # Skip empty lines and comments
+          if [[ -z "$line" || "$line" =~ ^[[:space:]]*# ]]; then
+            echo "$line" >> "$OUTPUT_FILE"
+            continue
+          fi
+
+          # Replace variables with their actual values
+          line=${line//\$\{\{ vars.AWS_S3_BUCKET_DEV \}\}/${{ env.DEV_S3_BUCKET }}}
+          line=${line//\$\{\{ env.MAJOR \}\}/${{ env.WAZUH_MAJOR }}}
+          line=${line//\$\{\{ env.WAZUH_VERSION \}\}/${{ env.WAZUH_VERSION }}}
+
+          # Replace component revisions
+          line=${line//\$\{\{ env.ASSISTANT_REVISION \}\}/${{ env.ASSISTANT_REVISION }}}
+
+          # Append the processed line to the output file
+          echo "$line" >> "$OUTPUT_FILE"
+        done < "$ARTIFACT_URLS_FILE_TEMP"
+
+        # Verify the output file
+        if [ -f "$OUTPUT_FILE" ]; then
+          echo "The downloaded file artifact_urls.yml was successfully processed at $OUTPUT_FILE."
+        else
+          echo "Failed to create processed artifact_urls.yml file." >&2
+          exit 1
+        fi
+        
+        # Export variables to the environment
+        awk -F':' '!/^#/ && NF>1 {name=$1; val=substr($0,length(name)+3); gsub(/[-.]/,"_",name); print name "=" val}' $OUTPUT_FILE > "${{ env.ENV_FILE_OUTPUT }}"
