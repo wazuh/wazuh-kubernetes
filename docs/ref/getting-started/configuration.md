@@ -13,8 +13,8 @@ Select the overlay that matches your environment and customize the files in `env
 
 For deployment steps, refer to:
 
-- EKS clusters: [Usage: EKS deployment](usage/deployment.md#usage-eks-deployment)
-- Local clusters: [Usage: Local deployment](usage/deployment.md#usage-local-deployment)
+- EKS clusters: [Usage: AWS EKS Deployment](usage/deployment/eks.md)
+- Local clusters: [Usage: Local Deployment](usage/deployment/local.md)
 
 ## Storage configuration
 

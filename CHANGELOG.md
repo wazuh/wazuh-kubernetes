@@ -13,6 +13,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
+- Update kubernetes deployment documentation to attend #1305 ([#1314](https://github.com/wazuh/wazuh-kubernetes/pull/1314))
 - Changed Nginx ingress controller to Traefik ingress controller. ([#1304](https://github.com/wazuh/wazuh-kubernetes/pull/1304))
 - Update Wazuh Kubernetes repository documentation ([#1285](https://github.com/wazuh/wazuh-kubernetes/pull/1285))
 - Added Nginx ingress controller for Wazuh Kubernetes deployment. ([#1272](https://github.com/wazuh/wazuh-kubernetes/pull/1272))
