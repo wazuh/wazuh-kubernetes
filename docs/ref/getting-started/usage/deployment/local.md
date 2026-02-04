@@ -213,7 +213,9 @@ kubectl -n wazuh port-forward service/dashboard 8443:443
 
 Access to Wazuh dashboard using <https://localhost:8443>
 
-If you need to access the dashboard from another host (or register agents pointing to the Minikube host IP), you can bind the port-forward to a specific interface/IP address:
+<!-- If you need to access the dashboard from another host (or register agents pointing to the Minikube host IP), you can bind the port-forward to a specific interface/IP address: -->
+
+If you need to access the dashboard from another host, you can bind the port-forward to a specific interface/IP address:
 
 ```bash
 kubectl -n wazuh port-forward service/dashboard 8443:443 --address 192.168.1.34 &
@@ -228,6 +230,8 @@ kubectl -n wazuh port-forward service/wazuh-events 1514:1514
 ```bash
 kubectl -n wazuh port-forward service/wazuh-registration 1515:1515
 ```
+
+If you need to register agents pointing directly to the Minikube host IP, bind the port-forward to a specific interface/IP address adding the `--address` flag (as done previously for the dashboard).
 
 > **Note**: You can run the process in background adding `&` to the port-forward command, for example: kubectl -n wazuh port-forward service/wazuh-events 1514:1514 &
 
