@@ -39,7 +39,7 @@ runs:
         mkdir -p "$(dirname "${{ inputs.artifact-urls-file-temp }}")"
         
         # Download the file from S3
-        S3_KEY="deployment/artifact_urls_test.yml"
+        S3_KEY="deployment/artifact_urls.yml"
         aws s3 cp "s3://${{ inputs.s3-bucket-artifacts }}/$S3_KEY" "${{ inputs.artifact-urls-file-temp }}" --region ${{ inputs.aws-region }}
 
         # Delete newline characters
