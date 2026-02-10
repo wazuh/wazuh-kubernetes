@@ -20,5 +20,7 @@
     - [Change Passwords](ref/getting-started/usage/change-password.md)
     - [Upgrade](ref/getting-started/usage/upgrade.md)
     - [Cleanup](ref/getting-started/usage/cleanup.md)
+    - [Security](ref/getting-started/usage/security.md)
+    - [Backup and Restore](ref/getting-started/usage/backup-restore.md)
 - [Configuration](ref/getting-started/configuration.md)
 - [Glossary](ref/glossary.md)
