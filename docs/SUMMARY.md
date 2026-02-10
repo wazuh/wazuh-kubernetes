@@ -17,6 +17,7 @@
       - [AWS EKS Deployment](ref/getting-started/usage/deployment/eks.md)
       - [Local Deployment](ref/getting-started/usage/deployment/local.md)
       - [Verify deployment](ref/getting-started/usage/deployment/verify.md)
+    - [Change Passwords](ref/getting-started/usage/change-password.md)
     - [Upgrade](ref/getting-started/usage/upgrade.md)
     - [Cleanup](ref/getting-started/usage/cleanup.md)
 - [Configuration](ref/getting-started/configuration.md)
