@@ -57,7 +57,7 @@ Replace <KIBANASERVER_PASSWORD_HASH> with the password hash generated in the pre
 
 ### Setting the new password
 
-Encode your new password in `base64` format. Use the -n option with the echo command as follows to avoid inserting a trailing newline character to maintain the hash value.
+Encode your new password in `base64` format. Use the `-n` option with the echo command as follows to avoid inserting a trailing newline character to maintain the hash value.
 
 ```sh
 echo -n "<NEW_PASSWORD>" | base64
@@ -66,6 +66,8 @@ echo -n "<NEW_PASSWORD>" | base64
 Replace the variable <NEW_PASSWORD> with your password.
 
 Edit the indexer or dashbboard secrets configuration file as follows. Replace the value of the password field with the `base64` encoded password.
+
+#### admin user
 
 To change the `admin` user password, edit the `wazuh/secrets/indexer-cred-secret.yaml` file.
 
@@ -79,6 +81,8 @@ data:
     username: YWRtaW4=              # string "admin" base64 encoded
     password: <NEW_PASSWORD>  # Paste the string of the base64 encoded password
 ```
+
+#### kibanaserver user
 
 To change the `kibanaserver` user password, edit the `wazuh/secrets/dashboard-cred-secret.yaml` file.
 
@@ -153,11 +157,16 @@ The `wazuh-wui` user is the default user used to connect to the Wazuh server API
 
 Note: The password for Wazuh server API users must be between 8 and 64 characters long. It must contain at least one uppercase and one lowercase letter, a number, and a symbol.
 
+### Encode the new password
+
 Encode your new password in `base64` format. Use the `-n` option with the echo command as follows to avoid inserting a trailing newline character to maintain the hash value.
 
 ```sh
 echo -n "<NEW_PASSWORD>" | base64
 ```
+
+### Replace the encoded password
+
 Replace the variable <NEW_PASSWORD> with your password.
 
 Edit the `wazuh/secrets/wazuh-api-cred-secret.yaml` file and replace the value of the password field.
@@ -173,10 +182,18 @@ data:
     password: <NEW_PASSWORD>  # Paste the string of the base64 encoded password
 ```
 
-Apply the manifest changes.
+### Apply the changed secret
+
+#### EKS cluster
 
 ```sh
 kubectl apply -k envs/eks/
+```
+
+#### Other cluster types
+
+```sh
+kubectl apply -k envs/local-env/
 ```
 
 Force the Wazuh dashboard deployment rollout to update the component credentials.
