@@ -9,13 +9,13 @@
 
 ## Amazon EKS development
 
-To deploy a cluster on Amazon EKS read the instructions on [Usage: AWS EKS Deployment](ref/getting-started/usage/deployment/eks.md).
+To deploy a cluster on Amazon EKS read the instructions on [Usage: AWS EKS Deployment](ref/getting-started/installation.md#eks-deployment).
 Note: For Kubernetes version 1.23 or higher, the assignment of an IAM Role is necessary for the CSI driver to function correctly. Within the AWS documentation you can find the instructions for the assignment: https://docs.aws.amazon.com/eks/latest/userguide/ebs-csi.html
 The installation of the CSI driver is mandatory for new and old deployments if you are going to use Kubernetes 1.23 for the first time or you need to upgrade the cluster.
 
 ## Local development
 
-To deploy a cluster on your local environment (like Minikube, Kind or Microk8s) read the instructions on [Usage: Local Deployment](ref/getting-started/usage/deployment/local.md).
+To deploy a cluster on your local environment (like Minikube, Kind or Microk8s) read the instructions on [Usage: Local Deployment](ref/getting-started/installation.md#local-deployment).
 
 ## Diagram
 
@@ -30,8 +30,13 @@ To deploy a cluster on your local environment (like Minikube, Kind or Microk8s) 
 │   │   └── setup.md
 │   ├── ref
 │   │   ├── getting-started
+│   │   ├── introduction
+│   │   ├── backup-restore.md
 │   │   ├── glossary.md
-│   │   └── introduction.md
+│   │   ├── introduction.md
+│   │   ├── performance.md
+│   │   ├── uninstall.md
+│   │   └── upgrade.md
 │   ├── README.md
 │   ├── SUMMARY.md
 │   ├── book.toml
@@ -41,9 +46,6 @@ To deploy a cluster on your local environment (like Minikube, Kind or Microk8s) 
 ├── envs
 │   ├── eks
 │   │   ├── network-policies
-│   │   │   ├── allow-ingress-to-dashboard.yaml
-│   │   │   ├── allow-ingress-to-manager-master.yaml
-│   │   │   └── allow-ingress-to-manager-worker.yaml
 │   │   ├── dashboard-resources.yaml
 │   │   ├── indexer-resources.yaml
 │   │   ├── kustomization.yml
@@ -55,22 +57,22 @@ To deploy a cluster on your local environment (like Minikube, Kind or Microk8s) 
 │       ├── kustomization.yml
 │       ├── storage-class.yaml
 │       └── wazuh-resources.yaml
+├── tests
+│   ├── conftest.py
+│   └── k8s_pytest.py
+├── tools
+│   └── repository_bumper.sh
 ├── traefik
 │   ├── crd
 │   │   └── kubernetes-crd-definition-v1.yml
 │   └── runtime
-│       ├── kustomization.yaml
+│       ├── kustomization.yml
 │       ├── traefik-cluster-role-binding.yaml
 │       ├── traefik-cluster-role.yaml
 │       ├── traefik-deployment.yaml
 │       ├── traefik-ns.yaml
 │       ├── traefik-sa.yaml
 │       └── traefik-service.yaml
-├── tests
-│   ├── conftest.py
-│   └── k8s_pytest.py
-├── tools
-│   └── repository_bumper.sh
 ├── wazuh
 │   ├── base
 │   │   ├── Allow-DNS-np.yaml
@@ -92,10 +94,6 @@ To deploy a cluster on your local environment (like Minikube, Kind or Microk8s) 
 │   │   └── wazuh-cluster-key-secret.yaml
 │   ├── wazuh_managers
 │   │   ├── network-policies
-│   │   │   ├── manager-egress-external.yaml
-│   │   │   ├── manager-egress.yaml
-│   │   │   ├── wazuh-master-ingress.yaml
-│   │   │   └── wazuh-worker-egress.yaml
 │   │   ├── wazuh-api-svc.yaml
 │   │   ├── wazuh-cluster-svc.yaml
 │   │   ├── wazuh-events-svc.yaml
@@ -107,7 +105,7 @@ To deploy a cluster on your local environment (like Minikube, Kind or Microk8s) 
 ├── LICENSE
 ├── README.md
 ├── SECURITY.md
-└── VERSION.json
+├── VERSION.json
 ```
 
 ## Docs requirements

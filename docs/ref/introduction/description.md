@@ -1,8 +1,4 @@
-# Introduction to the Reference Manual
-
-This reference manual provides comprehensive documentation for deploying and managing Wazuh on Kubernetes clusters. It covers deployment architecture, configuration management with Kustomize, compatibility requirements, and step-by-step instructions for both cloud and local environments.
-
-## Description
+# Description
 
 This repository enables you to deploy a complete Wazuh stack on a Kubernetes cluster. It provides manifests and Kustomize overlays for deploying Wazuh managers, indexers, and dashboards with high availability and persistent storage.
 

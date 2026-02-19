@@ -1,20 +1,4 @@
-# Configuration
-
-This page describes the main configuration options for deploying Wazuh using this repository. It explains how to adjust the manifests for your environment before applying the Kustomize overlays
-
-## Configuration overview
-
-The deployment is organized in two layers:
-
-- **Base manifests**: Located in `wazuh/`. They define the Wazuh namespace, storage class, ingress, services, StatefulSets, Deployments, and Secrets
-- **Environment overlays**: Located in `envs/eks/` and `envs/local-env/`. They reuse the base manifests and apply environment‑specific patches (storage, resources, replicas)
-
-Select the overlay that matches your environment and customize the files in `envs/<environment>/` before running `kubectl apply -k`
-
-For deployment steps, refer to:
-
-- EKS clusters: [Usage: AWS EKS Deployment](usage/deployment/eks.md)
-- Local clusters: [Usage: Local Deployment](usage/deployment/local.md)
+# Configuration Files
 
 ## Storage configuration
 
@@ -77,3 +61,23 @@ Main secrets:
   Wazuh dashboard (Kibana) username and password.
 - `wazuh/secrets/indexer-cred-secret.yaml`
   Wazuh indexer username and password.
+
+## Persistence configuration
+
+When customizing your Wazuh Kubernetes deployment, certain files and directories must be persisted to retain your changes across pod restarts and recreations. This is critical for maintaining custom configurations, user credentials, and security settings.
+
+### PersistentVolumeClaims and ConfigMaps
+
+Kubernetes uses PersistentVolumeClaims (PVCs) and ConfigMaps to persist data outside of pod lifecycles:
+
+- **PersistentVolumeClaims**: Used for stateful data like logs, queues, and Indexer data. When a pod is deleted and recreated, data in PVCs remains intact.
+- **ConfigMaps**: Used for configuration files. ConfigMaps can be mounted as files in pods and updated independently of the pod lifecycle.
+
+The Wazuh deployment already uses PVCs for critical directories like `/var/ossec/etc`, `/var/ossec/logs`, and `/var/lib/wazuh-indexer`. For additional configuration files, use ConfigMaps as described above.
+
+> **Important**: When creating ConfigMaps for configuration files, ensure the file content is properly formatted and validated before applying. Malformed configuration files can prevent pods from starting.
+
+For more information on Kubernetes storage concepts, refer to the official Kubernetes documentation:
+
+- [Persistent Volumes](https://kubernetes.io/docs/concepts/storage/persistent-volumes/)
+- [ConfigMaps](https://kubernetes.io/docs/concepts/configuration/configmap/)

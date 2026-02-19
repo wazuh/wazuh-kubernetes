@@ -14,7 +14,7 @@ Designed for development, testing, and evaluation purposes using local Kubernete
 - Local storage provisioner for persistent volumes
 - Simplified networking configuration
 
-For detailed instructions, see [Usage: Local Deployment](usage/deployment/local.md).
+For detailed instructions, see [Usage: Local Deployment](installation.md#local-deployment).
 
 ### Amazon EKS
 
@@ -25,9 +25,9 @@ Optimized for deployments on Amazon Elastic Kubernetes Service (EKS). This envir
 - Load balancer integration for service exposure
 - Separate resource configurations for master and worker nodes
 
-For detailed instructions, see [Usage: AWS EKS Deployment](usage/deployment/eks.md).
+For detailed instructions, see [Usage: AWS EKS Deployment](installation.md#eks-deployment).
 
 ## Next Steps
 
 - Review the [Requirements](requirements.md) to ensure your cluster is properly configured
-- Follow the [Usage](usage/usage.md) guide for step-by-step deployment/cleanup/upgrade instructions
+- Follow the [Installation](installation.md) guide for step-by-step deployment instructions
