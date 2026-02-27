@@ -73,7 +73,7 @@ Kubernetes uses PersistentVolumeClaims (PVCs) and ConfigMaps to persist data out
 - **PersistentVolumeClaims**: Used for stateful data like logs, queues, and Indexer data. When a pod is deleted and recreated, data in PVCs remains intact.
 - **ConfigMaps**: Used for configuration files. ConfigMaps can be mounted as files in pods and updated independently of the pod lifecycle.
 
-The Wazuh deployment already uses PVCs for critical directories like `/var/ossec/etc`, `/var/ossec/logs`, and `/var/lib/wazuh-indexer`. For additional configuration files, use ConfigMaps as described above.
+The Wazuh deployment already uses PVCs for critical directories like `/var/manager/etc`, `/var/manager/logs`, and `/var/lib/wazuh-indexer`. For additional configuration files, use ConfigMaps as described above.
 
 > **Important**: When creating ConfigMaps for configuration files, ensure the file content is properly formatted and validated before applying. Malformed configuration files can prevent pods from starting.
 

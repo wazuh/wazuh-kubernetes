@@ -49,12 +49,12 @@ spec:
             - -c
             - |
               if [ -z "$(ls -A /pvc-etc)" ]; then
-                cp -a /var/ossec/etc/* /pvc-etc/
+                cp -a /var/manager/etc/* /pvc-etc/
               fi
           volumeMounts:
             - name: wazuh-manager-worker
               mountPath: /pvc-etc
-              subPath: wazuh/var/ossec/etc
+              subPath: wazuh/var/manager/etc
       securityContext:
         fsGroup: 101
       containers:
@@ -69,38 +69,38 @@ spec:
               add: ["SYS_CHROOT"]
           volumeMounts:
             - name: wazuh-manager-worker
-              mountPath: /var/ossec/api/configuration
-              subPath: wazuh/var/ossec/api/configuration
+              mountPath: /var/manager/api/configuration
+              subPath: wazuh/var/manager/api/configuration
             - name: wazuh-manager-worker
-              mountPath: /var/ossec/etc
-              subPath: wazuh/var/ossec/etc
+              mountPath: /var/manager/etc
+              subPath: wazuh/var/manager/etc
             - name: wazuh-server-certs
-              mountPath: /var/ossec/etc/certs/root-ca.pem
+              mountPath: /var/manager/etc/certs/root-ca.pem
               readOnly: true
               subPath: root-ca.pem
             - name: wazuh-server-certs
-              mountPath: /var/ossec/etc/certs/server.pem
-              subPath: server.pem
+              mountPath: /var/manager/etc/certs/manager.pem
+              subPath: manager.pem
               readOnly: true
             - name: wazuh-server-certs
-              mountPath: /var/ossec/etc/certs/server-key.pem
-              subPath: server-key.pem
+              mountPath: /var/manager/etc/certs/manager-key.pem
+              subPath: manager-key.pem
               readOnly: true
             - name: wazuh-manager-worker
-              mountPath: /var/ossec/logs
-              subPath: wazuh/var/ossec/logs
+              mountPath: /var/manager/logs
+              subPath: wazuh/var/manager/logs
             - name: wazuh-manager-worker
-              mountPath: /var/ossec/queue
-              subPath: wazuh/var/ossec/queue
+              mountPath: /var/manager/queue
+              subPath: wazuh/var/manager/queue
             - name: wazuh-manager-worker
-              mountPath: /var/ossec/var/multigroups
-              subPath: wazuh/var/ossec/var/multigroups
+              mountPath: /var/manager/var/multigroups
+              subPath: wazuh/var/manager/var/multigroups
             - name: wazuh-manager-worker
-              mountPath: /var/ossec/active-response/bin
-              subPath: wazuh/var/ossec/active-response/bin
+              mountPath: /var/manager/active-response/bin
+              subPath: wazuh/var/manager/active-response/bin
             - name: wazuh-manager-worker
-              mountPath: /var/ossec/wodles
-              subPath: wazuh/var/ossec/wodles
+              mountPath: /var/manager/wodles
+              subPath: wazuh/var/manager/wodles
           ports:
             - containerPort: 1514
               name: agents-events
@@ -130,11 +130,11 @@ spec:
                   name: indexer-cred
                   key: password
             - name: SSL_CERTIFICATE_AUTHORITIES
-              value: /var/ossec/etc/certs/root-ca.pem
+              value: /var/manager/etc/certs/root-ca.pem
             - name: SSL_CERTIFICATE
-              value: /var/ossec/etc/certs/server.pem
+              value: /var/manager/etc/certs/server.pem
             - name: SSL_KEY
-              value: /var/ossec/etc/certs/server-key.pem
+              value: /var/manager/etc/certs/server-key.pem
             - name: WAZUH_CLUSTER_KEY
               valueFrom:
                 secretKeyRef:

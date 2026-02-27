@@ -71,7 +71,7 @@ class TestWazuhKubernetes:
 
     def test_manager_services_running(self, namespace):
         """Check if Wazuh manager has at least 10 services running"""
-        cmd = f'kubectl -n {namespace} exec -it wazuh-manager-master-0 -- /var/ossec/bin/wazuh-control status'
+        cmd = f'kubectl -n {namespace} exec -it wazuh-manager-master-0 -- /var/manager/bin/wazuh-manager-control status'
         result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
 
         print("Wazuh Manager services status:")

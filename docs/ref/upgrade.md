@@ -7,13 +7,13 @@ When upgrading our version of Wazuh installed in Kubernetes we must follow the f
 Our Kubernetes deployment uses our Wazuh images from Docker. If we look at the following code extracted from the Wazuh configuration using Docker we can see which directories and files are used in the upgrades.
 
 ```
-PERMANENT_DATA[((i++))]="/var/ossec/api/configuration"
-PERMANENT_DATA[((i++))]="/var/ossec/etc"
-PERMANENT_DATA[((i++))]="/var/ossec/logs"
-PERMANENT_DATA[((i++))]="/var/ossec/queue"
-PERMANENT_DATA[((i++))]="/var/ossec/var/multigroups"
-PERMANENT_DATA[((i++))]="/var/ossec/active-response/bin"
-PERMANENT_DATA[((i++))]="/var/ossec/wodles"
+PERMANENT_DATA[((i++))]="/var/manager/api/configuration"
+PERMANENT_DATA[((i++))]="/var/manager/etc"
+PERMANENT_DATA[((i++))]="/var/manager/logs"
+PERMANENT_DATA[((i++))]="/var/manager/queue"
+PERMANENT_DATA[((i++))]="/var/manager/var/multigroups"
+PERMANENT_DATA[((i++))]="/var/manager/active-response/bin"
+PERMANENT_DATA[((i++))]="/var/manager/wodles"
 ```
 
 Any file that we modify referring to the files previously mentioned, will be changed also the corresponding volume. When the corresponding Wazuh pod is created again, it will get the cited files from the volume, thus keeping the changes made previously.
@@ -28,11 +28,11 @@ containers:
   image: 'wazuh/wazuh:3.13.2_7.9.1'
 ```
 
-Let's proceed by creating a set of rules in our `local_rules.xml` file at location `/var/ossec/etc/rules` in our wazuh manager master pod.
+Let's proceed by creating a set of rules in our `local_rules.xml` file at location `/var/manager/etc/rules` in our wazuh manager master pod.
 
 ```
-root@wazuh-manager-master-0:/# vim /var/ossec/etc/rules/local_rules.xml
-root@wazuh-manager-master-0:/# cat /var/ossec/etc/rules/local_rules.xml
+root@wazuh-manager-master-0:/# vim /var/manager/etc/rules/local_rules.xml
+root@wazuh-manager-master-0:/# cat /var/manager/etc/rules/local_rules.xml
 <!-- Local rules -->
 
 <!-- Modify it at your will. -->
@@ -68,16 +68,16 @@ root@wazuh-manager-master-0:/# cat /var/ossec/etc/rules/local_rules.xml
 
 ```
 
-This action has modified the `local_rules.xml` file in the `/var/ossec/data/etc/rules` path and in the `/etc/postfix/etc/` rules path due these routes reference our volume assembly points.
+This action has modified the `local_rules.xml` file in the `/var/manager/data/etc/rules` path and in the `/etc/postfix/etc/` rules path due these routes reference our volume assembly points.
 
 ```
 volumeMounts:
 - name: config
-  mountPath: /wazuh-config-mount/etc/ossec.conf
-  subPath: ossec.conf
+  mountPath: /wazuh-config-mount/etc/wazuh-manager.conf
+  subPath: wazuh-manager.conf
   readOnly: true
 - name: wazuh-manager-master
-  mountPath: /var/ossec/data
+  mountPath: /var/manager/data
 - name: wazuh-manager-master
   mountPath: /etc/postfix
 ```
@@ -85,7 +85,7 @@ volumeMounts:
 We can see their content.
 
 ```
-root@wazuh-manager-master-0:/# cat /var/ossec/data/etc/rules/local_rules.xml
+root@wazuh-manager-master-0:/# cat /var/manager/data/etc/rules/local_rules.xml
 <!-- Local rules -->
 
 <!-- Modify it at your will. -->
