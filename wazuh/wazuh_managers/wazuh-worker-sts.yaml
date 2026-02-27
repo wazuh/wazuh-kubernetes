@@ -98,9 +98,6 @@ spec:
             - name: wazuh-manager-worker
               mountPath: /var/manager/active-response/bin
               subPath: wazuh/var/manager/active-response/bin
-            - name: wazuh-manager-worker
-              mountPath: /var/manager/wodles
-              subPath: wazuh/var/manager/wodles
           ports:
             - containerPort: 1514
               name: agents-events

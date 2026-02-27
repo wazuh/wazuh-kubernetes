@@ -13,7 +13,6 @@ PERMANENT_DATA[((i++))]="/var/manager/logs"
 PERMANENT_DATA[((i++))]="/var/manager/queue"
 PERMANENT_DATA[((i++))]="/var/manager/var/multigroups"
 PERMANENT_DATA[((i++))]="/var/manager/active-response/bin"
-PERMANENT_DATA[((i++))]="/var/manager/wodles"
 ```
 
 Any file that we modify referring to the files previously mentioned, will be changed also the corresponding volume. When the corresponding Wazuh pod is created again, it will get the cited files from the volume, thus keeping the changes made previously.

@@ -95,9 +95,6 @@ spec:
             - name: wazuh-manager-master
               mountPath: /var/manager/active-response/bin
               subPath: wazuh/var/manager/active-response/bin
-            - name: wazuh-manager-master
-              mountPath: /var/manager/wodles
-              subPath: wazuh/var/manager/wodles
           ports:
             - containerPort: 1515
               name: registration
