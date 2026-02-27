@@ -86,12 +86,12 @@ jobs:
 
       - name: Replace image registry to ECR
         run: |
-          yq e -i '.spec.template.spec.containers[] |= select(.name == "wazuh-dashboard").image = "${{ env.ECR_REGISTRY }}/wazuh/wazuh-dashboard:${{ env.WAZUH_VERSION }}-${{ env.WAZUH_REVISION }}"' wazuh/indexer_stack/wazuh-dashboard/dashboard-deploy.yaml
-          yq e -i '.spec.template.spec.containers[] |= select(.name == "wazuh-indexer").image = "${{ env.ECR_REGISTRY }}/wazuh/wazuh-indexer:${{ env.WAZUH_VERSION }}-${{ env.WAZUH_REVISION }}"' wazuh/indexer_stack/wazuh-indexer/cluster/indexer-sts.yaml
-          yq e -i '.spec.template.spec.initContainers[] |= select(.name == "init-wazuh-etc").image = "${{ env.ECR_REGISTRY }}/wazuh/wazuh-manager:${{ env.WAZUH_VERSION }}-${{ env.WAZUH_REVISION }}"' wazuh/wazuh_managers/wazuh-master-sts.yaml
-          yq e -i '.spec.template.spec.containers[] |= select(.name == "wazuh-manager").image = "${{ env.ECR_REGISTRY }}/wazuh/wazuh-manager:${{ env.WAZUH_VERSION }}-${{ env.WAZUH_REVISION }}"' wazuh/wazuh_managers/wazuh-master-sts.yaml
-          yq e -i '.spec.template.spec.initContainers[] |= select(.name == "init-wazuh-etc").image = "${{ env.ECR_REGISTRY }}/wazuh/wazuh-manager:${{ env.WAZUH_VERSION }}-${{ env.WAZUH_REVISION }}"' wazuh/wazuh_managers/wazuh-worker-sts.yaml
-          yq e -i '.spec.template.spec.containers[] |= select(.name == "wazuh-manager").image = "${{ env.ECR_REGISTRY }}/wazuh/wazuh-manager:${{ env.WAZUH_VERSION }}-${{ env.WAZUH_REVISION }}"' wazuh/wazuh_managers/wazuh-worker-sts.yaml
+          yq e -i '.spec.template.spec.containers[] |= select(.name == "wazuh-dashboard").image = "${{ env.ECR_REGISTRY }}/wazuh/wazuh-dashboard:${{ env.WAZUH_VERSION }}"' wazuh/indexer_stack/wazuh-dashboard/dashboard-deploy.yaml
+          yq e -i '.spec.template.spec.containers[] |= select(.name == "wazuh-indexer").image = "${{ env.ECR_REGISTRY }}/wazuh/wazuh-indexer:${{ env.WAZUH_VERSION }}"' wazuh/indexer_stack/wazuh-indexer/cluster/indexer-sts.yaml
+          yq e -i '.spec.template.spec.initContainers[] |= select(.name == "init-wazuh-etc").image = "${{ env.ECR_REGISTRY }}/wazuh/wazuh-manager:${{ env.WAZUH_VERSION }}"' wazuh/wazuh_managers/wazuh-master-sts.yaml
+          yq e -i '.spec.template.spec.containers[] |= select(.name == "wazuh-manager").image = "${{ env.ECR_REGISTRY }}/wazuh/wazuh-manager:${{ env.WAZUH_VERSION }}"' wazuh/wazuh_managers/wazuh-master-sts.yaml
+          yq e -i '.spec.template.spec.initContainers[] |= select(.name == "init-wazuh-etc").image = "${{ env.ECR_REGISTRY }}/wazuh/wazuh-manager:${{ env.WAZUH_VERSION }}"' wazuh/wazuh_managers/wazuh-worker-sts.yaml
+          yq e -i '.spec.template.spec.containers[] |= select(.name == "wazuh-manager").image = "${{ env.ECR_REGISTRY }}/wazuh/wazuh-manager:${{ env.WAZUH_VERSION }}"' wazuh/wazuh_managers/wazuh-worker-sts.yaml
 
       - name: Login to AWS ECR
         run: |
@@ -99,15 +99,15 @@ jobs:
 
       - name: Download Wazuh images
         run: |
-          docker pull ${{ env.ECR_REGISTRY }}/wazuh/wazuh-dashboard:${{ env.WAZUH_VERSION }}-${{ env.WAZUH_REVISION }}
-          docker pull ${{ env.ECR_REGISTRY }}/wazuh/wazuh-indexer:${{ env.WAZUH_VERSION }}-${{ env.WAZUH_REVISION }}
-          docker pull ${{ env.ECR_REGISTRY }}/wazuh/wazuh-manager:${{ env.WAZUH_VERSION }}-${{ env.WAZUH_REVISION }}
+          docker pull ${{ env.ECR_REGISTRY }}/wazuh/wazuh-dashboard:${{ env.WAZUH_VERSION }}
+          docker pull ${{ env.ECR_REGISTRY }}/wazuh/wazuh-indexer:${{ env.WAZUH_VERSION }}
+          docker pull ${{ env.ECR_REGISTRY }}/wazuh/wazuh-manager:${{ env.WAZUH_VERSION }}
 
       - name: Load Wazuh images into Minikube
         run: |
-          minikube image load ${{ env.ECR_REGISTRY }}/wazuh/wazuh-dashboard:${{ env.WAZUH_VERSION }}-${{ env.WAZUH_REVISION }}
-          minikube image load ${{ env.ECR_REGISTRY }}/wazuh/wazuh-indexer:${{ env.WAZUH_VERSION }}-${{ env.WAZUH_REVISION }}
-          minikube image load ${{ env.ECR_REGISTRY }}/wazuh/wazuh-manager:${{ env.WAZUH_VERSION }}-${{ env.WAZUH_REVISION }}
+          minikube image load ${{ env.ECR_REGISTRY }}/wazuh/wazuh-dashboard:${{ env.WAZUH_VERSION }}
+          minikube image load ${{ env.ECR_REGISTRY }}/wazuh/wazuh-indexer:${{ env.WAZUH_VERSION }}
+          minikube image load ${{ env.ECR_REGISTRY }}/wazuh/wazuh-manager:${{ env.WAZUH_VERSION }}
 
       - name: Download Wazuh certificates tool and config files
         run: |
