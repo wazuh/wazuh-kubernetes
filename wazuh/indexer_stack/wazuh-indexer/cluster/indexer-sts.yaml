@@ -59,7 +59,7 @@ spec:
             privileged: true
       containers:
         - name: wazuh-indexer
-          image: 'wazuh/wazuh-indexer:5.0.0'
+          image: 'public.ecr.aws/wazuh-cicd/wazuh/wazuh-indexer:5.0.0'
           resources:
             limits:
               cpu: 500m
