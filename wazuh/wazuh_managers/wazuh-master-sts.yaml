@@ -44,12 +44,12 @@ spec:
             - -c
             - |
               if [ -z "$(ls -A /pvc-etc)" ]; then
-                cp -a /var/manager/etc/* /pvc-etc/
+                cp -a /var/wazuh-manager/etc/* /pvc-etc/
               fi
           volumeMounts:
             - name: wazuh-manager-master
               mountPath: /pvc-etc
-              subPath: wazuh/var/manager/etc
+              subPath: wazuh/var/wazuh-manager/etc
       containers:
         - name: wazuh-manager
           image: 'wazuh/wazuh-manager:5.0.0'
@@ -66,35 +66,35 @@ spec:
               subPath: authd.pass
               readOnly: true
             - name: wazuh-manager-master
-              mountPath: /var/manager/api/configuration
-              subPath: wazuh/var/manager/api/configuration
+              mountPath: /var/wazuh-manager/api/configuration
+              subPath: wazuh/var/wazuh-manager/api/configuration
             - name: wazuh-manager-master
-              mountPath: /var/manager/etc
-              subPath: wazuh/var/manager/etc
+              mountPath: /var/wazuh-manager/etc
+              subPath: wazuh/var/wazuh-manager/etc
             - name: wazuh-server-certs
-              mountPath: /var/manager/etc/certs/root-ca.pem
+              mountPath: /var/wazuh-manager/etc/certs/root-ca.pem
               readOnly: true
               subPath: root-ca.pem
             - name: wazuh-server-certs
-              mountPath: /var/manager/etc/certs/manager.pem
+              mountPath: /var/wazuh-manager/etc/certs/manager.pem
               subPath: manager.pem
               readOnly: true
             - name: wazuh-server-certs
-              mountPath: /var/manager/etc/certs/manager-key.pem
+              mountPath: /var/wazuh-manager/etc/certs/manager-key.pem
               subPath: manager-key.pem
               readOnly: true
             - name: wazuh-manager-master
-              mountPath: /var/manager/logs
-              subPath: wazuh/var/manager/logs
+              mountPath: /var/wazuh-manager/logs
+              subPath: wazuh/var/wazuh-manager/logs
             - name: wazuh-manager-master
-              mountPath: /var/manager/queue
-              subPath: wazuh/var/manager/queue
+              mountPath: /var/wazuh-manager/queue
+              subPath: wazuh/var/wazuh-manager/queue
             - name: wazuh-manager-master
-              mountPath: /var/manager/var/multigroups
-              subPath: wazuh/var/manager/var/multigroups
+              mountPath: /var/wazuh-manager/var/multigroups
+              subPath: wazuh/var/wazuh-manager/var/multigroups
             - name: wazuh-manager-master
-              mountPath: /var/manager/active-response/bin
-              subPath: wazuh/var/manager/active-response/bin
+              mountPath: /var/wazuh-manager/active-response/bin
+              subPath: wazuh/var/wazuh-manager/active-response/bin
           ports:
             - containerPort: 1515
               name: registration
@@ -124,11 +124,11 @@ spec:
                   name: indexer-cred
                   key: password
             - name: SSL_CERTIFICATE_AUTHORITIES
-              value: /var/manager/etc/certs/root-ca.pem
+              value: /var/wazuh-manager/etc/certs/root-ca.pem
             - name: SSL_CERTIFICATE
-              value: /var/manager/etc/certs/manager.pem
+              value: /var/wazuh-manager/etc/certs/manager.pem
             - name: SSL_KEY
-              value: /var/manager/etc/certs/manager-key.pem
+              value: /var/wazuh-manager/etc/certs/manager-key.pem
             - name: API_USERNAME
               valueFrom:
                 secretKeyRef:

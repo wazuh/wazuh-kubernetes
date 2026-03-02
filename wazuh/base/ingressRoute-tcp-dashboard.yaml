@@ -7,7 +7,7 @@ spec:
   entryPoints:
     - websecure
   routes:
-  - match: HostSNI(`<UPDATE-WITH-THE-FQDN-OF-THE-INGRESS>`)
+  - match: HostSNI(`a1c6644293d5b443f80bb1db846d7716-1101041948.us-west-1.elb.amazonaws.com`)
     middlewares:
     - name: ip-allowlist
     services:
