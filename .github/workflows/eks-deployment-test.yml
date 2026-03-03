@@ -138,12 +138,12 @@ jobs:
 
       - name: Replace image registry to ECR
         run: |
-          yq e -i ".spec.template.spec.containers[] |= select(.name == \"wazuh-dashboard\").image = \"$ECR_REGISTRY/wazuh/wazuh-dashboard:${{ env.WAZUH_VERSION }}-${{ env.WAZUH_REVISION }}\"" wazuh/indexer_stack/wazuh-dashboard/dashboard-deploy.yaml
-          yq e -i ".spec.template.spec.containers[] |= select(.name == \"wazuh-indexer\").image = \"$ECR_REGISTRY/wazuh/wazuh-indexer:${{ env.WAZUH_VERSION }}-${{ env.WAZUH_REVISION }}\"" wazuh/indexer_stack/wazuh-indexer/cluster/indexer-sts.yaml
-          yq e -i ".spec.template.spec.initContainers[] |= select(.name == \"init-wazuh-etc\").image = \"$ECR_REGISTRY/wazuh/wazuh-manager:${{ env.WAZUH_VERSION }}-${{ env.WAZUH_REVISION }}\"" wazuh/wazuh_managers/wazuh-master-sts.yaml
-          yq e -i ".spec.template.spec.containers[] |= select(.name == \"wazuh-manager\").image = \"$ECR_REGISTRY/wazuh/wazuh-manager:${{ env.WAZUH_VERSION }}-${{ env.WAZUH_REVISION }}\"" wazuh/wazuh_managers/wazuh-master-sts.yaml
-          yq e -i ".spec.template.spec.initContainers[] |= select(.name == \"init-wazuh-etc\").image = \"$ECR_REGISTRY/wazuh/wazuh-manager:${{ env.WAZUH_VERSION }}-${{ env.WAZUH_REVISION }}\"" wazuh/wazuh_managers/wazuh-worker-sts.yaml
-          yq e -i ".spec.template.spec.containers[] |= select(.name == \"wazuh-manager\").image = \"$ECR_REGISTRY/wazuh/wazuh-manager:${{ env.WAZUH_VERSION }}-${{ env.WAZUH_REVISION }}\"" wazuh/wazuh_managers/wazuh-worker-sts.yaml
+          yq e -i ".spec.template.spec.containers[] |= select(.name == \"wazuh-dashboard\").image = \"$ECR_REGISTRY/wazuh/wazuh-dashboard:${{ env.WAZUH_VERSION }}\"" wazuh/indexer_stack/wazuh-dashboard/dashboard-deploy.yaml
+          yq e -i ".spec.template.spec.containers[] |= select(.name == \"wazuh-indexer\").image = \"$ECR_REGISTRY/wazuh/wazuh-indexer:${{ env.WAZUH_VERSION }}\"" wazuh/indexer_stack/wazuh-indexer/cluster/indexer-sts.yaml
+          yq e -i ".spec.template.spec.initContainers[] |= select(.name == \"init-wazuh-etc\").image = \"$ECR_REGISTRY/wazuh/wazuh-manager:${{ env.WAZUH_VERSION }}\"" wazuh/wazuh_managers/wazuh-master-sts.yaml
+          yq e -i ".spec.template.spec.containers[] |= select(.name == \"wazuh-manager\").image = \"$ECR_REGISTRY/wazuh/wazuh-manager:${{ env.WAZUH_VERSION }}\"" wazuh/wazuh_managers/wazuh-master-sts.yaml
+          yq e -i ".spec.template.spec.initContainers[] |= select(.name == \"init-wazuh-etc\").image = \"$ECR_REGISTRY/wazuh/wazuh-manager:${{ env.WAZUH_VERSION }}\"" wazuh/wazuh_managers/wazuh-worker-sts.yaml
+          yq e -i ".spec.template.spec.containers[] |= select(.name == \"wazuh-manager\").image = \"$ECR_REGISTRY/wazuh/wazuh-manager:${{ env.WAZUH_VERSION }}\"" wazuh/wazuh_managers/wazuh-worker-sts.yaml
 
       - name: Download Wazuh certificates tool and config files
         run: |
@@ -155,8 +155,8 @@ jobs:
         run: |
           yq e -i '.nodes.indexer[0].name = "indexer"' wazuh/config.yml
           yq e -i '.nodes.indexer[0].ip = "127.0.0.1"' wazuh/config.yml
-          yq e -i '.nodes.server[0].name = "server"' wazuh/config.yml
-          yq e -i '.nodes.server[0].ip = "127.0.0.1"' wazuh/config.yml
+          yq e -i '.nodes.manager[0].name = "manager"' wazuh/config.yml
+          yq e -i '.nodes.manager[0].ip = "127.0.0.1"' wazuh/config.yml
           yq e -i '.nodes.dashboard[0].ip = "127.0.0.1"' wazuh/config.yml
 
       - name: Create Wazuh certificates
