@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
+- Wazuh Manager/agent Separation - Kubernetes - Breaking changes summary ([#1343](https://github.com/wazuh/wazuh-kubernetes/pull/1343))
 - Add internal doc pages. ([#1331](https://github.com/wazuh/wazuh-kubernetes/pull/1331))
 - Add version and revision on wazuh-certs-tool.sh and config.yml files. ([#1309](https://github.com/wazuh/wazuh-kubernetes/pull/1309))
 - Added Network Policies to Wazuh Kubernetes deployment. ([#1281](https://github.com/wazuh/wazuh-kubernetes/pull/1281))

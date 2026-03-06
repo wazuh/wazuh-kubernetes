@@ -38,7 +38,7 @@ spec:
                     app: wazuh-manager
                     node-type: worker
       volumes:
-        - name: wazuh-server-certs
+        - name: wazuh-manager-certs
           secret:
             secretName: indexer-certs
       initContainers:
@@ -74,15 +74,15 @@ spec:
             - name: wazuh-manager-worker
               mountPath: /var/wazuh-manager/etc
               subPath: wazuh/var/wazuh-manager/etc
-            - name: wazuh-server-certs
+            - name: wazuh-manager-certs
               mountPath: /var/wazuh-manager/etc/certs/root-ca.pem
               readOnly: true
               subPath: root-ca.pem
-            - name: wazuh-server-certs
+            - name: wazuh-manager-certs
               mountPath: /var/wazuh-manager/etc/certs/manager.pem
               subPath: manager.pem
               readOnly: true
-            - name: wazuh-server-certs
+            - name: wazuh-manager-certs
               mountPath: /var/wazuh-manager/etc/certs/manager-key.pem
               subPath: manager-key.pem
               readOnly: true
@@ -129,9 +129,9 @@ spec:
             - name: SSL_CERTIFICATE_AUTHORITIES
               value: /var/wazuh-manager/etc/certs/root-ca.pem
             - name: SSL_CERTIFICATE
-              value: /var/wazuh-manager/etc/certs/server.pem
+              value: /var/wazuh-manager/etc/certs/manager.pem
             - name: SSL_KEY
-              value: /var/wazuh-manager/etc/certs/server-key.pem
+              value: /var/wazuh-manager/etc/certs/manager-key.pem
             - name: WAZUH_CLUSTER_KEY
               valueFrom:
                 secretKeyRef:

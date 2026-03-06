@@ -28,7 +28,7 @@ spec:
       name: wazuh-manager-master
     spec:
       volumes:
-        - name: wazuh-server-certs
+        - name: wazuh-manager-certs
           secret:
             secretName: indexer-certs
         - name: wazuh-authd-pass
@@ -71,15 +71,15 @@ spec:
             - name: wazuh-manager-master
               mountPath: /var/wazuh-manager/etc
               subPath: wazuh/var/wazuh-manager/etc
-            - name: wazuh-server-certs
+            - name: wazuh-manager-certs
               mountPath: /var/wazuh-manager/etc/certs/root-ca.pem
               readOnly: true
               subPath: root-ca.pem
-            - name: wazuh-server-certs
+            - name: wazuh-manager-certs
               mountPath: /var/wazuh-manager/etc/certs/manager.pem
               subPath: manager.pem
               readOnly: true
-            - name: wazuh-server-certs
+            - name: wazuh-manager-certs
               mountPath: /var/wazuh-manager/etc/certs/manager-key.pem
               subPath: manager-key.pem
               readOnly: true
