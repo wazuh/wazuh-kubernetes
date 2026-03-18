@@ -177,8 +177,6 @@ nodes:
     - name: manager
       ip: "127.0.0.1"
       dns:
-        - "manager"
-        - "manager.wazuh.svc.cluster.local"
         - "wazuh-api"
         - "wazuh-api.wazuh.svc.cluster.local"
 
@@ -189,8 +187,6 @@ nodes:
       dns:
         - "dashboard"
         - "dashboard.wazuh.svc.cluster.local"
-        - "wazuh-dashboard"
-        - "wazuh-dashboard.wazuh.svc.cluster.local"
 ```
 
 **3.1.3 Run the Wazuh certificates tool script**:
@@ -409,8 +405,6 @@ nodes:
     - name: manager
       ip: "127.0.0.1"
       dns:
-        - "manager"
-        - "manager.wazuh.svc.cluster.local"
         - "wazuh-api"
         - "wazuh-api.wazuh.svc.cluster.local"
 
@@ -421,8 +415,6 @@ nodes:
       dns:
         - "dashboard"
         - "dashboard.wazuh.svc.cluster.local"
-        - "wazuh-dashboard"
-        - "wazuh-dashboard.wazuh.svc.cluster.local"
 ```
 
 Run `wazuh-certs-tool.sh` to create the certificates.

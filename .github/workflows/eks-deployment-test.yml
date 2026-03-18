@@ -158,9 +158,9 @@ jobs:
           yq e -i '.nodes.indexer[0].dns = ["wazuh-indexer", "wazuh-indexer.wazuh.svc.cluster.local"]' wazuh/config.yml
           yq e -i '.nodes.manager[0].name = "manager"' wazuh/config.yml
           yq e -i '.nodes.manager[0].ip = "127.0.0.1"' wazuh/config.yml
-          yq e -i '.nodes.manager[0].dns = ["manager", "manager.wazuh.svc.cluster.local", "wazuh-api", "wazuh-api.wazuh.svc.cluster.local"]' wazuh/config.yml
+          yq e -i '.nodes.manager[0].dns = ["wazuh-api", "wazuh-api.wazuh.svc.cluster.local"]' wazuh/config.yml
           yq e -i '.nodes.dashboard[0].ip = "127.0.0.1"' wazuh/config.yml
-          yq e -i '.nodes.dashboard[0].dns = ["dashboard", "dashboard.wazuh.svc.cluster.local", "wazuh-dashboard", "wazuh-dashboard.wazuh.svc.cluster.local"]' wazuh/config.yml
+          yq e -i '.nodes.dashboard[0].dns = ["dashboard", "dashboard.wazuh.svc.cluster.local"]' wazuh/config.yml
 
       - name: Create Wazuh certificates
         run: |
