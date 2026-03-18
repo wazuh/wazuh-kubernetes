@@ -167,7 +167,6 @@ nodes:
   # Wazuh indexer nodes
   indexer:
     - name: indexer
-      ip: "127.0.0.1"
       dns:
         - "wazuh-indexer"
         - "wazuh-indexer.wazuh.svc.cluster.local"
@@ -175,7 +174,6 @@ nodes:
   # Wazuh server nodes
   manager:
     - name: manager
-      ip: "127.0.0.1"
       dns:
         - "wazuh-api"
         - "wazuh-api.wazuh.svc.cluster.local"
@@ -183,7 +181,6 @@ nodes:
   # Wazuh dashboard nodes
   dashboard:
     - name: dashboard
-      ip: "127.0.0.1"
       dns:
         - "dashboard"
         - "dashboard.wazuh.svc.cluster.local"
@@ -395,7 +392,6 @@ nodes:
   # Wazuh indexer nodes
   indexer:
     - name: indexer
-      ip: "127.0.0.1"
       dns:
         - "wazuh-indexer"
         - "wazuh-indexer.wazuh.svc.cluster.local"
@@ -403,7 +399,6 @@ nodes:
   # Wazuh server nodes
   manager:
     - name: manager
-      ip: "127.0.0.1"
       dns:
         - "wazuh-api"
         - "wazuh-api.wazuh.svc.cluster.local"
@@ -411,7 +406,6 @@ nodes:
   # Wazuh dashboard nodes
   dashboard:
     - name: dashboard
-      ip: "127.0.0.1"
       dns:
         - "dashboard"
         - "dashboard.wazuh.svc.cluster.local"
