@@ -14,7 +14,7 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
-- None
+- Fix bumper script early exit ([#1357](https://github.com/wazuh/wazuh-kubernetes/pull/1357))
 
 ### Deleted
 
