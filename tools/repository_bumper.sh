@@ -76,7 +76,7 @@ update_stage_in_files() {
 
 update_docker_images_tag() {
     local NEW_TAG="$1"
-    local DOCKERFILES=( $(grep_command -E "wazuh/wazuh-[a-zA-Z0-9._-]*" "${DIR}") )
+    local DOCKERFILES=( $(grep_command "wazuh/wazuh-[a-zA-Z0-9._-]*" "${DIR}") )
     for file in "${DOCKERFILES[@]}"; do
         sed -i -E "s/(wazuh\/wazuh-[a-zA-Z0-9._-]*):[a-zA-Z0-9._-]+/\1:${NEW_TAG}/g" "${file}"
         if [[ $(git diff --name-only "${file}") ]]; then
@@ -144,11 +144,6 @@ main() {
     # Get old version and stage
     get_old_version_and_stage
 
-    if [[ "${OLD_VERSION}" == "${VERSION}" && "${OLD_STAGE}" == "${STAGE}" ]]; then
-        echo "Version and stage are already up to date." | tee -a "${LOG_FILE}"
-        echo "No changes needed." | tee -a "${LOG_FILE}"
-        exit 0
-    fi
     if [[ "${OLD_VERSION}" != "${VERSION}" ]]; then
         echo "Updating version from ${OLD_VERSION} to ${VERSION}" | tee -a "${LOG_FILE}"
         update_version_in_files "${VERSION}"
