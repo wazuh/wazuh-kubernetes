@@ -4,7 +4,7 @@ Steps to perform a clean up of our deployments, services and volumes used in our
 
 ## Delete the cluster
 
-To delete your Wazuh cluster just use `kubectl delete -k envs/<ENVIRONMENT>` from this repository directory. (being <ENVIRONMENT> one of `EKS` or `local-env`)
+To delete your Wazuh cluster just use `kubectl delete -k envs/<ENVIRONMENT>` from this repository directory. (being `<ENVIRONMENT>` one of `EKS` or `local-env`)
 
 ## Delete Traefik Ingress Controller
 

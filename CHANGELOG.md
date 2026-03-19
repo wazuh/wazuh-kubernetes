@@ -15,6 +15,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
+- Updated wazuh-kubernetes documentation config and tooling versions to meet new standards. ([#1358](https://github.com/wazuh/wazuh-kubernetes/pull/1358))
 - Change config.yml configuration on test and deployment doc ([#1355](https://github.com/wazuh/wazuh-kubernetes/pull/1355))
 - Change paths and binary names of Wazuh manager. ([#1339](https://github.com/wazuh/wazuh-kubernetes/pull/1339))
 - Update kubernetes deployment documentation to attend #1305 ([#1314](https://github.com/wazuh/wazuh-kubernetes/pull/1314))
