@@ -12,7 +12,7 @@ inputs:
   artifact-urls-file-temp:
     description: 'Temporary file path for artifact URLs'
     required: true
-    default: '/tmp/artifact_urls.yml'
+    default: '/tmp/artifact_urls.yaml'
   wazuh-version:
     description: 'Wazuh version'
     required: true
@@ -39,7 +39,7 @@ runs:
         mkdir -p "$(dirname "${{ inputs.artifact-urls-file-temp }}")"
         
         # Download the file from S3
-        S3_KEY="deployment/artifact_urls.yml"
+        S3_KEY="deployment/artifact_urls.yaml"
         aws s3 cp "s3://${{ inputs.s3-bucket-artifacts }}/$S3_KEY" "${{ inputs.artifact-urls-file-temp }}" --region ${{ inputs.aws-region }}
 
         # Delete newline characters
@@ -59,7 +59,7 @@ runs:
         DEV_S3_BUCKET: ${{ inputs.dev_s3_bucket }}
         ENV_FILE_OUTPUT: ${{ inputs.env_file_output }}
       run: |
-        OUTPUT_FILE="/tmp/wazuh-docker/artifact_urls_processed.yml"
+        OUTPUT_FILE="/tmp/wazuh-docker/artifact_urls_processed.yaml"
         
         mkdir -p "$(dirname "$OUTPUT_FILE")"
 
@@ -93,9 +93,9 @@ runs:
 
         # Verify the output file
         if [ -f "$OUTPUT_FILE" ]; then
-          echo "The downloaded file artifact_urls.yml was successfully processed at $OUTPUT_FILE."
+          echo "The downloaded file artifact_urls.yaml was successfully processed at $OUTPUT_FILE."
         else
-          echo "Failed to create processed artifact_urls.yml file." >&2
+          echo "Failed to create processed artifact_urls.yaml file." >&2
           exit 1
         fi
         
