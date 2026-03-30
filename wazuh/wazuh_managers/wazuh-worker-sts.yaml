@@ -63,7 +63,7 @@ spec:
           resources:
             limits:
               cpu: 400m
-              memory: 1.25Gi
+              memory: 1280Mi
           securityContext:
             capabilities:
               add: ["SYS_CHROOT"]
