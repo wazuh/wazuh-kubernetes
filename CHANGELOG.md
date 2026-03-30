@@ -29,7 +29,7 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
-- None
+- Fix test for deployment ([#1364](https://github.com/wazuh/wazuh-kubernetes/pull/1364))
 
 ### Deleted
 
