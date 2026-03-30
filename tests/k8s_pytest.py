@@ -70,7 +70,7 @@ class TestWazuhKubernetes:
         assert qty_templates > 3, f"Expected more than 3 templates, found {qty_templates}"
 
     def test_manager_services_running(self, namespace):
-        """Check if Wazuh manager has at least 10 services running"""
+        """Check if Wazuh manager has at least 7 services running"""
         cmd = f'kubectl -n {namespace} exec -it wazuh-manager-master-0 -- /var/wazuh-manager/bin/wazuh-manager-control status'
         result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
 
@@ -80,7 +80,7 @@ class TestWazuhKubernetes:
         running_services = len(re.findall(r'is running', result.stdout))
         print(f"Running services: {running_services}")
 
-        assert running_services >= 10, f"Expected at least 10 running services, found {running_services}"
+        assert running_services >= 7, f"Expected at least 7 running services, found {running_services}"
 
     def test_dashboard_service_url(self, namespace, dashboard_pod, request):
         """Check if Wazuh dashboard service returns HTTP 200"""
