@@ -12,8 +12,14 @@ kind: StorageClass
 metadata:
   name: wazuh-storage
 
+# K3s provisioner
+provisioner: rancher.io/local-path
+
+# K3s requires WaitForFirstConsumer for local-path provisioner
+volumeBindingMode: WaitForFirstConsumer
+
 # Microk8s is our standard for local development
-provisioner: microk8s.io/hostpath
+# provisioner: microk8s.io/hostpath
 
 # In case you're running Minikube you can comment the line above and use this one
 # provisioner: k8s.io/minikube-hostpath
