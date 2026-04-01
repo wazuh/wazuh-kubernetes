@@ -30,7 +30,7 @@ spec:
       volumes:
         - name: wazuh-manager-certs
           secret:
-            secretName: indexer-certs
+            secretName: manager-certs
         - name: wazuh-authd-pass
           secret:
             secretName: wazuh-authd-pass

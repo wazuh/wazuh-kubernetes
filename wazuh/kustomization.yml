@@ -14,20 +14,24 @@ namespace: wazuh
 secretGenerator:
   - name: indexer-certs
     files:
-      - wazuh-certificates/root-ca.pem
-      - wazuh-certificates/indexer.pem
-      - wazuh-certificates/indexer-key.pem
-      - wazuh-certificates/dashboard.pem
-      - wazuh-certificates/dashboard-key.pem
-      - wazuh-certificates/admin.pem
-      - wazuh-certificates/admin-key.pem
-      - wazuh-certificates/manager.pem
-      - wazuh-certificates/manager-key.pem
+      - config/indexer/certs/admin-key.pem
+      - config/indexer/certs/admin.pem
+      - config/indexer/certs/indexer-key.pem
+      - config/indexer/certs/indexer.pem
+      - config/indexer/certs/root-ca.key
+      - config/indexer/certs/root-ca.pem
   - name: dashboard-certs
     files:
-      - wazuh-certificates/dashboard.pem
-      - wazuh-certificates/dashboard-key.pem
-      - wazuh-certificates/root-ca.pem
+      - config/dashboard/certs/dashboard-key.pem
+      - config/dashboard/certs/dashboard.pem
+      - config/dashboard/certs/root-ca.key
+      - config/dashboard/certs/root-ca.pem
+  - name: manager-certs
+    files:
+      - config/manager/certs/manager-key.pem
+      - config/manager/certs/manager.pem
+      - config/manager/certs/root-ca.key
+      - config/manager/certs/root-ca.pem
 
 resources:
   - base/wazuh-ns.yaml
