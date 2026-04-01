@@ -10,6 +10,8 @@ wazuh/wazuh-certs-tool*.sh
 wazuh/wazuh-certificates
 wazuh/wazuh-certificates/*
 wazuh/wazuh-certificates-tool.log
+wazuh/config
+wazuh/config/*
 tests/__pycache__/
 .pytest_cache/
 

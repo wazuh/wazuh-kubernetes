@@ -40,7 +40,7 @@ spec:
       volumes:
         - name: wazuh-manager-certs
           secret:
-            secretName: indexer-certs
+            secretName: manager-certs
       initContainers:
         - name: init-wazuh-etc
           image: 'wazuh/wazuh-manager:5.0.0'
