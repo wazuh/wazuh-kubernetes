@@ -132,21 +132,18 @@ if $DO_PRIV; then
     dir_name=$(node_to_dir "$node")
     echo "Setting permissions for indexer $node (1000:1000)"
     chown -R 1000:1000 "./config/$dir_name/certs"
-    chmod 400 "./config/$dir_name/certs/"*
   done
 
   for node in "${MANAGER_NODES[@]}"; do
     dir_name=$(node_to_dir "$node")
     echo "Setting permissions for manager $node (999:999)"
     chown -R 999:999 "./config/$dir_name/certs"
-    chmod 400 "./config/$dir_name/certs/"*
   done
 
   for node in "${DASHBOARD_NODES[@]}"; do
     dir_name=$(node_to_dir "$node")
     echo "Setting permissions for dashboard $node (1000:1000)"
     chown -R 1000:1000 "./config/$dir_name/certs"
-    chmod 400 "./config/$dir_name/certs/"*
   done
 fi
 
