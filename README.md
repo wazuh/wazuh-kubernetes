@@ -78,6 +78,8 @@ To deploy a cluster on your local environment (like Minikube, Kind or Microk8s) 
         │   └── wazuh-cluster-key-secret.yaml
         └── wazuh_managers
             ├── wazuh-cluster-svc.yaml
+            ├── filebeat_conf
+            │   └── filebeat.yml
             ├── wazuh_conf
             │   ├── master.conf
             │   └── worker.conf
