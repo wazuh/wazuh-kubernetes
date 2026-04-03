@@ -1,0 +1,30 @@
+# Wazuh - Filebeat configuration file
+filebeat.modules:
+  - module: wazuh
+    alerts:
+      enabled: true
+    archives:
+      enabled: false
+
+setup.template.json.enabled: true
+setup.template.overwrite: true
+setup.template.json.path: '/etc/filebeat/wazuh-template.json'
+setup.template.json.name: 'wazuh'
+setup.ilm.enabled: false
+output.elasticsearch:
+  hosts: ${INDEXER_URL}
+  username: ${INDEXER_USERNAME}
+  password: ${INDEXER_PASSWORD}
+  ssl.verification_mode: ${FILEBEAT_SSL_VERIFICATION_MODE}
+  ssl.certificate_authorities: ${SSL_CERTIFICATE_AUTHORITIES}
+  ssl.certificate: ${SSL_CERTIFICATE}
+  ssl.key: ${SSL_KEY}
+
+logging.metrics.enabled: false
+
+seccomp:
+  default_action: allow
+  syscalls:
+  - action: allow
+    names:
+    - rseq

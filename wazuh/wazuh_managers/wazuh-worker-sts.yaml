@@ -41,6 +41,9 @@ spec:
         - name: config
           configMap:
             name: wazuh-conf
+        - name: filebeat-conf
+          configMap:
+            name: filebeat-conf
         - name: filebeat-certs
           secret:
             secretName: indexer-certs
@@ -60,6 +63,10 @@ spec:
             - name: config
               mountPath: /wazuh-config-mount/etc/ossec.conf
               subPath: worker.conf
+              readOnly: true
+            - name: filebeat-conf
+              mountPath: /etc/filebeat/filebeat.yml
+              subPath: filebeat.yml
               readOnly: true
             - name: filebeat-certs
               mountPath: /etc/ssl/root-ca.pem
