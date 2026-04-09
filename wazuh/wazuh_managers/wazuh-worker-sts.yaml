@@ -12,12 +12,20 @@ kind: StatefulSet
 metadata:
   name: wazuh-manager-worker
   namespace: wazuh
+  labels:
+    app: wazuh-manager
+    app.kubernetes.io/name: wazuh-manager
+    app.kubernetes.io/component: manager
+    app.kubernetes.io/part-of: wazuh
 spec:
   replicas: 2
   selector:
     matchLabels:
       app: wazuh-manager
       node-type: worker
+      app.kubernetes.io/name: wazuh-manager
+      app.kubernetes.io/component: manager
+      app.kubernetes.io/part-of: wazuh
   serviceName: wazuh-cluster
   podManagementPolicy: Parallel
   template:
@@ -25,6 +33,9 @@ spec:
       labels:
         app: wazuh-manager
         node-type: worker
+        app.kubernetes.io/name: wazuh-manager
+        app.kubernetes.io/component: manager
+        app.kubernetes.io/part-of: wazuh
       name: wazuh-manager-worker
     spec:
       affinity:
@@ -37,6 +48,9 @@ spec:
                   matchLabels:
                     app: wazuh-manager
                     node-type: worker
+                    app.kubernetes.io/name: wazuh-manager
+                    app.kubernetes.io/component: manager
+                    app.kubernetes.io/part-of: wazuh
       volumes:
         - name: wazuh-manager-certs
           secret:
@@ -103,6 +117,20 @@ spec:
               name: agents-events
             - containerPort: 1516
               name: cluster
+          livenessProbe:
+            tcpSocket:
+              port: 1514
+            initialDelaySeconds: 60
+            periodSeconds: 30
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            tcpSocket:
+              port: 1514
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
           env:
             - name: WAZUH_INDEXER_HOSTS
               value: 'wazuh-indexer:9200'

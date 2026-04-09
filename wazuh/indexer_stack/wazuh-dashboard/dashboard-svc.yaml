@@ -14,7 +14,11 @@ metadata:
   namespace: wazuh
   labels:
     app: wazuh-dashboard
+    app.kubernetes.io/name: wazuh-dashboard
+    app.kubernetes.io/component: dashboard
+    app.kubernetes.io/part-of: wazuh
 spec:
+  type: ClusterIP
   selector:
     app: wazuh-dashboard
   ports:

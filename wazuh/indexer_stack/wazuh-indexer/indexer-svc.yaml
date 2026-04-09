@@ -14,6 +14,9 @@ metadata:
   namespace: wazuh
   labels:
     app: wazuh-indexer
+    app.kubernetes.io/name: wazuh-indexer
+    app.kubernetes.io/component: indexer
+    app.kubernetes.io/part-of: wazuh
 spec:
   selector:
     app: wazuh-indexer

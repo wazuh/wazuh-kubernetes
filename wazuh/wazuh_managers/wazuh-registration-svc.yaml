@@ -14,6 +14,9 @@ metadata:
   namespace: wazuh
   labels:
     app: wazuh-manager
+    app.kubernetes.io/name: wazuh-manager
+    app.kubernetes.io/component: manager
+    app.kubernetes.io/part-of: wazuh
 spec:
   selector:
     app: wazuh-manager

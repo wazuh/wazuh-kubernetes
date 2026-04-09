@@ -12,15 +12,26 @@ kind: Deployment
 metadata:
   name: wazuh-dashboard
   namespace: wazuh
+  labels:
+    app: wazuh-dashboard
+    app.kubernetes.io/name: wazuh-dashboard
+    app.kubernetes.io/component: dashboard
+    app.kubernetes.io/part-of: wazuh
 spec:
   replicas: 1
   selector:
     matchLabels:
       app: wazuh-dashboard
+      app.kubernetes.io/name: wazuh-dashboard
+      app.kubernetes.io/component: dashboard
+      app.kubernetes.io/part-of: wazuh
   template:
     metadata:
       labels:
         app: wazuh-dashboard
+        app.kubernetes.io/name: wazuh-dashboard
+        app.kubernetes.io/component: dashboard
+        app.kubernetes.io/part-of: wazuh
       name: wazuh-dashboard
     spec:
       volumes:
@@ -53,6 +64,20 @@ spec:
           ports:
             - containerPort: 443
               name: dashboard
+          livenessProbe:
+            tcpSocket:
+              port: 443
+            initialDelaySeconds: 30
+            periodSeconds: 30
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            tcpSocket:
+              port: 443
+            initialDelaySeconds: 20
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
           env:
             - name: OPENSEARCH_HOSTS
               value: 'https://wazuh-indexer:9200'

@@ -12,16 +12,27 @@ kind: StatefulSet
 metadata:
   name: wazuh-indexer
   namespace: wazuh
+  labels:
+    app: wazuh-indexer
+    app.kubernetes.io/name: wazuh-indexer
+    app.kubernetes.io/component: indexer
+    app.kubernetes.io/part-of: wazuh
 spec:
   replicas: 3
   selector:
     matchLabels:
       app: wazuh-indexer
+      app.kubernetes.io/name: wazuh-indexer
+      app.kubernetes.io/component: indexer
+      app.kubernetes.io/part-of: wazuh
   serviceName: wazuh-indexer
   template:
     metadata:
       labels:
         app: wazuh-indexer
+        app.kubernetes.io/name: wazuh-indexer
+        app.kubernetes.io/component: indexer
+        app.kubernetes.io/part-of: wazuh
       name: wazuh-indexer
     spec:
       securityContext:
@@ -127,6 +138,20 @@ spec:
               name: indexer-rest
             - containerPort: 9300
               name: indexer-nodes
+          livenessProbe:
+            tcpSocket:
+              port: 9200
+            initialDelaySeconds: 90
+            periodSeconds: 30
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            tcpSocket:
+              port: 9200
+            initialDelaySeconds: 60
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
   volumeClaimTemplates:
     - metadata:
         name: wazuh-indexer
