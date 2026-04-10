@@ -129,7 +129,7 @@ jobs:
       - name: Create Wazuh certificates
         run: |
           cd wazuh/
-          bash wazuh-certs-tool.sh -A
+          sudo bash ../tools/utils/deployment/certificates-conf.sh --cert --copy --priv
 
       - name: Change provisioner for minikube
         run: |

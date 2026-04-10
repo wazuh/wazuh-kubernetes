@@ -41,6 +41,10 @@ spec:
         - name: dashboard-certs
           secret:
             secretName: dashboard-certs
+      securityContext:
+        fsGroup: 1000
+        runAsUser: 1000
+        runAsGroup: 1000
       containers:
         - name: wazuh-dashboard
           image: 'wazuh/wazuh-dashboard:5.0.0'

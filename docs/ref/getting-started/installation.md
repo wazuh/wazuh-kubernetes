@@ -189,7 +189,7 @@ nodes:
 **3.1.3 Run the Wazuh certificates tool script**:
 
 ```bash
-bash wazuh-certs-tool.sh -A
+sudo bash ../tools/utils/deployment/certificates-conf.sh --cert --copy --priv
 ```
 
 The required certificates are imported via secretGenerator on the `kustomization.yml` file:
@@ -198,20 +198,21 @@ The required certificates are imported via secretGenerator on the `kustomization
 secretGenerator:
   - name: indexer-certs
     files:
-      - wazuh-certificates/root-ca.pem
-      - wazuh-certificates/indexer.pem
-      - wazuh-certificates/indexer-key.pem
-      - wazuh-certificates/dashboard.pem
-      - wazuh-certificates/dashboard-key.pem
-      - wazuh-certificates/admin.pem
-      - wazuh-certificates/admin-key.pem
-      - wazuh-certificates/manager.pem
-      - wazuh-certificates/manager-key.pem
+      - config/indexer/certs/admin-key.pem
+      - config/indexer/certs/admin.pem
+      - config/indexer/certs/indexer-key.pem
+      - config/indexer/certs/indexer.pem
+      - config/indexer/certs/root-ca.pem
   - name: dashboard-certs
     files:
-      - wazuh-certificates/dashboard.pem
-      - wazuh-certificates/dashboard-key.pem
-      - wazuh-certificates/root-ca.pem
+      - config/dashboard/certs/dashboard-key.pem
+      - config/dashboard/certs/dashboard.pem
+      - config/dashboard/certs/root-ca.pem
+  - name: manager-certs
+    files:
+      - config/manager/certs/manager-key.pem
+      - config/manager/certs/manager.pem
+      - config/manager/certs/root-ca.pem
 ```
 
 #### Step 3.2: Apply Traefik ingress controller
@@ -414,7 +415,7 @@ nodes:
 Run `wazuh-certs-tool.sh` to create the certificates.
 
 ```bash
-bash wazuh-certs-tool.sh -A
+sudo bash ../tools/utils/deployment/certificates-conf.sh --cert --copy --priv
 ```
 
 Return to the root of the repository.
@@ -431,20 +432,21 @@ The required certificates are imported via secretGenerator on the `kustomization
 secretGenerator:
   - name: indexer-certs
     files:
-      - wazuh-certificates/root-ca.pem
-      - wazuh-certificates/indexer.pem
-      - wazuh-certificates/indexer-key.pem
-      - wazuh-certificates/dashboard.pem
-      - wazuh-certificates/dashboard-key.pem
-      - wazuh-certificates/admin.pem
-      - wazuh-certificates/admin-key.pem
-      - wazuh-certificates/manager.pem
-      - wazuh-certificates/manager-key.pem
+      - config/indexer/certs/admin-key.pem
+      - config/indexer/certs/admin.pem
+      - config/indexer/certs/indexer-key.pem
+      - config/indexer/certs/indexer.pem
+      - config/indexer/certs/root-ca.pem
   - name: dashboard-certs
     files:
-      - wazuh-certificates/dashboard.pem
-      - wazuh-certificates/dashboard-key.pem
-      - wazuh-certificates/root-ca.pem
+      - config/dashboard/certs/dashboard-key.pem
+      - config/dashboard/certs/dashboard.pem
+      - config/dashboard/certs/root-ca.pem
+  - name: manager-certs
+    files:
+      - config/manager/certs/manager-key.pem
+      - config/manager/certs/manager.pem
+      - config/manager/certs/root-ca.pem
 ```
 
 #### Tune storage class with custom provisioner

@@ -39,14 +39,17 @@ spec:
       name: wazuh-manager-master
     spec:
       volumes:
-        - name: wazuh-manager-certs
+        - name: wazuh-manager-certs-raw
           secret:
-            secretName: indexer-certs
+            secretName: manager-certs
+            defaultMode: 0400
+        - name: wazuh-manager-certs
+          emptyDir: {}
         - name: wazuh-authd-pass
           secret:
             secretName: wazuh-authd-pass
       securityContext:
-        fsGroup: 101
+        fsGroup: 999
       initContainers:
         - name: init-wazuh-etc
           image: 'wazuh/wazuh-manager:5.0.0'
@@ -57,10 +60,17 @@ spec:
               if [ -z "$(ls -A /pvc-etc)" ]; then
                 cp -a /var/wazuh-manager/etc/* /pvc-etc/
               fi
+              cp /tmp/certs-raw/* /etc/wazuh-certs-final/
+              chown -R 999:999 /etc/wazuh-certs-final/
+              chmod 500 /etc/wazuh-certs-final/*.pem
           volumeMounts:
             - name: wazuh-manager-master
               mountPath: /pvc-etc
               subPath: wazuh/var/wazuh-manager/etc
+            - name: wazuh-manager-certs-raw
+              mountPath: /tmp/certs-raw
+            - name: wazuh-manager-certs
+              mountPath: /etc/wazuh-certs-final
       containers:
         - name: wazuh-manager
           image: 'wazuh/wazuh-manager:5.0.0'
@@ -84,16 +94,13 @@ spec:
               subPath: wazuh/var/wazuh-manager/etc
             - name: wazuh-manager-certs
               mountPath: /var/wazuh-manager/etc/certs/root-ca.pem
-              readOnly: true
               subPath: root-ca.pem
             - name: wazuh-manager-certs
               mountPath: /var/wazuh-manager/etc/certs/manager.pem
               subPath: manager.pem
-              readOnly: true
             - name: wazuh-manager-certs
               mountPath: /var/wazuh-manager/etc/certs/manager-key.pem
               subPath: manager-key.pem
-              readOnly: true
             - name: wazuh-manager-master
               mountPath: /var/wazuh-manager/logs
               subPath: wazuh/var/wazuh-manager/logs

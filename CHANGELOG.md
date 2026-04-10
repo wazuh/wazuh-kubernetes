@@ -15,6 +15,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
+- Add certificates configuration script ([#1369](https://github.com/wazuh/wazuh-kubernetes/pull/1369))
 - Update artifact URLs file extension from .yml to .yaml ([#1363](https://github.com/wazuh/wazuh-kubernetes/pull/1363))
 - Updated wazuh-kubernetes documentation config and tooling versions to meet new standards. ([#1358](https://github.com/wazuh/wazuh-kubernetes/pull/1358))
 - Change config.yml configuration on test and deployment doc ([#1355](https://github.com/wazuh/wazuh-kubernetes/pull/1355))
