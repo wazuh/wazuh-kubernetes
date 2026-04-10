@@ -10,7 +10,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
-- None
+- The versions of the actions used in the workflows are updated. ([#1372](https://github.com/wazuh/wazuh-kubernetes/pull/1372))
 
 ### Fixed
 
