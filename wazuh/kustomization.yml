@@ -41,7 +41,10 @@ configMapGenerator:
   - name: dashboard-conf
     files:
       - indexer_stack/wazuh-dashboard/dashboard_conf/opensearch_dashboards.yml
-
+  - name: filebeat-conf
+    files:
+      - wazuh_managers/filebeat_conf/filebeat.yml
+      
 resources:
   - base/wazuh-ns.yaml
   - base/storage-class.yaml
