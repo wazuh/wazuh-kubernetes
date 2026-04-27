@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
+- Add 5.x bumper revert changes ([#1409](https://github.com/wazuh/wazuh-kubernetes/pull/1409))
 - Added set-as-main option to repository bumper. ([#1375](https://github.com/wazuh/wazuh-kubernetes/pull/1375))
 - Wazuh Manager/agent Separation - Kubernetes - Breaking changes summary ([#1343](https://github.com/wazuh/wazuh-kubernetes/pull/1343))
 - Add internal doc pages. ([#1331](https://github.com/wazuh/wazuh-kubernetes/pull/1331))
