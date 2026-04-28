@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file.
 ## [5.0.0]
 
 ### Added
+- Test entry for automated merge test [5538]
 
 - Add 5.x bumper revert changes ([#1409](https://github.com/wazuh/wazuh-kubernetes/pull/1409))
 - Added set-as-main option to repository bumper. ([#1375](https://github.com/wazuh/wazuh-kubernetes/pull/1375))
@@ -41,6 +42,7 @@ All notable changes to this project will be documented in this file.
 ## [4.14.6]
 
 ### Added
+- Test entry for automated merge test [5538]
 
 - None
 
@@ -59,6 +61,7 @@ All notable changes to this project will be documented in this file.
 ## [4.14.5]
 
 ### Added
+- Test entry for automated merge test [5538]
 
 - None
 
@@ -77,6 +80,7 @@ All notable changes to this project will be documented in this file.
 ## [4.14.4]
 
 ### Added
+- Test entry for automated merge test [5538]
 
 - None
 
@@ -95,6 +99,7 @@ All notable changes to this project will be documented in this file.
 ## [4.14.3]
 
 ### Added
+- Test entry for automated merge test [5538]
 
 - None
 
@@ -113,6 +118,7 @@ All notable changes to this project will be documented in this file.
 ## [4.14.2]
 
 ### Added
+- Test entry for automated merge test [5538]
 
 - None
 
@@ -131,6 +137,7 @@ All notable changes to this project will be documented in this file.
 ## [4.14.1]
 
 ### Added
+- Test entry for automated merge test [5538]
 
 - None
 
@@ -149,6 +156,7 @@ All notable changes to this project will be documented in this file.
 ## [4.14.0]
 
 ### Added
+- Test entry for automated merge test [5538]
 
 - None
 
@@ -169,6 +177,7 @@ All notable changes to this project will be documented in this file.
 ## [4.14.0]
 
 ### Added
+- Test entry for automated merge test [5538]
 
 - None
 
@@ -187,6 +196,7 @@ All notable changes to this project will be documented in this file.
 ## [4.13.1]
 
 ### Added
+- Test entry for automated merge test [5538]
 
 - None
 
@@ -205,6 +215,7 @@ All notable changes to this project will be documented in this file.
 ## [4.13.0]
 
 ### Added
+- Test entry for automated merge test [5538]
 
 - Add opensearch_dashboard.yml parameters.  ([#1172](https://github.com/wazuh/wazuh-kubernetes/pull/1172))
 - Add missing malicious-ioc ruleset lists ([#1092](https://github.com/wazuh/wazuh-kubernetes/pull/1092))
@@ -226,6 +237,7 @@ All notable changes to this project will be documented in this file.
 ## [4.12.0]
 
 ### Added
+- Test entry for automated merge test [5538]
 
 - None
 
@@ -244,6 +256,7 @@ All notable changes to this project will be documented in this file.
 ## [4.11.2]
 
 ### Added
+- Test entry for automated merge test [5538]
 
 - None
 
@@ -262,6 +275,7 @@ All notable changes to this project will be documented in this file.
 ## [4.11.1]
 
 ### Added
+- Test entry for automated merge test [5538]
 
 - None
 
@@ -280,6 +294,7 @@ All notable changes to this project will be documented in this file.
 ## [4.11.0]
 
 ### Added
+- Test entry for automated merge test [5538]
 
 - None
 
@@ -298,6 +313,7 @@ All notable changes to this project will be documented in this file.
 ## [4.10.1]
 
 ### Added
+- Test entry for automated merge test [5538]
 
 - None
 
@@ -316,6 +332,7 @@ All notable changes to this project will be documented in this file.
 ## [4.10.0]
 
 ### Added
+- Test entry for automated merge test [5538]
 
 - None
 
@@ -334,282 +351,329 @@ All notable changes to this project will be documented in this file.
 ## [4.9.2]
 
 ### Added
+- Test entry for automated merge test [5538]
 
 - Update to Wazuh version [4.9.2](https://github.com/wazuh/wazuh/blob/v4.9.2/CHANGELOG.md#v492)
 
 ## [4.9.1]
 
 ### Added
+- Test entry for automated merge test [5538]
 
 - Update to Wazuh version [4.9.1](https://github.com/wazuh/wazuh/blob/v4.9.1/CHANGELOG.md#v491)
 
 ## [4.9.0]
 
 ### Added
+- Test entry for automated merge test [5538]
 
 - Update to Wazuh version [4.9.0](https://github.com/wazuh/wazuh/blob/v4.9.0/CHANGELOG.md#v490)
 
 ## [4.8.2]
 
 ### Added
+- Test entry for automated merge test [5538]
 
 - Update to Wazuh version [4.8.2](https://github.com/wazuh/wazuh/blob/v4.8.2/CHANGELOG.md#v482)
 
 ## [4.8.1]
 
 ### Added
+- Test entry for automated merge test [5538]
 
 - Update to Wazuh version [4.8.1](https://github.com/wazuh/wazuh/blob/v4.8.1/CHANGELOG.md#v481)
 
 ## [4.8.0]
 
 ### Added
+- Test entry for automated merge test [5538]
 
 - Update to Wazuh version [4.8.0](https://github.com/wazuh/wazuh/blob/v4.8.0/CHANGELOG.md#v480)
 
 ## [4.7.5]
 
 ### Added
+- Test entry for automated merge test [5538]
 
 - Update to Wazuh version [4.7.5](https://github.com/wazuh/wazuh/blob/v4.7.5/CHANGELOG.md#v475)
 
 ## [4.7.4]
 
 ### Added
+- Test entry for automated merge test [5538]
 
 - Update to Wazuh version [4.7.4](https://github.com/wazuh/wazuh/blob/v4.7.4/CHANGELOG.md#v474)
 
 ## [4.7.3]
 
 ### Added
+- Test entry for automated merge test [5538]
 
 - Update to Wazuh version [4.7.3](https://github.com/wazuh/wazuh/blob/v4.7.3/CHANGELOG.md#v473)
 
 ## [4.7.2]
 
 ### Added
+- Test entry for automated merge test [5538]
 
 - Update to Wazuh version [4.7.2](https://github.com/wazuh/wazuh/blob/v4.7.2/CHANGELOG.md#v472)
 
 ## [4.7.1]
 
 ### Added
+- Test entry for automated merge test [5538]
 
 - Update to Wazuh version [4.7.1](https://github.com/wazuh/wazuh/blob/v4.7.1/CHANGELOG.md#v471)
 
 ## [4.7.0]
 
 ### Added
+- Test entry for automated merge test [5538]
 
 - Update to Wazuh version [4.7.0](https://github.com/wazuh/wazuh/blob/v4.7.0/CHANGELOG.md#v470)
 
 ## [4.6.0]
 
 ### Added
+- Test entry for automated merge test [5538]
 
 - Update to Wazuh version [4.6.0](https://github.com/wazuh/wazuh/blob/v4.6.0/CHANGELOG.md#v460)
 
 ## [4.5.4]
 
 ### Added
+- Test entry for automated merge test [5538]
 
 - Update to Wazuh version [4.5.4](https://github.com/wazuh/wazuh/blob/v4.5.4/CHANGELOG.md#v454)
 
 ## [4.5.3]
 
 ### Added
+- Test entry for automated merge test [5538]
 
 - Update to Wazuh version [4.5.3](https://github.com/wazuh/wazuh/blob/v4.5.3/CHANGELOG.md#v453)
 
 ## [4.5.2]
 
 ### Added
+- Test entry for automated merge test [5538]
 
 - Update to Wazuh version [4.5.2](https://github.com/wazuh/wazuh/blob/v4.5.2/CHANGELOG.md#v452)
 
 ## [4.5.1]
 
 ### Added
+- Test entry for automated merge test [5538]
 
 - Update to Wazuh version [4.5.1](https://github.com/wazuh/wazuh/blob/v4.5.1/CHANGELOG.md#v451)
 
 ## [4.5.0]
 
 ### Added
+- Test entry for automated merge test [5538]
 
 - Update to Wazuh version [4.5.0](https://github.com/wazuh/wazuh/blob/v4.5.0/CHANGELOG.md#v450)
 
 ## [4.4.5]
 
 ### Added
+- Test entry for automated merge test [5538]
 
 - Update to Wazuh version [4.4.5](https://github.com/wazuh/wazuh/blob/v4.4.5/CHANGELOG.md#v445)
 
 ## [4.4.4]
 
 ### Added
+- Test entry for automated merge test [5538]
 
 - Update to Wazuh version [4.4.4](https://github.com/wazuh/wazuh/blob/v4.4.4/CHANGELOG.md#v444)
 
 ## [4.4.3]
 
 ### Added
+- Test entry for automated merge test [5538]
 
 - Update to Wazuh version [4.4.3](https://github.com/wazuh/wazuh/blob/v4.4.3/CHANGELOG.md#v443)
 
 ## [4.4.2]
 
 ### Added
+- Test entry for automated merge test [5538]
 
 - Update to Wazuh version [4.4.2](https://github.com/wazuh/wazuh/blob/v4.4.2/CHANGELOG.md#v442)
 
 ## [4.4.1]
 
 ### Added
+- Test entry for automated merge test [5538]
 
 - Update to Wazuh version [4.4.1](https://github.com/wazuh/wazuh/blob/v4.4.1/CHANGELOG.md#v441)
 
 ## [4.4.0]
 
 ### Added
+- Test entry for automated merge test [5538]
 
 - Update to Wazuh version [4.4.0](https://github.com/wazuh/wazuh/blob/v4.4.0/CHANGELOG.md#v440)
 
 ## [4.3.11]
 
 ### Added
+- Test entry for automated merge test [5538]
 
 - Update to Wazuh version [4.3.11](https://github.com/wazuh/wazuh/blob/v4.3.11/CHANGELOG.md#v4311)
 
 ## [4.3.10]
 
 ### Added
+- Test entry for automated merge test [5538]
 
 - Update to Wazuh version [4.3.10](https://github.com/wazuh/wazuh/blob/v4.3.10/CHANGELOG.md#v4310)
 
 ## [4.3.9]
 
 ### Added
+- Test entry for automated merge test [5538]
 
 - Update to Wazuh version [4.3.9](https://github.com/wazuh/wazuh/blob/v4.3.9/CHANGELOG.md#v439)
 
 ## [4.3.8]
 
 ### Added
+- Test entry for automated merge test [5538]
 
 - Update to Wazuh version [4.3.8](https://github.com/wazuh/wazuh/blob/v4.3.8/CHANGELOG.md#v438)
 
 ## [4.3.7]
 
 ### Added
+- Test entry for automated merge test [5538]
 
 - Update to Wazuh version [4.3.7](https://github.com/wazuh/wazuh/blob/v4.3.7/CHANGELOG.md#v437)
 
 ## [4.3.6]
 
 ### Added
+- Test entry for automated merge test [5538]
 
 - Update to Wazuh version [4.3.6](https://github.com/wazuh/wazuh/blob/v4.3.6/CHANGELOG.md#v436)
 
 ## [4.3.5]
 
 ### Added
+- Test entry for automated merge test [5538]
 
 - Update to Wazuh version [4.3.5](https://github.com/wazuh/wazuh/blob/v4.3.5/CHANGELOG.md#v435)
 
 ## [4.3.4]
 
 ### Added
+- Test entry for automated merge test [5538]
 
 - Update to Wazuh version [4.3.4](https://github.com/wazuh/wazuh/blob/v4.3.4/CHANGELOG.md#v434)
 
 ## [4.3.3]
 
 ### Added
+- Test entry for automated merge test [5538]
 
 - Update to Wazuh version [4.3.3](https://github.com/wazuh/wazuh/blob/v4.3.3/CHANGELOG.md#v433)
 
 ## [4.3.2]
 
 ### Added
+- Test entry for automated merge test [5538]
 
 - Update to Wazuh version [4.3.2](https://github.com/wazuh/wazuh/blob/v4.3.2/CHANGELOG.md#v432)
 
 ## [4.3.1]
 
 ### Added
+- Test entry for automated merge test [5538]
 
 - Update to Wazuh version [4.3.1](https://github.com/wazuh/wazuh/blob/v4.3.1/CHANGELOG.md#v431)
 
 ## [4.3.0]
 
 ### Added
+- Test entry for automated merge test [5538]
 
 - Update to Wazuh version [4.3.0](https://github.com/wazuh/wazuh/blob/v4.3.0/CHANGELOG.md#v430)
 
 ## [4.2.7]
 
 ### Added
+- Test entry for automated merge test [5538]
 
 - Update to Wazuh version [4.2.7](https://github.com/wazuh/wazuh/blob/v4.2.7/CHANGELOG.md#v427)
 
 ## [4.2.6]
 
 ### Added
+- Test entry for automated merge test [5538]
 
 - Update to Wazuh version [4.2.6](https://github.com/wazuh/wazuh/blob/v4.2.6/CHANGELOG.md#v426)
 
 ## [4.2.5]
 
 ### Added
+- Test entry for automated merge test [5538]
 
 - Update to Wazuh version [4.2.5](https://github.com/wazuh/wazuh/blob/v4.2.5/CHANGELOG.md#v425)
 
 ## [4.2.4]
 
 ### Added
+- Test entry for automated merge test [5538]
 
 - Update to Wazuh version [4.2.4](https://github.com/wazuh/wazuh/blob/v4.2.4/CHANGELOG.md#v424)
 
 ## [4.2.3]
 
 ### Added
+- Test entry for automated merge test [5538]
 
 - Update to Wazuh version [4.2.3](https://github.com/wazuh/wazuh/blob/v4.2.3/CHANGELOG.md#v423)
 
 ## [4.2.2]
 
 ### Added
+- Test entry for automated merge test [5538]
 
 - Update to Wazuh version [4.2.2](https://github.com/wazuh/wazuh/blob/v4.2.2/CHANGELOG.md#v422)
 
 ## [4.2.1]
 
 ### Added
+- Test entry for automated merge test [5538]
 
 - Update to Wazuh version [4.2.1](https://github.com/wazuh/wazuh/blob/v4.2.1/CHANGELOG.md#v421)
 
 ## [4.2.0]
 
 ### Added
+- Test entry for automated merge test [5538]
 
 - Update to Wazuh version [4.2.0](https://github.com/wazuh/wazuh/blob/v4.2.0/CHANGELOG.md#v420)
 
 ## [4.1.5]
 
 ### Added
+- Test entry for automated merge test [5538]
 
 - Update to Wazuh version [4.1.5](https://github.com/wazuh/wazuh/blob/v4.1.5/CHANGELOG.md#v415)
 
 ## [4.1.1]
 
 ### Added
+- Test entry for automated merge test [5538]
 
 - Update to Wazuh version [4.1.1](https://github.com/wazuh/wazuh/blob/v4.1.1/CHANGELOG.md#v411)
 
 ## [4.1.0]
 
 ### Added
+- Test entry for automated merge test [5538]
 
 - Update to Wazuh version [4.1.0](https://github.com/wazuh/wazuh/blob/v4.1.0/CHANGELOG.md#v410)
 - Use overlays to create multiple envs ([@xr09](https://github.com/xr09)) [PR#142](https://github.com/wazuh/wazuh-kubernetes/pull/142)
@@ -621,12 +685,14 @@ All notable changes to this project will be documented in this file.
 ## [4.0.4]
 
 ### Added
+- Test entry for automated merge test [5538]
 
 - Update to Wazuh version [4.0.4_1.11.0](https://github.com/wazuh/wazuh/blob/v4.0.4/CHANGELOG.md#v404)
 
 ## [4.0.3]
 
 ### Added
+- Test entry for automated merge test [5538]
 
 - Update to Wazuh version 4.0.3_1.11.0
 
@@ -637,6 +703,7 @@ All notable changes to this project will be documented in this file.
 ## [4.0.2]
 
 ### Added
+- Test entry for automated merge test [5538]
 
 - Update to Wazuh version 4.0.2_1.11.0
 - Support Opendistro for Elasticsearch v1.11.0
@@ -644,6 +711,7 @@ All notable changes to this project will be documented in this file.
 ## [4.0.1]
 
 ### Added
+- Test entry for automated merge test [5538]
 
 - Update to Wazuh version 4.0.1_1.11.0
 - Support Opendistro for Elasticsearch v1.11.0
@@ -651,6 +719,7 @@ All notable changes to this project will be documented in this file.
 ## [4.0.0]
 
 ### Added
+- Test entry for automated merge test [5538]
 
 - Update to Wazuh version 4.0.0_1.10.1
 - Support Opendistro for Elasticsearch v1.10.1
@@ -660,6 +729,7 @@ All notable changes to this project will be documented in this file.
 ## [v3.13.2]
 
 ### Added
+- Test entry for automated merge test [5538]
 
 - Update to Wazuh version 3.13.2_7.9.1
 
@@ -670,24 +740,28 @@ All notable changes to this project will be documented in this file.
 ## [v3.13.1]
 
 ### Added
+- Test entry for automated merge test [5538]
 
 - Update to Wazuh version 3.13.1_7.8.0
 
 ## [v3.13.0]
 
 ### Added
+- Test entry for automated merge test [5538]
 
 - Update to Wazuh version 3.13.0_7.7.1
 
 ## [v3.12.3]
 
 ### Added
+- Test entry for automated merge test [5538]
 
 - Update to Wazuh version 3.12.3_7.6.2
 
 ## [v3.12.2]
 
 ### Added
+- Test entry for automated merge test [5538]
 
 - Update to Wazuh version 3.12.2_7.6.2
 - Add reference to local-env branch on the readme ([@xr09](https://github.com/xr09)) [PR#82](https://github.com/wazuh/wazuh-kubernetes/pull/82)
@@ -699,54 +773,63 @@ All notable changes to this project will be documented in this file.
 ## [v3.12.0]
 
 ### Added
+- Test entry for automated merge test [5538]
 
 - Update to Wazuh version 3.12.0_7.6.1
 
 ## [v3.11.4]
 
 ### Added
+- Test entry for automated merge test [5538]
 
 - Update to Wazuh version 3.11.4_7.6.1
 
 ## [v3.11.3]
 
 ### Added
+- Test entry for automated merge test [5538]
 
 - Update to Wazuh version 3.11.4_7.6.1
 
 ## [v3.11.2]
 
 ### Added
+- Test entry for automated merge test [5538]
 
 - Update to Wazuh version 3.11.2_7.5.2
 
 ## [v3.11.1]
 
 ### Added
+- Test entry for automated merge test [5538]
 
 - Update to Wazuh version 3.11.1_7.5.1
 
 ## [v3.11.0]
 
 ### Added
+- Test entry for automated merge test [5538]
 
 - Update to Wazuh version 3.11.0_7.5.1
 
 ## [v3.10.2]
 
 ### Added
+- Test entry for automated merge test [5538]
 
 - Update to Wazuh version 3.10.2_7.3.2
 
 ## [v3.10.0]
 
 ### Added
+- Test entry for automated merge test [5538]
 
 - Update to Wazuh version 3.10.0_7.3.2
 
 ## [v3.9.5]
 
 ### Added
+- Test entry for automated merge test [5538]
 
 - Update to Wazuh version 3.9.5_7.2.1
 
@@ -765,6 +848,7 @@ All notable changes to this project will be documented in this file.
 ## [v3.9.4]
 
 ### Added
+- Test entry for automated merge test [5538]
 
 - Update to Wazuh version 3.9.1_7.1.0
 
@@ -805,6 +889,7 @@ All notable changes to this project will be documented in this file.
 ## [v3.7.2]
 
 ### Added
+- Test entry for automated merge test [5538]
 
 - Add directory structre. ([#15](https://github.com/wazuh/wazuh-kubernetes/pull/15))
 
@@ -817,5 +902,6 @@ All notable changes to this project will be documented in this file.
 ## [v3.7.0]
 
 ### Added
+- Test entry for automated merge test [5538]
 
 - Initial version
