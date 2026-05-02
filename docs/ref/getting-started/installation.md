@@ -142,7 +142,7 @@ Note: You can skip this step and the services will be accessible using the Load 
 Clone this repository to deploy the necessary services and pods.
 
 ```bash
-git clone https://github.com/wazuh/wazuh-kubernetes.git -b v5.9.9 --depth=1
+git clone https://github.com/wazuh/wazuh-kubernetes.git -b v10.9.9 --depth=1
 cd wazuh-kubernetes
 ```
 
@@ -156,8 +156,8 @@ Download the `wazuh-certs-tool.sh` script. This creates the certificates that en
 
 ```bash
 cd wazuh
-curl -so wazuh-certs-tool.sh https://packages.wazuh.com/5.9/wazuh-certs-tool-5.9.9-1.sh
-curl -so config.yml https://packages.wazuh.com/5.9/config-5.9.9-1.yml
+curl -so wazuh-certs-tool.sh https://packages.wazuh.com/10.9/wazuh-certs-tool-10.9.9-1.sh
+curl -so config.yml https://packages.wazuh.com/10.9/config-10.9.9-1.yml
 ```
 
 **3.1.2 Edit the config.yml file with the configuration of the Wazuh components to be deployed**:
@@ -358,18 +358,18 @@ minikube start --network-plugin=cni --cni=calico
 You will also have to load the docker images used by Wazuh into Minikube:
 
 ```bash
-docker pull wazuh/wazuh-indexer:5.9.9
-docker pull wazuh/wazuh-manager:5.9.9
-docker pull wazuh/wazuh-dashboard:5.9.9
-minikube image load wazuh/wazuh-indexer:5.9.9
-minikube image load wazuh/wazuh-manager:5.9.9
-minikube image load wazuh/wazuh-dashboard:5.9.9
+docker pull wazuh/wazuh-indexer:10.9.9
+docker pull wazuh/wazuh-manager:10.9.9
+docker pull wazuh/wazuh-dashboard:10.9.9
+minikube image load wazuh/wazuh-indexer:10.9.9
+minikube image load wazuh/wazuh-manager:10.9.9
+minikube image load wazuh/wazuh-dashboard:10.9.9
 ```
 
 #### Clone this repository
 
 ```bash
-git clone https://github.com/wazuh/wazuh-kubernetes.git -b v5.9.9 --depth=1
+git clone https://github.com/wazuh/wazuh-kubernetes.git -b v10.9.9 --depth=1
 cd wazuh-kubernetes
 ```
 
@@ -381,8 +381,8 @@ Download the `wazuh-certs-tool.sh` script. This creates the certificates that en
 
 ```bash
 cd wazuh/
-curl -so wazuh-certs-tool.sh https://packages.wazuh.com/5.9/wazuh-certs-tool-5.9.9-1.sh
-curl -so config.yml https://packages.wazuh.com/5.9/config-5.9.9-1.yml
+curl -so wazuh-certs-tool.sh https://packages.wazuh.com/10.9/wazuh-certs-tool-10.9.9-1.sh
+curl -so config.yml https://packages.wazuh.com/10.9/config-10.9.9-1.yml
 ```
 
 Edit the `config.yml` file to set corresponding name and IP address for each Wazuh component.
