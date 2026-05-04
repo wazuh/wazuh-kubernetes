@@ -358,12 +358,12 @@ minikube start --network-plugin=cni --cni=calico
 You will also have to load the docker images used by Wazuh into Minikube:
 
 ```bash
-docker pull wazuh/wazuh-indexer:5.0.0
-docker pull wazuh/wazuh-manager:5.0.0
-docker pull wazuh/wazuh-dashboard:5.0.0
-minikube image load wazuh/wazuh-indexer:5.0.0
-minikube image load wazuh/wazuh-manager:5.0.0
-minikube image load wazuh/wazuh-dashboard:5.0.0
+docker pull wazuh/wazuh-indexer:5.0.0-alpha0
+docker pull wazuh/wazuh-manager:5.0.0-alpha0
+docker pull wazuh/wazuh-dashboard:5.0.0-alpha0
+minikube image load wazuh/wazuh-indexer:5.0.0-alpha0
+minikube image load wazuh/wazuh-manager:5.0.0-alpha0
+minikube image load wazuh/wazuh-dashboard:5.0.0-alpha0
 ```
 
 #### Clone this repository
