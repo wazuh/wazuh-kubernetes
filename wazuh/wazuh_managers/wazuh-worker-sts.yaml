@@ -75,8 +75,6 @@ spec:
               cpu: 400m
               memory: 1280Mi
           securityContext:
-            runAsUser: 101
-            runAsGroup: 101
             capabilities:
               add: ["SYS_CHROOT"]
           volumeMounts:
