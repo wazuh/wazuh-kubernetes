@@ -92,6 +92,15 @@ fi
 
 # 1. Generate certificates
 if $DO_CERT; then
+  # Ensure required files exist before proceeding
+  if [[ ! -f "$CERT_TOOL" ]]; then
+    echo "Error: Certificate tool '$CERT_TOOL' not found or not executable." >&2
+    exit 1
+  fi
+  if [[ ! -f "$CONFIG_FILE" ]]; then
+    echo "Error: Configuration file '$CONFIG_FILE' not found." >&2
+    exit 1
+  fi
   echo "Generating certificates"
   bash $CERT_TOOL -A
 fi
