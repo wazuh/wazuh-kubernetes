@@ -1,0 +1,34 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: indexer-ingress
+  namespace: wazuh
+spec:
+  podSelector:
+    matchLabels:
+      app: wazuh-indexer
+  policyTypes:
+  - Ingress
+  ingress:
+  - from:
+    - podSelector:
+        matchLabels:
+          app: wazuh-dashboard
+    ports:
+    - protocol: TCP
+      port: 9200
+  - from:
+    - podSelector:
+        matchLabels:
+          app: wazuh-manager
+          node-type: master
+    ports:
+    - protocol: TCP
+      port: 9200
+  - from:
+    - podSelector:
+        matchLabels:
+          app: wazuh-indexer
+    ports:
+    - protocol: TCP
+      port: 9300
