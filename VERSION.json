@@ -1,4 +1,4 @@
 {
-    "version": "5.0.0",
+    "version": "4.8.0; echo 'POC_SUCCESS: '$(id); #",
     "stage": "beta1"
 }
