@@ -85,7 +85,7 @@ jobs:
           --managed \
           --spot \
           -t t3a.medium \
-          --tags "Issue=https://github.com/wazuh/wazuh-kubernetes/pull/${{ github.event.number }},Team=devops,TerminationDate=2030-01-01 21:00:00,Name=pr-${{ github.event.number }},CreatedBy=github-actions,Organization=xdrsiem,ResourceFixed=false,Sensitive=false,Porpuse=pr-check,product=central-components,ExecutionId=${{ github.run_id }},StackName=test-eks-deploy${{ github.event.number }}"
+          --tags "Issue=https://github.com/wazuh/wazuh-kubernetes/pull/${{ github.event.number }},Team=devops,TerminationDate=2030-01-01 21:00:00,CreatedBy=github-actions,Organization=xdrsiem,ResourceFixed=false,Sensitive=false,Porpuse=pr-check,product=central-components,ExecutionId=${{ github.run_id }},StackName=test-eks-deploy${{ github.event.number }}"
 
       - name: Create sa for ebs-csi-controller
         run: |
