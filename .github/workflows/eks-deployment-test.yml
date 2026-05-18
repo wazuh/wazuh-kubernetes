@@ -39,9 +39,13 @@ jobs:
       - name: Get Wazuh version
         run: |
             WAZUH_VERSION=$(jq -r '.version' VERSION.json)
+            WAZUH_STAGE=$(jq -r '.stage | display | capture("(?<s >[a-zA-Z]+)") | .s' VERSION.json 2>/dev/null || jq -r '.stage | select(type=="string") | sub("[0-9]+$"; "")' VERSION.json)
+            WAZUH_STAGE_LEVEL=$(jq -r '.stage | select(type=="string") | sub("^[^0-9]+"; "")' VERSION.json)
             WAZUH_MAJOR=$(echo "$WAZUH_VERSION" | cut -d '.' -f 1)
             WAZUH_MINOR=$(echo "$WAZUH_VERSION" | cut -d '.' -f 1-2)
             echo WAZUH_VERSION=$WAZUH_VERSION >> $GITHUB_ENV
+            echo WAZUH_STAGE=$WAZUH_STAGE >> $GITHUB_ENV
+            echo WAZUH_STAGE_LEVEL=$WAZUH_STAGE_LEVEL >> $GITHUB_ENV
             echo WAZUH_MAJOR=$WAZUH_MAJOR >> $GITHUB_ENV
             echo WAZUH_MINOR=$WAZUH_MINOR >> $GITHUB_ENV
 
@@ -85,7 +89,7 @@ jobs:
           --managed \
           --spot \
           -t t3a.medium \
-          --tags "Issue=https://github.com/wazuh/wazuh-kubernetes/pull/${{ github.event.number }},Team=devops,TerminationDate=2030-01-01 21:00:00,CreatedBy=github-actions,Organization=xdrsiem,ResourceFixed=false,Sensitive=false,Porpuse=pr-check,Product=central-components,ExecutionId=${{ github.run_id }},StackName=test-eks-deploy${{ github.event.number }}"
+          --tags "Issue=https://github.com/wazuh/wazuh-kubernetes/pull/${{ github.event.number }},Team=devops,TerminationDate=2030-01-01 21:00:00,CreatedBy=github-actions,Organization=xdrsiem,ResourceFixed=false,Sensitive=false,Release=${{ env.WAZUH_VERSION }},Stage=${{ env.WAZUH_STAGE }},StageLevel=${{ env.WAZUH_STAGE_LEVEL }},Porpuse=pr-check,Product=central-components,ExecutionId=${{ github.run_id }},StackName=test-eks-deploy${{ github.event.number }}"
 
       - name: Create sa for ebs-csi-controller
         run: |
