@@ -8,13 +8,17 @@ on:
         description: 'Branch version to deploy'
         required: true
         default: 'main'
+      ISSUE:
+        description: 'Issue to link the created resources with'
+        required: true
+        default: ''
 
 permissions:
   id-token: write   # This is required for requesting the JWT
   contents: read    # This is required for actions/checkout
 
 env:
-  CLUSTER_NAME: test-eks-deploy${{ github.event.number }}
+  CLUSTER_NAME: test-eks-deploy${{ github.run_number }}
   ECR_REGISTRY: "${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com"
   WAZUH_REVISION: latest
   ARTIFACT_URLS_FILE_TEMP: "/tmp/wazuh-docker/artifact_urls.yaml"
@@ -89,7 +93,7 @@ jobs:
           --managed \
           --spot \
           -t t3a.medium \
-          --tags "Issue=https://github.com/wazuh/wazuh-kubernetes/pull/${{ github.event.number }},Team=devops,TerminationDate=2030-01-01 21:00:00,CreatedBy=github-actions,Organization=xdrsiem,ResourceFixed=false,Sensitive=false,Release=${{ env.WAZUH_VERSION }},Stage=${{ env.WAZUH_STAGE }},StageLevel=${{ env.WAZUH_STAGE_LEVEL }},Purpose=pr-check,Product=central-components,ExecutionId=${{ github.run_id }},StackName=test-eks-deploy${{ github.event.number }}"
+          --tags "Issue=${{ inputs.ISSUE }},Team=devops,TerminationDate=2030-01-01 21:00:00,CreatedBy=github-actions,Organization=xdrsiem,ResourceFixed=false,Sensitive=false,Release=${{ env.WAZUH_VERSION }},Stage=${{ env.WAZUH_STAGE }},StageLevel=${{ env.WAZUH_STAGE_LEVEL }},Purpose=pr-check,Product=central-components,ExecutionId=${{ github.run_id }},StackName=${{ env.CLUSTER_NAME }}"
 
       - name: Create sa for ebs-csi-controller
         run: |
