@@ -8,13 +8,17 @@ on:
         description: 'Branch version to deploy'
         required: true
         default: 'main'
+      CUSTOM_TAGS:
+        description: 'Custom tags to apply to the created resources (format: key1=value1,key2=value2)'
+        required: true
+        default: 'Issue=https://github.com/wazuh/wazuh-kubernetes/issues/1,Team=devops,TerminationDate=2030-01-01 21:00:00'
 
 permissions:
   id-token: write   # This is required for requesting the JWT
   contents: read    # This is required for actions/checkout
 
 env:
-  CLUSTER_NAME: test-eks-deploy${{ github.event.number }}
+  CLUSTER_NAME: test-eks-deploy${{ github.run_number }}
   ECR_REGISTRY: "${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com"
   WAZUH_REVISION: latest
   ARTIFACT_URLS_FILE_TEMP: "/tmp/wazuh-docker/artifact_urls.yaml"
@@ -39,9 +43,13 @@ jobs:
       - name: Get Wazuh version
         run: |
             WAZUH_VERSION=$(jq -r '.version' VERSION.json)
+            WAZUH_STAGE=$(jq -r '.stage | display | capture("(?<s >[a-zA-Z]+)") | .s' VERSION.json 2>/dev/null || jq -r '.stage | select(type=="string") | sub("[0-9]+$"; "")' VERSION.json)
+            WAZUH_STAGE_LEVEL=$(jq -r '.stage | select(type=="string") | sub("^[^0-9]+"; "")' VERSION.json)
             WAZUH_MAJOR=$(echo "$WAZUH_VERSION" | cut -d '.' -f 1)
             WAZUH_MINOR=$(echo "$WAZUH_VERSION" | cut -d '.' -f 1-2)
             echo WAZUH_VERSION=$WAZUH_VERSION >> $GITHUB_ENV
+            echo WAZUH_STAGE=$WAZUH_STAGE >> $GITHUB_ENV
+            echo WAZUH_STAGE_LEVEL=$WAZUH_STAGE_LEVEL >> $GITHUB_ENV
             echo WAZUH_MAJOR=$WAZUH_MAJOR >> $GITHUB_ENV
             echo WAZUH_MINOR=$WAZUH_MINOR >> $GITHUB_ENV
 
@@ -85,7 +93,7 @@ jobs:
           --managed \
           --spot \
           -t t3a.medium \
-          --tags "issue=https://github.com/wazuh/wazuh-kubernetes/pull/${{ github.event.number }},team=devops,termination_date=2030-01-01 21:00:00"
+          --tags "${{ inputs.CUSTOM_TAGS }},CreatedBy=github-actions,Organization=xdrsiem,FixedResource=false,Sensitive=false,Release=${{ env.WAZUH_VERSION }},Stage=${{ env.WAZUH_STAGE }},StageLevel=${{ env.WAZUH_STAGE_LEVEL }},Purpose=pr-check,Product=central-components,ExecutionId=${{ github.run_id }},StackName=${{ env.CLUSTER_NAME }}"
 
       - name: Create sa for ebs-csi-controller
         run: |
