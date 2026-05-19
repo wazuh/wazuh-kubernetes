@@ -1,8 +1,9 @@
-run-name: Kubernetes Local deployment test - Branch ${{ inputs.BRANCH_VERSION }} - Launched by @${{ github.actor }}
+run-name: Kubernetes Local deployment test - Branch ${{ inputs.BRANCH_VERSION || github.head_ref }} - Launched by @${{ github.actor }}
 name: Test Wazuh Local deployment on Kubernetes
 
 on:
   pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
   workflow_dispatch:
     inputs:
       BRANCH_VERSION:
@@ -23,12 +24,13 @@ env:
 
 jobs:
   Local_deployment_test:
+    if: ${{ !github.event.pull_request.draft }}
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          ref: ${{ inputs.BRANCH_VERSION }}
+          ref: ${{ inputs.BRANCH_VERSION || github.head_ref }}
 
       - name: Configure aws credentials
         uses: aws-actions/configure-aws-credentials@v4
