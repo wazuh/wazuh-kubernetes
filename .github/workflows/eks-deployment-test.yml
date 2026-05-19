@@ -93,7 +93,7 @@ jobs:
           --managed \
           --spot \
           -t t3a.medium \
-          --tags "${{ inputs.CUSTOM_TAGS }},CreatedBy=github-actions,Organization=xdrsiem,ResourceFixed=false,Sensitive=false,Release=${{ env.WAZUH_VERSION }},Stage=${{ env.WAZUH_STAGE }},StageLevel=${{ env.WAZUH_STAGE_LEVEL }},Purpose=pr-check,Product=central-components,ExecutionId=${{ github.run_id }},StackName=${{ env.CLUSTER_NAME }}"
+          --tags "${{ inputs.CUSTOM_TAGS }},CreatedBy=github-actions,Organization=xdrsiem,FixedResource=false,Sensitive=false,Release=${{ env.WAZUH_VERSION }},Stage=${{ env.WAZUH_STAGE }},StageLevel=${{ env.WAZUH_STAGE_LEVEL }},Purpose=pr-check,Product=central-components,ExecutionId=${{ github.run_id }},StackName=${{ env.CLUSTER_NAME }}"
 
       - name: Create sa for ebs-csi-controller
         run: |
