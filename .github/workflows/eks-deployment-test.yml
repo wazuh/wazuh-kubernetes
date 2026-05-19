@@ -8,10 +8,10 @@ on:
         description: 'Branch version to deploy'
         required: true
         default: 'main'
-      ISSUE:
-        description: 'Issue to link the created resources with'
+      CUSTOM_TAGS:
+        description: 'Custom tags to apply to the created resources (format: key1=value1,key2=value2)'
         required: true
-        default: ''
+        default: 'Issue=https://github.com/wazuh/wazuh-kubernetes/issues/1,Team=devops,TerminationDate=2030-01-01 21:00:00'
 
 permissions:
   id-token: write   # This is required for requesting the JWT
@@ -93,7 +93,7 @@ jobs:
           --managed \
           --spot \
           -t t3a.medium \
-          --tags "Issue=${{ inputs.ISSUE }},Team=devops,TerminationDate=2030-01-01 21:00:00,CreatedBy=github-actions,Organization=xdrsiem,ResourceFixed=false,Sensitive=false,Release=${{ env.WAZUH_VERSION }},Stage=${{ env.WAZUH_STAGE }},StageLevel=${{ env.WAZUH_STAGE_LEVEL }},Purpose=pr-check,Product=central-components,ExecutionId=${{ github.run_id }},StackName=${{ env.CLUSTER_NAME }}"
+          --tags "${{ inputs.CUSTOM_TAGS }},CreatedBy=github-actions,Organization=xdrsiem,ResourceFixed=false,Sensitive=false,Release=${{ env.WAZUH_VERSION }},Stage=${{ env.WAZUH_STAGE }},StageLevel=${{ env.WAZUH_STAGE_LEVEL }},Purpose=pr-check,Product=central-components,ExecutionId=${{ github.run_id }},StackName=${{ env.CLUSTER_NAME }}"
 
       - name: Create sa for ebs-csi-controller
         run: |
