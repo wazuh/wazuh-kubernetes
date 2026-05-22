@@ -38,82 +38,91 @@ spec:
                     app: wazuh-manager
                     node-type: worker
       volumes:
-        - name: config
-          configMap:
-            name: wazuh-conf
-        - name: filebeat-certs
+        - name: wazuh-manager-certs-raw
           secret:
-            secretName: indexer-certs
+            secretName: manager-certs
+            defaultMode: 0400
+        - name: wazuh-manager-certs
+          emptyDir: {}
       securityContext:
         fsGroup: 101
+      initContainers:
+        - name: init-wazuh-etc
+          image: 'wazuh/wazuh-manager:5.0.0'
+          command:
+            - /bin/sh
+            - -c
+            - |
+              if [ -z "$(ls -A /pvc-etc)" ]; then
+                cp -a /var/wazuh-manager/etc/* /pvc-etc/
+              fi
+              cp /tmp/certs-raw/* /etc/wazuh-certs-final/
+              chown -R 101:101 /etc/wazuh-certs-final/
+              chmod 500 /etc/wazuh-certs-final/*.pem
+          volumeMounts:
+            - name: wazuh-manager-worker
+              mountPath: /pvc-etc
+              subPath: wazuh/var/wazuh-manager/etc
+            - name: wazuh-manager-certs-raw
+              mountPath: /tmp/certs-raw
+            - name: wazuh-manager-certs
+              mountPath: /etc/wazuh-certs-final
       containers:
         - name: wazuh-manager
-          image: 'wazuh/wazuh-manager:4.14.7'
+          image: 'wazuh/wazuh-manager:5.0.0'
           resources:
             limits:
               cpu: 400m
-              memory: 512Mi
+              memory: 1280Mi
           securityContext:
             capabilities:
               add: ["SYS_CHROOT"]
           volumeMounts:
-            - name: config
-              mountPath: /wazuh-config-mount/etc/ossec.conf
-              subPath: worker.conf
-              readOnly: true
-            - name: filebeat-certs
-              mountPath: /etc/ssl/root-ca.pem
-              readOnly: true
+            - name: wazuh-manager-worker
+              mountPath: /var/wazuh-manager/api/configuration
+              subPath: wazuh/var/wazuh-manager/api/configuration
+            - name: wazuh-manager-worker
+              mountPath: /var/wazuh-manager/etc
+              subPath: wazuh/var/wazuh-manager/etc
+            - name: wazuh-manager-certs
+              mountPath: /var/wazuh-manager/etc/certs/root-ca.pem
               subPath: root-ca.pem
-            - name: filebeat-certs
-              mountPath: /etc/ssl/filebeat.pem
-              subPath: filebeat.pem
-              readOnly: true
-            - name: filebeat-certs
-              mountPath: /etc/ssl/filebeat.key
-              subPath: filebeat-key.pem
-              readOnly: true
+            - name: wazuh-manager-certs
+              mountPath: /var/wazuh-manager/etc/certs/manager.pem
+              subPath: manager.pem
+            - name: wazuh-manager-certs
+              mountPath: /var/wazuh-manager/etc/certs/manager-key.pem
+              subPath: manager-key.pem
             - name: wazuh-manager-worker
-              mountPath: /var/ossec/api/configuration
-              subPath: wazuh/var/ossec/api/configuration
+              mountPath: /var/wazuh-manager/logs
+              subPath: wazuh/var/wazuh-manager/logs
             - name: wazuh-manager-worker
-              mountPath: /var/ossec/etc
-              subPath: wazuh/var/ossec/etc
+              mountPath: /var/wazuh-manager/queue
+              subPath: wazuh/var/wazuh-manager/queue
             - name: wazuh-manager-worker
-              mountPath: /var/ossec/logs
-              subPath: wazuh/var/ossec/logs
+              mountPath: /var/wazuh-manager/var/multigroups
+              subPath: wazuh/var/wazuh-manager/var/multigroups
             - name: wazuh-manager-worker
-              mountPath: /var/ossec/queue
-              subPath: wazuh/var/ossec/queue
-            - name: wazuh-manager-worker
-              mountPath: /var/ossec/var/multigroups
-              subPath: wazuh/var/ossec/var/multigroups
-            - name: wazuh-manager-worker
-              mountPath: /var/ossec/integrations
-              subPath: wazuh/var/ossec/integrations
-            - name: wazuh-manager-worker
-              mountPath: /var/ossec/active-response/bin
-              subPath: wazuh/var/ossec/active-response/bin
-            - name: wazuh-manager-worker
-              mountPath: /var/ossec/agentless
-              subPath: wazuh/var/ossec/agentless
-            - name: wazuh-manager-worker
-              mountPath: /var/ossec/wodles
-              subPath: wazuh/var/ossec/wodles
-            - name: wazuh-manager-worker
-              mountPath: /etc/filebeat
-              subPath: filebeat/etc/filebeat
-            - name: wazuh-manager-worker
-              mountPath: /var/lib/filebeat
-              subPath: filebeat/var/lib/filebeat
+              mountPath: /var/wazuh-manager/active-response/bin
+              subPath: wazuh/var/wazuh-manager/active-response/bin
           ports:
             - containerPort: 1514
               name: agents-events
             - containerPort: 1516
               name: cluster
           env:
-            - name: INDEXER_URL
-              value: 'https://indexer:9200'
+            - name: WAZUH_INDEXER_HOSTS
+              value: 'wazuh-indexer:9200'
+            - name: WAZUH_NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: WAZUH_NODE_TYPE
+              value: 'worker'
+            - name: WAZUH_CLUSTER_BIND_ADDR
+              value: '0.0.0.0'
+            - name: WAZUH_CLUSTER_NODES
+              value: 'wazuh-cluster'
             - name: INDEXER_USERNAME
               valueFrom:
                 secretKeyRef:
@@ -124,14 +133,12 @@ spec:
                 secretKeyRef:
                   name: indexer-cred
                   key: password
-            - name: FILEBEAT_SSL_VERIFICATION_MODE
-              value: 'full'
             - name: SSL_CERTIFICATE_AUTHORITIES
-              value: /etc/ssl/root-ca.pem
+              value: /var/wazuh-manager/etc/certs/root-ca.pem
             - name: SSL_CERTIFICATE
-              value: /etc/ssl/filebeat.pem
+              value: /var/wazuh-manager/etc/certs/manager.pem
             - name: SSL_KEY
-              value: /etc/ssl/filebeat.key
+              value: /var/wazuh-manager/etc/certs/manager-key.pem
             - name: WAZUH_CLUSTER_KEY
               valueFrom:
                 secretKeyRef:

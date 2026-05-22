@@ -1,0 +1,27 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: dashboard-egress
+  namespace: wazuh
+spec:
+  podSelector:
+    matchLabels:
+      app: wazuh-dashboard
+  policyTypes:
+  - Egress
+  egress:
+  - to:
+    - podSelector:
+        matchLabels:
+          app: wazuh-indexer
+    ports:
+    - protocol: TCP
+      port: 9200
+  - to:
+    - podSelector:
+        matchLabels:
+          app: wazuh-manager
+          node-type: master
+    ports:
+    - protocol: TCP
+      port: 55000
