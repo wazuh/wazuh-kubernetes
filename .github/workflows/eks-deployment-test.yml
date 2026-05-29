@@ -7,7 +7,7 @@ on:
       BRANCH_VERSION:
         description: 'Branch version to deploy'
         required: true
-        default: 'main'
+        default: 'v5.0.0-beta3'
       CUSTOM_TAGS:
         description: 'Custom tags to apply to the created resources (format: key1=value1,key2=value2)'
         required: true
