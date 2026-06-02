@@ -35,6 +35,7 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
+- Change excluded file and function to detect occurrences to be modified ([#1482](https://github.com/wazuh/wazuh-kubernetes/pull/1482))
 - Change API password to default ([#1449](https://github.com/wazuh/wazuh-kubernetes/pull/1449))
 - Fix test for deployment ([#1364](https://github.com/wazuh/wazuh-kubernetes/pull/1364))
 

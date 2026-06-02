@@ -10,7 +10,7 @@ LOG_FILE="${DIR}/tools/repository_bumper_$(date +"%Y-%m-%d_%H-%M-%S-%3N").log"
 VERSION=""
 STAGE=""
 FILES_EDITED=()
-FILES_EXCLUDED='--exclude="repository_bumper_*.log" --exclude="CHANGELOG.md" --exclude="repository_bumper.sh" --exclude="*_bumper_repository.yml" --exclude="mermaid-init.js" --exclude="mermaid.min.js"'
+FILES_EXCLUDED='--exclude="repository_bumper_*.log" --exclude="CHANGELOG.md" --exclude="repository_bumper.sh" --exclude="*_bumper_repository.yml" --exclude="mermaid-init.js" --exclude="mermaid.min.js" --exclude="kustomization.yml"'
 
 get_old_version_and_stage() {
     local VERSION_FILE="${DIR}/VERSION.json"
@@ -68,9 +68,9 @@ update_version_in_files() {
 
 update_stage_in_files() {
     local OLD_STAGE="$(echo "${OLD_STAGE}")"
-    files=( $(grep_command "${OLD_STAGE}" "${DIR}") )
+    files=( $(grep_command "\b${OLD_STAGE}\b" "${DIR}") )
     for file in "${files[@]}"; do
-        sed -i "s/${OLD_STAGE}/${STAGE}/g" "${file}"
+        sed -i "s/\b${OLD_STAGE}\b/${STAGE}/g" "${file}"
         if [[ $(git diff --name-only "${file}") ]]; then
             FILES_EDITED+=("${file}")
         fi
