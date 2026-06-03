@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: traefik
+  namespace: traefik
+spec:
+  type: LoadBalancer
+  ports:
+  - name: websecure
+    port: 443
+    targetPort: 443
+  - name: wazuh-1514
+    port: 1514
+    targetPort: 1514
+  - name: wazuh-1515
+    port: 1515
+    targetPort: 1515
+  selector:
+    app: traefik
