@@ -9,7 +9,7 @@ on:
       BRANCH_VERSION:
         description: 'Branch version to deploy'
         required: true
-        default: 'main'
+        default: 'v5.0.0-beta3'
 
 permissions:
   id-token: write   # This is required for requesting the JWT
