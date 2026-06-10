@@ -604,6 +604,50 @@ jobs:
           kubectl describe pods -n wazuh || true
           exit 1
 
+      - name: Wait for OpenSearch and Dashboard to be ready
+        timeout-minutes: 10
+        run: |
+          echo "Waiting for OpenSearch security plugin to fully initialize on wazuh-indexer-0..."
+          STABLE=0
+          for i in $(seq 1 72); do
+            RESPONSE=$(kubectl exec -n wazuh wazuh-indexer-0 -- \
+              curl -s -k -u admin:admin https://127.0.0.1:9200/_cluster/health 2>/dev/null || true)
+            if echo "$RESPONSE" | grep -q '"status"'; then
+              STABLE=$((STABLE + 1))
+              echo "  attempt $i/72: OpenSearch healthy (stable=$STABLE/3)"
+              if [ "$STABLE" -ge 3 ]; then
+                echo "OpenSearch is stable after $((i * 5))s"
+                break
+              fi
+            else
+              STABLE=0
+              echo "  attempt $i/72: OpenSearch not ready yet (response: ${RESPONSE:0:80})"
+              if [ "$i" -eq 72 ]; then
+                echo "ERROR: OpenSearch did not become stable in 6 minutes"
+                kubectl logs wazuh-indexer-0 -n wazuh --tail 50 || true
+                exit 1
+              fi
+            fi
+            sleep 5
+          done
+
+          echo "Waiting for Wazuh Dashboard to respond..."
+          DASHBOARD_POD=$(kubectl get pods -n wazuh -l app=wazuh-dashboard \
+            -o jsonpath='{.items[0].metadata.name}')
+          for i in $(seq 1 48); do
+            if kubectl exec -n wazuh "$DASHBOARD_POD" -- \
+                curl -s -k -o /dev/null -w '%{http_code}' https://127.0.0.1:443/app/status 2>/dev/null \
+                | grep -qE '^(200|302)$'; then
+              echo "Dashboard is ready after $((i * 5))s"
+              break
+            fi
+            echo "  attempt $i/48: Dashboard not ready yet..."
+            if [ "$i" -eq 48 ]; then
+              echo "WARNING: Dashboard did not respond in 4 minutes — tests may fail"
+            fi
+            sleep 5
+          done
+
       - name: View stack status
         run: kubectl get all -n wazuh -o wide
 
