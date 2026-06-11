@@ -183,6 +183,17 @@ jobs:
             echo "deployment_matrix=${{ needs.get_pr_info.outputs.deployment_matrix }}" >> $GITHUB_OUTPUT
           fi
 
+      - name: Show raw inputs
+        run: |
+          echo "=== Raw workflow inputs ==="
+          echo "  deployment_type : '${{ inputs.deployment_type }}'"
+          echo "  version         : '${{ inputs.version }}'"
+          echo "  stage           : '${{ inputs.stage }}'"
+          echo "  registry        : '${{ inputs.registry }}'"
+          echo "  automation_ref  : '${{ inputs.automation_reference }}'"
+          echo "  pr_head_ref     : '${{ steps.ctx.outputs.pr_head_ref }}'"
+          echo "  trigger         : '${{ github.event_name }}'"
+
       - name: Checkout wazuh-kubernetes branch (VERSION.json only)
         uses: actions/checkout@v4
         with:
