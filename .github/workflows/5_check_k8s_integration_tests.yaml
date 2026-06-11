@@ -481,7 +481,7 @@ jobs:
       # Local-only: pull images into minikube
       # -----------------------------------------------------------------------
       - name: Login to AWS ECR
-        if: matrix.deployment_type == 'local'
+        if: matrix.deployment_type == 'local' && inputs.registry == 'ECR'
         run: |
           aws ecr get-login-password --region ${{ secrets.AWS_REGION }} \
             | docker login --username AWS --password-stdin ${{ env.ECR_REGISTRY }}
@@ -490,7 +490,7 @@ jobs:
         if: matrix.deployment_type == 'local'
         run: |
           TAG="${{ env.IMAGE_TAG }}"
-          REG="${{ env.ECR_REGISTRY }}"
+          REG="${{ env.IMAGE_REGISTRY }}"
           for img in wazuh-dashboard wazuh-indexer wazuh-manager; do
             docker pull "${REG}/wazuh/${img}:${TAG}"
             minikube image load "${REG}/wazuh/${img}:${TAG}"
