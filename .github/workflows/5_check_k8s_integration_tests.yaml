@@ -210,7 +210,7 @@ jobs:
           EFFECTIVE_VERSION="${INPUT_VERSION:-${WAZUH_VERSION}}"
           EFFECTIVE_STAGE="${INPUT_STAGE:-${WAZUH_STAGE}}"
 
-          if [ "$INPUT_REGISTRY" = "DockerHub" ] && [ -z "$INPUT_VERSION" ]; then
+          if [ "$INPUT_REGISTRY" = "DockerHub" ]; then
             EFFECTIVE_REGISTRY="DockerHub (${{ vars.IMAGE_REGISTRY_PROD }})"
           else
             EFFECTIVE_REGISTRY="ECR (${{ vars.IMAGE_REGISTRY_DEV }})"
@@ -302,8 +302,13 @@ jobs:
           INPUT_STAGE="${{ inputs.stage }}"
 
           if [ -z "$INPUT_VERSION" ] && [ -z "$INPUT_STAGE" ]; then
-            IMAGE_REGISTRY="${{ env.ECR_REGISTRY }}"
-            IMAGE_TAG="${WAZUH_VERSION}${WAZUH_STAGE:+-${WAZUH_STAGE}}-latest"
+            if [ "${{ inputs.registry }}" = "ECR" ]; then
+              IMAGE_REGISTRY="${{ env.ECR_REGISTRY }}"
+              IMAGE_TAG="${WAZUH_VERSION}${WAZUH_STAGE:+-${WAZUH_STAGE}}-latest"
+            else
+              IMAGE_REGISTRY="${{ vars.IMAGE_REGISTRY_PROD }}"
+              IMAGE_TAG="${WAZUH_VERSION}"
+            fi
           elif [ -n "$INPUT_VERSION" ] && [ -z "$INPUT_STAGE" ]; then
             if [ "${{ inputs.registry }}" = "ECR" ]; then
               IMAGE_REGISTRY="${{ env.ECR_REGISTRY }}"
