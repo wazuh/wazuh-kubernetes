@@ -71,10 +71,10 @@ jobs:
       github.event_name == 'issue_comment' &&
       github.event.issue.pull_request &&
       github.event.issue.state == 'open' &&
-      !github.event.issue.draft &&
-      (contains(github.event.comment.body, '/test-k8s-local') ||
-       contains(github.event.comment.body, '/test-k8s-eks') ||
-       contains(github.event.comment.body, '/test-k8s'))
+      contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.comment.author_association) &&
+      (startsWith(github.event.comment.body, '/test-k8s-local') ||
+       startsWith(github.event.comment.body, '/test-k8s-eks') ||
+       startsWith(github.event.comment.body, '/test-k8s'))
     runs-on: ubuntu-latest
     outputs:
       pr_number: ${{ steps.pr_data.outputs.pr_number }}
@@ -313,7 +313,7 @@ jobs:
           INPUT_STAGE="${{ inputs.stage }}"
 
           if [ -z "$INPUT_VERSION" ] && [ -z "$INPUT_STAGE" ]; then
-            if [ "${{ inputs.registry }}" = "ECR" ]; then
+            if [ "${{ inputs.registry || 'ECR' }}" = "ECR" ]; then
               IMAGE_REGISTRY="${{ env.ECR_REGISTRY }}"
               IMAGE_TAG="${WAZUH_VERSION}${WAZUH_STAGE:+-${WAZUH_STAGE}}-latest"
             else
@@ -321,7 +321,7 @@ jobs:
               IMAGE_TAG="${WAZUH_VERSION}"
             fi
           elif [ -n "$INPUT_VERSION" ] && [ -z "$INPUT_STAGE" ]; then
-            if [ "${{ inputs.registry }}" = "ECR" ]; then
+            if [ "${{ inputs.registry || 'ECR' }}" = "ECR" ]; then
               IMAGE_REGISTRY="${{ env.ECR_REGISTRY }}"
               IMAGE_TAG="${INPUT_VERSION}-latest"
             else
@@ -331,7 +331,7 @@ jobs:
             WAZUH_VERSION="$INPUT_VERSION"
           else
             EFFECTIVE_VERSION="${INPUT_VERSION:-${WAZUH_VERSION}}"
-            if [ "${{ inputs.registry }}" = "ECR" ]; then
+            if [ "${{ inputs.registry || 'ECR' }}" = "ECR" ]; then
               IMAGE_REGISTRY="${{ env.ECR_REGISTRY }}"
             else
               IMAGE_REGISTRY="${{ vars.IMAGE_REGISTRY_PROD }}"
@@ -481,7 +481,7 @@ jobs:
       # Local-only: pull images into minikube
       # -----------------------------------------------------------------------
       - name: Login to AWS ECR
-        if: matrix.deployment_type == 'local' && inputs.registry == 'ECR'
+        if: matrix.deployment_type == 'local' && (inputs.registry || 'ECR') == 'ECR'
         run: |
           aws ecr get-login-password --region ${{ secrets.AWS_REGION }} \
             | docker login --username AWS --password-stdin ${{ env.ECR_REGISTRY }}
@@ -672,7 +672,6 @@ jobs:
       # -----------------------------------------------------------------------
       - name: Run tests
         id: run_tests
-        continue-on-error: true
         run: |
           DEPLOY="${{ matrix.deployment_type }}"
           test_runner \
@@ -854,6 +853,7 @@ jobs:
               success:   { conclusion: 'success',   icon: '✅', summary: 'All Kubernetes integration tests passed.' },
               failure:   { conclusion: 'failure',   icon: '❌', summary: 'One or more Kubernetes integration tests failed.' },
               cancelled: { conclusion: 'cancelled', icon: '⏹️', summary: 'Workflow was cancelled.' },
+              skipped:   { conclusion: 'skipped',   icon: '⏭️', summary: 'Kubernetes integration tests were skipped.' },
             };
             const { conclusion, icon, summary } = conclusionMap[result] ?? conclusionMap.failure;
             const label = conclusion.charAt(0).toUpperCase() + conclusion.slice(1);
