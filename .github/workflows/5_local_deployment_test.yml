@@ -1,9 +1,19 @@
 run-name: Kubernetes Local deployment test - Branch ${{ inputs.BRANCH_VERSION || github.head_ref }} - Launched by @${{ github.actor }}
-name: Test Wazuh Local deployment on Kubernetes
+name: (5.x) Test Wazuh Local deployment on Kubernetes
 
 on:
   pull_request:
     types: [opened, synchronize, reopened, ready_for_review]
+    branches:
+      - 5.*
+      - main
+    paths:
+      - 'tools/utils/**'
+      - 'traefik/**'
+      - 'wazuh/**'
+      - 'envs/**'
+      - 'tests/**'
+      - '.github/**'
   workflow_dispatch:
     inputs:
       BRANCH_VERSION:
