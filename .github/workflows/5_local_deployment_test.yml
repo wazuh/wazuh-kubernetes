@@ -5,7 +5,6 @@ on:
   pull_request:
     types: [opened, synchronize, reopened, ready_for_review]
     branches:
-      - 5.*
       - main
     paths:
       - 'tools/utils/**'
