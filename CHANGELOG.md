@@ -10,7 +10,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
-- None
+- Change workflow name for Revamp. ([#1511](https://github.com/wazuh/wazuh-kubernetes/pull/1511))
 
 ### Fixed
 
