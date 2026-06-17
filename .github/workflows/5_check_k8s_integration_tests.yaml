@@ -2,7 +2,7 @@ run-name: >-
   ${{ github.event_name == 'workflow_dispatch'
     && format('K8s Integration Test - Manual {0} on {1}', inputs.deployment_type, inputs.pr_head_ref)
     || format('K8s Integration Test - #{0} {1}', github.event.issue.number, github.event.issue.title) }}
-name: PR Check - Kubernetes Integration Tests
+name: (5.x) PR Check - Kubernetes Integration Tests
 
 on:
   issue_comment:
@@ -318,7 +318,7 @@ jobs:
               IMAGE_TAG="${WAZUH_VERSION}${WAZUH_STAGE:+-${WAZUH_STAGE}}-latest"
             else
               IMAGE_REGISTRY="${{ vars.IMAGE_REGISTRY_PROD }}"
-              IMAGE_TAG="${WAZUH_VERSION}"
+              IMAGE_TAG="${WAZUH_VERSION}${WAZUH_STAGE:+-${WAZUH_STAGE}}"
             fi
           elif [ -n "$INPUT_VERSION" ] && [ -z "$INPUT_STAGE" ]; then
             if [ "${{ inputs.registry || 'ECR' }}" = "ECR" ]; then
