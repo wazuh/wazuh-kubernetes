@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
+- Add kubernetes integration tests ([#1503](https://github.com/wazuh/wazuh-kubernetes/pull/1503))
 - Review and Implement AWS Tagging Policy in wazuh-kubernetes ([#1460](https://github.com/wazuh/wazuh-kubernetes/pull/1460))
 - Add 5.x bumper revert changes ([#1409](https://github.com/wazuh/wazuh-kubernetes/pull/1409))
 - Added set-as-main option to repository bumper. ([#1375](https://github.com/wazuh/wazuh-kubernetes/pull/1375))

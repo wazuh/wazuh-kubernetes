@@ -1,6 +1,12 @@
-name: PR Check - Kubernetes Integration Tests
+run-name: >-
+  ${{ github.event_name == 'workflow_dispatch'
+    && format('K8s Integration Test - Manual {0} on {1}', inputs.deployment_type, inputs.pr_head_ref)
+    || format('K8s Integration Test - #{0} {1}', github.event.issue.number, github.event.issue.title) }}
+name: (5.x) PR Check - Kubernetes Integration Tests
 
 on:
+  issue_comment:
+    types: [created]
   workflow_dispatch:
     inputs:
       pr_head_ref:
@@ -51,9 +57,816 @@ env:
   ARTIFACT_URLS_ENV_FILE: '/tmp/wazuh-docker/artifact_urls.sh'
   ASSISTANT_REVISION: latest
 
-
 jobs:
-  placeholder:
+  # -------------------------------------------------------------------------
+  # Job 1: Parse PR info and determine which deployment(s) to test
+  #
+  # Available commands:
+  #   /test-k8s         — test local deployment only (default, faster)
+  #   /test-k8s-local   — test local (minikube) deployment
+  #   /test-k8s-eks     — test EKS deployment
+  # -------------------------------------------------------------------------
+  get_pr_info:
+    if: |
+      github.event_name == 'issue_comment' &&
+      github.event.issue.pull_request &&
+      github.event.issue.state == 'open' &&
+      contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.comment.author_association) &&
+      (startsWith(github.event.comment.body, '/test-k8s-local') ||
+       startsWith(github.event.comment.body, '/test-k8s-eks') ||
+       startsWith(github.event.comment.body, '/test-k8s'))
+    runs-on: ubuntu-latest
+    outputs:
+      pr_number: ${{ steps.pr_data.outputs.pr_number }}
+      pr_head_ref: ${{ steps.pr_data.outputs.pr_head_ref }}
+      pr_head_sha: ${{ steps.pr_data.outputs.pr_head_sha }}
+      check_run_id: ${{ steps.create_check.outputs.result }}
+      deployment_matrix: ${{ steps.parse_command.outputs.deployment_matrix }}
+      check_name: ${{ steps.parse_command.outputs.check_name }}
+
+    steps:
+      - name: React to comment
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.reactions.createForIssueComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              comment_id: context.payload.comment.id,
+              content: 'rocket'
+            });
+
+      - name: Extract PR data
+        id: pr_data
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          PR_NUMBER="${{ github.event.issue.number }}"
+          PR_DATA=$(gh api repos/${{ github.repository }}/pulls/${PR_NUMBER})
+          PR_HEAD_REF=$(echo "$PR_DATA" | jq -r '.head.ref')
+          PR_HEAD_SHA=$(echo "$PR_DATA" | jq -r '.head.sha')
+          echo "pr_number=${PR_NUMBER}"   >> $GITHUB_OUTPUT
+          echo "pr_head_ref=${PR_HEAD_REF}" >> $GITHUB_OUTPUT
+          echo "pr_head_sha=${PR_HEAD_SHA}" >> $GITHUB_OUTPUT
+
+      - name: Parse command and set deployment metadata
+        id: parse_command
+        env:
+          COMMENT_BODY: ${{ github.event.comment.body }}
+        run: |
+          if echo "$COMMENT_BODY" | grep -q '/test-k8s-eks'; then
+            echo 'deployment_matrix=["eks"]'                          >> $GITHUB_OUTPUT
+            echo 'check_name=Kubernetes Integration Check (EKS)'      >> $GITHUB_OUTPUT
+          elif echo "$COMMENT_BODY" | grep -q '/test-k8s-local'; then
+            echo 'deployment_matrix=["local"]'                        >> $GITHUB_OUTPUT
+            echo 'check_name=Kubernetes Integration Check (Local)'    >> $GITHUB_OUTPUT
+          elif echo "$COMMENT_BODY" | grep -q '/test-k8s'; then
+            echo 'deployment_matrix=["local"]'                        >> $GITHUB_OUTPUT
+            echo 'check_name=Kubernetes Integration Check (Local)'    >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create check run
+        id: create_check
+        uses: actions/github-script@v7
+        env:
+          HEAD_SHA: ${{ steps.pr_data.outputs.pr_head_sha }}
+          CHECK_NAME: ${{ steps.parse_command.outputs.check_name }}
+          COMMENT_BODY: ${{ github.event.comment.body }}
+        with:
+          script: |
+            const { data: check } = await github.rest.checks.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              name: process.env.CHECK_NAME,
+              head_sha: process.env.HEAD_SHA,
+              status: 'in_progress',
+              started_at: new Date().toISOString(),
+              details_url: `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
+              output: {
+                title: `🔨 Running ${process.env.CHECK_NAME}...`,
+                summary: `Triggered by comment: \`${process.env.COMMENT_BODY}\``,
+                text: 'Setting up Kubernetes cluster and running integration tests'
+              }
+            });
+            console.log('Check run created:', check.id);
+            return check.id;
+
+  # -------------------------------------------------------------------------
+  # Job 2: Resolve branch + matrix for both triggers
+  # -------------------------------------------------------------------------
+  prepare:
+    needs: [get_pr_info]
+    if: |
+      always() &&
+      (needs.get_pr_info.result == 'success' || github.event_name == 'workflow_dispatch')
+    runs-on: ubuntu-latest
+    outputs:
+      pr_head_ref: ${{ steps.ctx.outputs.pr_head_ref }}
+      deployment_matrix: ${{ steps.ctx.outputs.deployment_matrix }}
+      wazuh_version: ${{ steps.version.outputs.wazuh_version }}
+      wazuh_stage: ${{ steps.version.outputs.wazuh_stage }}
+
+    steps:
+      - name: Resolve context
+        id: ctx
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "pr_head_ref=${{ inputs.pr_head_ref }}" >> $GITHUB_OUTPUT
+            DEPLOY_TYPE="${{ inputs.deployment_type }}"
+            if [ "$DEPLOY_TYPE" = "both" ]; then
+              echo 'deployment_matrix=["local","eks"]' >> $GITHUB_OUTPUT
+            else
+              echo "deployment_matrix=[\"${DEPLOY_TYPE}\"]" >> $GITHUB_OUTPUT
+            fi
+          else
+            echo "pr_head_ref=${{ needs.get_pr_info.outputs.pr_head_ref }}" >> $GITHUB_OUTPUT
+            echo "deployment_matrix=${{ needs.get_pr_info.outputs.deployment_matrix }}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Show raw inputs
+        run: |
+          echo "=== Raw workflow inputs ==="
+          echo "  deployment_type : '${{ inputs.deployment_type }}'"
+          echo "  version         : '${{ inputs.version }}'"
+          echo "  stage           : '${{ inputs.stage }}'"
+          echo "  registry        : '${{ inputs.registry }}'"
+          echo "  automation_ref  : '${{ inputs.automation_reference }}'"
+          echo "  pr_head_ref     : '${{ steps.ctx.outputs.pr_head_ref }}'"
+          echo "  trigger         : '${{ github.event_name }}'"
+
+      - name: Checkout wazuh-kubernetes branch (VERSION.json only)
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.ctx.outputs.pr_head_ref }}
+          sparse-checkout: |
+            VERSION.json
+          sparse-checkout-cone-mode: false
+
+      - name: Read version info from VERSION.json
+        id: version
+        run: |
+          VERSION=$(python3 -c "import json; d=json.load(open('VERSION.json')); print(d['version'])")
+          STAGE=$(python3 -c "import json; d=json.load(open('VERSION.json')); print(d.get('stage',''))")
+          echo "wazuh_version=${VERSION}" >> $GITHUB_OUTPUT
+          echo "wazuh_stage=${STAGE}"     >> $GITHUB_OUTPUT
+          echo "Version: ${VERSION}  Stage: ${STAGE:-<release>}"
+
+      - name: Show test plan
+        run: |
+          WAZUH_VERSION="${{ steps.version.outputs.wazuh_version }}"
+          WAZUH_STAGE="${{ steps.version.outputs.wazuh_stage }}"
+          INPUT_VERSION="${{ inputs.version }}"
+          INPUT_STAGE="${{ inputs.stage }}"
+          INPUT_REGISTRY="${{ inputs.registry }}"
+          EFFECTIVE_VERSION="${INPUT_VERSION:-${WAZUH_VERSION}}"
+          EFFECTIVE_STAGE="${INPUT_STAGE:-${WAZUH_STAGE}}"
+
+          if [ "$INPUT_REGISTRY" = "DockerHub" ]; then
+            EFFECTIVE_REGISTRY="DockerHub (${{ vars.IMAGE_REGISTRY_PROD }})"
+          else
+            EFFECTIVE_REGISTRY="ECR (${{ vars.IMAGE_REGISTRY_DEV }})"
+          fi
+
+          {
+            echo "## Kubernetes Integration Test Plan"
+            echo ""
+            echo "| | |"
+            echo "|---|---|"
+            echo "| **Branch** | \`${{ steps.ctx.outputs.pr_head_ref }}\` |"
+            echo "| **Trigger** | \`${{ github.event_name }}\` |"
+            echo "| **Deployments** | \`${{ steps.ctx.outputs.deployment_matrix }}\` |"
+            echo "| **Registry** | ${EFFECTIVE_REGISTRY} |"
+            echo "| **Version** | \`${EFFECTIVE_VERSION}\` |"
+            echo "| **Stage** | \`${EFFECTIVE_STAGE:-<release>}\` |"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  # -------------------------------------------------------------------------
+  # Job 3: Provision cluster (EKS or minikube), deploy Wazuh, run tests
+  # -------------------------------------------------------------------------
+  kubernetes_test:
+    needs: [get_pr_info, prepare]
+    if: |
+      always() &&
+      needs.prepare.result == 'success'
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        deployment_type: ${{ fromJSON(needs.prepare.outputs.deployment_matrix) }}
+
+    env:
+      CLUSTER_NAME: k8s-integration-test-${{ github.run_number }}-${{ matrix.deployment_type }}
+      ECR_REGISTRY: '${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com'
+
+    steps:
+      # -----------------------------------------------------------------------
+      # Common setup
+      # -----------------------------------------------------------------------
+      - name: Checkout wazuh-automation
+        uses: actions/checkout@v4
+        with:
+          repository: wazuh/wazuh-automation
+          ref: ${{ env.AUTOMATION_REFERENCE }}
+          token: ${{ secrets.GH_CLONE_TOKEN }}
+          path: wazuh-automation
+
+      - name: Checkout wazuh-kubernetes PR branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.prepare.outputs.pr_head_ref }}
+          path: wazuh-kubernetes
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install test_runner
+        run: |
+          pip install -r wazuh-automation/deployability/deps/requirements.txt
+          pip install -r wazuh-automation/integration-test-module/requirements.txt
+          pip install -e wazuh-automation/integration-test-module/
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_IAM_ROLE }}
+          aws-region: '${{ secrets.AWS_REGION }}'
+
+      - name: Read Wazuh version
+        run: |
+          WAZUH_VERSION="${{ needs.prepare.outputs.wazuh_version }}"
+          WAZUH_STAGE="${{ needs.prepare.outputs.wazuh_stage }}"
+          WAZUH_MAJOR=$(echo "$WAZUH_VERSION" | cut -d '.' -f 1)
+          WAZUH_MINOR=$(echo "$WAZUH_VERSION" | cut -d '.' -f 1-2)
+          echo "WAZUH_VERSION=${WAZUH_VERSION}" >> $GITHUB_ENV
+          echo "WAZUH_STAGE=${WAZUH_STAGE}"     >> $GITHUB_ENV
+          echo "WAZUH_MAJOR=${WAZUH_MAJOR}"     >> $GITHUB_ENV
+          echo "WAZUH_MINOR=${WAZUH_MINOR}"     >> $GITHUB_ENV
+
+      - name: Resolve image registry and tag
+        working-directory: wazuh-kubernetes
+        run: |
+          WAZUH_VERSION="${{ env.WAZUH_VERSION }}"
+          WAZUH_STAGE="${{ env.WAZUH_STAGE }}"
+          INPUT_VERSION="${{ inputs.version }}"
+          INPUT_STAGE="${{ inputs.stage }}"
+
+          if [ -z "$INPUT_VERSION" ] && [ -z "$INPUT_STAGE" ]; then
+            if [ "${{ inputs.registry || 'ECR' }}" = "ECR" ]; then
+              IMAGE_REGISTRY="${{ env.ECR_REGISTRY }}"
+              IMAGE_TAG="${WAZUH_VERSION}${WAZUH_STAGE:+-${WAZUH_STAGE}}-latest"
+            else
+              IMAGE_REGISTRY="${{ vars.IMAGE_REGISTRY_PROD }}"
+              IMAGE_TAG="${WAZUH_VERSION}${WAZUH_STAGE:+-${WAZUH_STAGE}}"
+            fi
+          elif [ -n "$INPUT_VERSION" ] && [ -z "$INPUT_STAGE" ]; then
+            if [ "${{ inputs.registry || 'ECR' }}" = "ECR" ]; then
+              IMAGE_REGISTRY="${{ env.ECR_REGISTRY }}"
+              IMAGE_TAG="${INPUT_VERSION}-latest"
+            else
+              IMAGE_REGISTRY="${{ vars.IMAGE_REGISTRY_PROD }}"
+              IMAGE_TAG="${INPUT_VERSION}"
+            fi
+            WAZUH_VERSION="$INPUT_VERSION"
+          else
+            EFFECTIVE_VERSION="${INPUT_VERSION:-${WAZUH_VERSION}}"
+            if [ "${{ inputs.registry || 'ECR' }}" = "ECR" ]; then
+              IMAGE_REGISTRY="${{ env.ECR_REGISTRY }}"
+            else
+              IMAGE_REGISTRY="${{ vars.IMAGE_REGISTRY_PROD }}"
+            fi
+            IMAGE_TAG="${EFFECTIVE_VERSION}-${INPUT_STAGE}"
+            WAZUH_VERSION="$EFFECTIVE_VERSION"
+          fi
+
+          echo "IMAGE_REGISTRY=${IMAGE_REGISTRY}" >> $GITHUB_ENV
+          echo "IMAGE_TAG=${IMAGE_TAG}"           >> $GITHUB_ENV
+          echo "WAZUH_VERSION=${WAZUH_VERSION}"   >> $GITHUB_ENV
+          echo "=== Image configuration ==="
+          echo "Registry: ${IMAGE_REGISTRY}"
+          echo "Tag:      ${IMAGE_TAG}"
+
+      # -----------------------------------------------------------------------
+      # Local-only: free disk, start minikube
+      # -----------------------------------------------------------------------
+      - name: Free disk space
+        if: matrix.deployment_type == 'local'
+        uses: jlumbroso/free-disk-space@main
+
+      - name: Free additional disk space
+        if: matrix.deployment_type == 'local'
+        run: |
+          sudo swapoff -a
+          sudo rm -f /swapfile
+          sudo apt update -y && sudo apt upgrade -y
+          sudo apt clean
+          df -h
+
+      - name: Install Minikube
+        if: matrix.deployment_type == 'local'
+        run: |
+          curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
+          sudo install minikube-linux-amd64 /usr/local/bin/minikube && rm minikube-linux-amd64
+
+      - name: Start Minikube cluster
+        if: matrix.deployment_type == 'local'
+        run: minikube start --memory=8192 --cpus=4 --network-plugin=cni --cni=calico
+
+      # -----------------------------------------------------------------------
+      # EKS-only: install tools, create cluster
+      # -----------------------------------------------------------------------
+      - name: Install eksctl
+        if: matrix.deployment_type == 'eks'
+        run: |
+          ARCH=amd64
+          PLATFORM=$(uname -s)_$ARCH
+          curl -sLO "https://github.com/eksctl-io/eksctl/releases/latest/download/eksctl_$PLATFORM.tar.gz"
+          curl -sL "https://github.com/eksctl-io/eksctl/releases/latest/download/eksctl_checksums.txt" | grep $PLATFORM | sha256sum --check
+          tar -xzf eksctl_$PLATFORM.tar.gz -C /tmp && rm eksctl_$PLATFORM.tar.gz
+          sudo mv /tmp/eksctl /usr/local/bin
+
+      - name: Deploy EKS cluster
+        if: matrix.deployment_type == 'eks'
+        run: |
+          eksctl create cluster \
+            --name ${{ env.CLUSTER_NAME }} \
+            --with-oidc \
+            --region ${{ secrets.AWS_REGION }} \
+            --nodes-min 6 \
+            --nodes-max 6 \
+            --managed \
+            --spot \
+            -t t3a.medium \
+            --tags "CreatedBy=github-actions,Organization=xdrsiem,FixedResource=false,Sensitive=false,Release=${{ env.WAZUH_VERSION }},Stage=${{ env.WAZUH_STAGE }},Purpose=pr-check,Product=central-components,ExecutionId=${{ github.run_id }},StackName=${{ env.CLUSTER_NAME }}"
+
+      - name: Create IAM service account for EBS CSI driver
+        if: matrix.deployment_type == 'eks'
+        run: |
+          eksctl create iamserviceaccount \
+            --name ebs-csi-controller-sa \
+            --region ${{ secrets.AWS_REGION }} \
+            --namespace kube-system \
+            --cluster ${{ env.CLUSTER_NAME }} \
+            --role-name eksctl-EBS-CSI-DriverRole-${{ env.CLUSTER_NAME }} \
+            --role-only \
+            --attach-policy-arn arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy \
+            --approve
+
+      - name: Install EBS CSI driver addon
+        if: matrix.deployment_type == 'eks'
+        run: |
+          eksctl create addon \
+            --name aws-ebs-csi-driver \
+            --cluster ${{ env.CLUSTER_NAME }} \
+            --region ${{ secrets.AWS_REGION }} \
+            --service-account-role-arn arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/eksctl-EBS-CSI-DriverRole-${{ env.CLUSTER_NAME }} \
+            --force
+
+      - name: Create IAM service account for aws-node
+        if: matrix.deployment_type == 'eks'
+        run: |
+          eksctl create iamserviceaccount \
+            --cluster ${{ env.CLUSTER_NAME }} \
+            --namespace kube-system \
+            --name aws-node \
+            --attach-policy-arn arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy \
+            --role-name AmazonEKSVPCCNIRole \
+            --override-existing-serviceaccounts \
+            --approve \
+            --region ${{ secrets.AWS_REGION }}
+
+      - name: Enable Network Policies in EKS cluster
+        if: matrix.deployment_type == 'eks'
+        run: |
+          ADDON_VERSION=$(kubectl describe daemonset aws-node --namespace kube-system | grep amazon-k8s-cni: | cut -d : -f 3)
+          aws eks update-addon \
+            --cluster-name ${{ env.CLUSTER_NAME }} \
+            --addon-name vpc-cni \
+            --addon-version $ADDON_VERSION \
+            --service-account-role-arn arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/AmazonEKSVPCCNIRole \
+            --resolve-conflicts OVERWRITE \
+            --configuration-values '{"enableNetworkPolicy": "true"}' \
+            --region ${{ secrets.AWS_REGION }}
+
+      # -----------------------------------------------------------------------
+      # Common: install yq, patch images
+      # -----------------------------------------------------------------------
+      - name: Install yq
+        run: |
+          sudo wget https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 \
+            -O /usr/local/bin/yq && sudo chmod +x /usr/local/bin/yq
+
+      - name: Patch image registry and tag in manifests
+        working-directory: wazuh-kubernetes
+        run: |
+          REG="${{ env.IMAGE_REGISTRY }}"
+          TAG="${{ env.IMAGE_TAG }}"
+          yq e -i ".spec.template.spec.containers[] |= select(.name == \"wazuh-dashboard\").image = \"${REG}/wazuh/wazuh-dashboard:${TAG}\"" \
+            wazuh/indexer_stack/wazuh-dashboard/dashboard-deploy.yaml
+          yq e -i ".spec.template.spec.containers[] |= select(.name == \"wazuh-indexer\").image = \"${REG}/wazuh/wazuh-indexer:${TAG}\"" \
+            wazuh/indexer_stack/wazuh-indexer/cluster/indexer-sts.yaml
+          yq e -i ".spec.template.spec.initContainers[] |= select(.name == \"init-wazuh-etc\").image = \"${REG}/wazuh/wazuh-manager:${TAG}\"" \
+            wazuh/wazuh_managers/wazuh-master-sts.yaml
+          yq e -i ".spec.template.spec.containers[] |= select(.name == \"wazuh-manager\").image = \"${REG}/wazuh/wazuh-manager:${TAG}\"" \
+            wazuh/wazuh_managers/wazuh-master-sts.yaml
+          yq e -i ".spec.template.spec.initContainers[] |= select(.name == \"init-wazuh-etc\").image = \"${REG}/wazuh/wazuh-manager:${TAG}\"" \
+            wazuh/wazuh_managers/wazuh-worker-sts.yaml
+          yq e -i ".spec.template.spec.containers[] |= select(.name == \"wazuh-manager\").image = \"${REG}/wazuh/wazuh-manager:${TAG}\"" \
+            wazuh/wazuh_managers/wazuh-worker-sts.yaml
+          echo "=== Patched image references ==="
+          grep -rh "image:" wazuh/indexer_stack wazuh/wazuh_managers | sort -u
+
+      # -----------------------------------------------------------------------
+      # Local-only: pull images into minikube
+      # -----------------------------------------------------------------------
+      - name: Login to AWS ECR
+        if: matrix.deployment_type == 'local' && (inputs.registry || 'ECR') == 'ECR'
+        run: |
+          aws ecr get-login-password --region ${{ secrets.AWS_REGION }} \
+            | docker login --username AWS --password-stdin ${{ env.ECR_REGISTRY }}
+
+      - name: Pull and load images into Minikube
+        if: matrix.deployment_type == 'local'
+        run: |
+          TAG="${{ env.IMAGE_TAG }}"
+          REG="${{ env.IMAGE_REGISTRY }}"
+          for img in wazuh-dashboard wazuh-indexer wazuh-manager; do
+            docker pull "${REG}/wazuh/${img}:${TAG}"
+            minikube image load "${REG}/wazuh/${img}:${TAG}"
+          done
+
+      # -----------------------------------------------------------------------
+      # Common: certificates and config
+      # -----------------------------------------------------------------------
+      - name: Setup artifact URLs
+        uses: ./wazuh-kubernetes/.github/actions/setup_artifacts
+        with:
+          aws-region: ${{ secrets.AWS_REGION }}
+          s3-bucket-artifacts: ${{ secrets.ARTIFACTS_S3_BUCKET }}
+          artifact-urls-file-temp: ${{ env.ARTIFACT_URLS_FILE_TEMP }}
+          wazuh-version: ${{ env.WAZUH_VERSION }}
+          wazuh-major: ${{ env.WAZUH_MAJOR }}
+          assistant_revision: ${{ env.ASSISTANT_REVISION }}
+          dev_s3_bucket: ${{ vars.AWS_S3_BUCKET_DEV }}
+          env_file_output: ${{ env.ARTIFACT_URLS_ENV_FILE }}
+
+      - name: Load artifact URL environment variables
+        run: cat ${{ env.ARTIFACT_URLS_ENV_FILE }} >> $GITHUB_ENV
+
+      - name: Download Wazuh certificates tool and config
+        working-directory: wazuh-kubernetes/wazuh
+        run: |
+          aws s3 cp ${{ env.wazuh_certs_tool }} "wazuh-certs-tool.sh"
+          aws s3 cp ${{ env.wazuh_config_yml }} "config.yml"
+
+      - name: Update config.yml for Kubernetes
+        working-directory: wazuh-kubernetes
+        run: |
+          yq e -i '.nodes.indexer[0].name = "indexer"'                                                          wazuh/config.yml
+          yq e -i 'del(.nodes.indexer[0].ip)'                                                                    wazuh/config.yml
+          yq e -i '.nodes.indexer[0].dns = ["wazuh-indexer", "wazuh-indexer.wazuh.svc.cluster.local"]'          wazuh/config.yml
+          yq e -i '.nodes.manager[0].name = "manager"'                                                          wazuh/config.yml
+          yq e -i 'del(.nodes.manager[0].ip)'                                                                    wazuh/config.yml
+          yq e -i '.nodes.manager[0].dns = ["wazuh-api", "wazuh-api.wazuh.svc.cluster.local"]'                  wazuh/config.yml
+          yq e -i 'del(.nodes.dashboard[0].ip)'                                                                  wazuh/config.yml
+          yq e -i '.nodes.dashboard[0].dns = ["dashboard", "dashboard.wazuh.svc.cluster.local"]'                wazuh/config.yml
+
+      - name: Create Wazuh certificates
+        working-directory: wazuh-kubernetes
+        run: |
+          cd wazuh/
+          sudo bash ../tools/utils/deployment/certificates-conf.sh --cert --copy --priv
+
+      # -----------------------------------------------------------------------
+      # Local-only: storage provisioner + ingress for minikube
+      # -----------------------------------------------------------------------
+      - name: Change storage provisioner for Minikube
+        if: matrix.deployment_type == 'local'
+        working-directory: wazuh-kubernetes
+        run: |
+          sed -i 's/provisioner: microk8s.io\/hostpath/# provisioner: microk8s.io\/hostpath/; s/# provisioner: k8s.io\/minikube-hostpath/provisioner: k8s.io\/minikube-hostpath/' \
+            envs/local-env/storage-class.yaml
+
+      - name: Set local ingress DNS (localhost)
+        if: matrix.deployment_type == 'local'
+        working-directory: wazuh-kubernetes
+        run: |
+          yq e -i '.spec.routes[0].match = "HostSNI(`localhost`)"' wazuh/base/ingressRoute-tcp-dashboard.yaml
+
+      # -----------------------------------------------------------------------
+      # EKS-only: Traefik + ingress DNS from LoadBalancer
+      # -----------------------------------------------------------------------
+      - name: Deploy Traefik ingress controller (EKS)
+        if: matrix.deployment_type == 'eks'
+        working-directory: wazuh-kubernetes
+        run: |
+          kubectl apply -f traefik/crd/kubernetes-crd-definition-v1.yml
+          kubectl apply -k traefik/runtime/
+
+      - name: Wait for Traefik startup (EKS)
+        if: matrix.deployment_type == 'eks'
+        run: sleep 5m
+
+      - name: Set EKS ingress DNS from LoadBalancer
+        if: matrix.deployment_type == 'eks'
+        working-directory: wazuh-kubernetes
+        run: |
+          INGRESS_DNS=$(kubectl -n traefik get service traefik -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
+          yq e -i ".spec.routes[0].match = \"HostSNI(\`${INGRESS_DNS}\`)\"" wazuh/base/ingressRoute-tcp-dashboard.yaml
+          echo "INGRESS_DNS=${INGRESS_DNS}" >> $GITHUB_ENV
+
+      # -----------------------------------------------------------------------
+      # Local-only: Traefik CRD (no runtime config for minikube)
+      # -----------------------------------------------------------------------
+      - name: Deploy Traefik CRD (Local)
+        if: matrix.deployment_type == 'local'
+        working-directory: wazuh-kubernetes
+        run: kubectl apply -f traefik/crd/kubernetes-crd-definition-v1.yml
+
+      # -----------------------------------------------------------------------
+      # Common: deploy Wazuh stack
+      # -----------------------------------------------------------------------
+      - name: Deploy Wazuh stack
+        working-directory: wazuh-kubernetes
+        run: |
+          if [ "${{ matrix.deployment_type }}" = "eks" ]; then
+            kubectl apply -k envs/eks/
+          else
+            kubectl apply -k envs/local-env/
+          fi
+
+      - name: Wait for Wazuh stack to be ready
+        timeout-minutes: 15
+        run: |
+          echo "Waiting for all pods in namespace wazuh to be Running..."
+          for i in $(seq 1 90); do
+            NOT_RUNNING=$(kubectl get pods -n wazuh --no-headers 2>/dev/null \
+              | grep -vcE '(Running|Completed)' || true)
+            TOTAL=$(kubectl get pods -n wazuh --no-headers 2>/dev/null | wc -l | tr -d ' ')
+            if [ "$TOTAL" -gt 0 ] && [ "$NOT_RUNNING" -eq 0 ]; then
+              echo "All ${TOTAL} pod(s) are Running after $((i * 10))s"
+              kubectl get pods -n wazuh -o wide
+              exit 0
+            fi
+            echo "  attempt $i/90: ${NOT_RUNNING} pod(s) not yet Running (total: ${TOTAL})"
+            if [ "$(( i % 6 ))" -eq 0 ]; then
+              kubectl get pods -n wazuh --no-headers || true
+            fi
+            sleep 10
+          done
+          echo "ERROR: pods not all Running after 15 minutes"
+          kubectl get pods -n wazuh -o wide || true
+          kubectl describe pods -n wazuh || true
+          exit 1
+
+      - name: Wait for OpenSearch and Dashboard to be ready
+        timeout-minutes: 10
+        run: |
+          echo "Waiting for OpenSearch security plugin to fully initialize on wazuh-indexer-0..."
+          STABLE=0
+          for i in $(seq 1 72); do
+            RESPONSE=$(kubectl exec -n wazuh wazuh-indexer-0 -- \
+              curl -s -k -u admin:admin https://127.0.0.1:9200/_cluster/health 2>/dev/null || true)
+            if echo "$RESPONSE" | grep -q '"status"'; then
+              STABLE=$((STABLE + 1))
+              echo "  attempt $i/72: OpenSearch healthy (stable=$STABLE/3)"
+              if [ "$STABLE" -ge 3 ]; then
+                echo "OpenSearch is stable after $((i * 5))s"
+                break
+              fi
+            else
+              STABLE=0
+              echo "  attempt $i/72: OpenSearch not ready yet (response: ${RESPONSE:0:80})"
+              if [ "$i" -eq 72 ]; then
+                echo "ERROR: OpenSearch did not become stable in 6 minutes"
+                kubectl logs wazuh-indexer-0 -n wazuh --tail 50 || true
+                exit 1
+              fi
+            fi
+            sleep 5
+          done
+
+          echo "Waiting for Wazuh Dashboard to respond..."
+          DASHBOARD_POD=$(kubectl get pods -n wazuh -l app=wazuh-dashboard \
+            -o jsonpath='{.items[0].metadata.name}')
+          for i in $(seq 1 48); do
+            if kubectl exec -n wazuh "$DASHBOARD_POD" -- \
+                curl -s -k -o /dev/null -w '%{http_code}' https://127.0.0.1:443/app/status 2>/dev/null \
+                | grep -qE '^(200|302)$'; then
+              echo "Dashboard is ready after $((i * 5))s"
+              break
+            fi
+            echo "  attempt $i/48: Dashboard not ready yet..."
+            if [ "$i" -eq 48 ]; then
+              echo "WARNING: Dashboard did not respond in 4 minutes — tests may fail"
+            fi
+            sleep 5
+          done
+
+      - name: View stack status
+        run: kubectl get all -n wazuh -o wide
+
+      # -----------------------------------------------------------------------
+      # Run integration tests
+      # -----------------------------------------------------------------------
+      - name: Run tests
+        id: run_tests
+        run: |
+          DEPLOY="${{ matrix.deployment_type }}"
+          test_runner \
+            --test-type "kubernetes-${DEPLOY}" \
+            --deployment-type "kubernetes-${DEPLOY}" \
+            --use-local \
+            --version "${{ env.WAZUH_VERSION }}" \
+            --log-level INFO \
+            --output github \
+            --output-file "test-results-k8s-${DEPLOY}.github"
+
+      - name: Show test outcome
+        if: always()
+        run: |
+          DEPLOY="${{ matrix.deployment_type }}"
+          echo "Run tests outcome: ${{ steps.run_tests.outcome }}"
+          if [ -f "test-results-k8s-${DEPLOY}.github" ]; then
+            echo "=== Test results ==="
+            cat "test-results-k8s-${DEPLOY}.github"
+          else
+            echo "WARNING: no test results file found"
+          fi
+
+      # -----------------------------------------------------------------------
+      # Collect logs on failure
+      # -----------------------------------------------------------------------
+      - name: Collect Kubernetes logs on failure
+        if: failure() || steps.run_tests.outcome == 'failure'
+        run: |
+          DEPLOY="${{ matrix.deployment_type }}"
+          {
+            echo "=== kubectl get all -n wazuh ==="
+            kubectl get all -n wazuh -o wide || true
+            echo ""
+            echo "=== kubectl describe pods -n wazuh ==="
+            kubectl describe pods -n wazuh || true
+            echo ""
+            for pod in $(kubectl get pods -n wazuh --no-headers -o custom-columns=NAME:.metadata.name 2>/dev/null); do
+              echo "=== logs: ${pod} ==="
+              kubectl logs "${pod}" -n wazuh --tail 200 2>/dev/null || true
+              echo ""
+            done
+          } > "k8s-logs-${DEPLOY}.txt" || true
+
+      - name: Upload Kubernetes logs
+        if: failure() || steps.run_tests.outcome == 'failure'
+        uses: actions/upload-artifact@v4
+        with:
+          name: k8s-logs-${{ matrix.deployment_type }}-${{ github.run_id }}
+          path: k8s-logs-*.txt
+          retention-days: 7
+
+      # -----------------------------------------------------------------------
+      # Reporting
+      # -----------------------------------------------------------------------
+      - name: Create step summary
+        if: always()
+        run: |
+          DEPLOY="${{ matrix.deployment_type }}"
+          echo "## Kubernetes Integration Test Results — ${DEPLOY}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          if [ -f "test-results-k8s-${DEPLOY}.github" ]; then
+            cat "test-results-k8s-${DEPLOY}.github" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "No test results file found." >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: Post PR comment with results
+        if: always() && github.event_name == 'issue_comment'
+        uses: actions/github-script@v7
+        env:
+          DEPLOYMENT: ${{ matrix.deployment_type }}
+          RUN_OUTCOME: ${{ steps.run_tests.outcome }}
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const fs = require('fs');
+            const deployment = process.env.DEPLOYMENT;
+            const outcome = process.env.RUN_OUTCOME;
+            const marker = `<!-- k8s-integration-check-${deployment} -->`;
+
+            let body = `${marker}\n## Kubernetes Integration Tests — \`${deployment}\`\n\n`;
+            body += outcome === 'success'
+              ? '✅ **All tests passed!**\n\n'
+              : '❌ **Some tests failed**\n\n';
+
+            const resultsFile = `test-results-k8s-${deployment}.github`;
+            try {
+              if (fs.existsSync(resultsFile)) {
+                body += '### Results\n\n' + fs.readFileSync(resultsFile, 'utf8') + '\n\n';
+              }
+            } catch (e) {
+              console.log('Could not read results file:', e.message);
+            }
+            body += `- **Workflow:** [View Details](${context.payload.repository.html_url}/actions/runs/${context.runId})\n`;
+
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+
+            const existing = comments.find(c =>
+              c.user.type === 'Bot' && c.body.includes(marker)
+            );
+
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existing.id,
+                body: body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: body,
+              });
+            }
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-k8s-${{ matrix.deployment_type }}-${{ github.run_id }}
+          path: test-results-k8s-${{ matrix.deployment_type }}.github
+          retention-days: 7
+
+      # -----------------------------------------------------------------------
+      # Cleanup: EKS cluster (always, local needs no cleanup)
+      # -----------------------------------------------------------------------
+      - name: Configure AWS credentials for EKS cleanup
+        if: always() && matrix.deployment_type == 'eks'
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_IAM_ROLE }}
+          role-session-name: k8s-cleanup-${{ github.run_id }}-eks
+          aws-region: '${{ secrets.AWS_REGION }}'
+
+      - name: Delete EKS cluster
+        if: always() && matrix.deployment_type == 'eks'
+        run: |
+          eksctl delete cluster \
+            --name ${{ env.CLUSTER_NAME }} \
+            --region ${{ secrets.AWS_REGION }}
+
+      - name: Delete EBS dynamic volumes
+        if: always() && matrix.deployment_type == 'eks'
+        run: |
+          for volume_id in $(aws ec2 describe-volumes \
+              --region ${{ secrets.AWS_REGION }} \
+              --filters Name=tag:KubernetesCluster,Values="${{ env.CLUSTER_NAME }}" \
+              --query "Volumes[].VolumeId" \
+              --output text); do
+            echo "Deleting Volume: $volume_id"
+            aws ec2 delete-volume --region ${{ secrets.AWS_REGION }} --volume-id $volume_id
+          done
+
+  # -------------------------------------------------------------------------
+  # Job 4: Update GitHub check run (issue_comment trigger only)
+  # -------------------------------------------------------------------------
+  update_check:
+    needs: [get_pr_info, prepare, kubernetes_test]
+    if: always() && github.event_name == 'issue_comment' && needs.get_pr_info.result == 'success'
     runs-on: ubuntu-latest
     steps:
-      - run: echo "Workflow registered. Use workflow_dispatch selecting the feature branch."
+      - name: Update check run
+        uses: actions/github-script@v7
+        env:
+          K8S_RESULT: ${{ needs.kubernetes_test.result }}
+          CHECK_NAME: ${{ needs.get_pr_info.outputs.check_name }}
+          CHECK_RUN_ID: ${{ needs.get_pr_info.outputs.check_run_id }}
+        with:
+          script: |
+            const result = process.env.K8S_RESULT;
+            const conclusionMap = {
+              success:   { conclusion: 'success',   icon: '✅', summary: 'All Kubernetes integration tests passed.' },
+              failure:   { conclusion: 'failure',   icon: '❌', summary: 'One or more Kubernetes integration tests failed.' },
+              cancelled: { conclusion: 'cancelled', icon: '⏹️', summary: 'Workflow was cancelled.' },
+              skipped:   { conclusion: 'skipped',   icon: '⏭️', summary: 'Kubernetes integration tests were skipped.' },
+            };
+            const { conclusion, icon, summary } = conclusionMap[result] ?? conclusionMap.failure;
+            const label = conclusion.charAt(0).toUpperCase() + conclusion.slice(1);
+            await github.rest.checks.update({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              check_run_id: parseInt(process.env.CHECK_RUN_ID),
+              status: 'completed',
+              conclusion,
+              completed_at: new Date().toISOString(),
+              output: {
+                title: `${icon} ${process.env.CHECK_NAME} — ${label}`,
+                summary,
+                text: `[View workflow run](https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId})`
+              }
+            });
