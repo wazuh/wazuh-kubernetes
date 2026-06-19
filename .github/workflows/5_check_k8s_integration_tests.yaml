@@ -371,7 +371,7 @@ jobs:
 
       - name: Start Minikube cluster
         if: matrix.deployment_type == 'local'
-        run: minikube start --memory=8192 --cpus=4 --network-plugin=cni --cni=calico
+        run: minikube start --memory=8192 --cpus=4 --network-plugin=cni --cni=calico --force
 
       # -----------------------------------------------------------------------
       # EKS-only: install tools, create cluster
