@@ -41,7 +41,7 @@ on:
 jobs:
   bump:
     name: Repository bumper 5.x
-    runs-on: ubuntu-22.04
+    runs-on: codebuild-github-actions-codebuild-runner-devops-amd-${{ github.run_id }}-${{ github.run_attempt }}
     permissions:
       contents: write
       pull-requests: write
@@ -176,7 +176,7 @@ jobs:
             git commit -m "feat: revert ${{ github.ref_name }} references"
             echo "has_changes=true" >> $GITHUB_OUTPUT
           fi
-      
+
       - name: Push changes
         if: inputs.revert != true || (inputs.revert == true && steps.revert_step.outputs.has_changes == 'true')
         run: |
@@ -210,7 +210,7 @@ jobs:
           echo "PR: ${{ steps.create_pr.outputs.pull_request_url }}"
           echo "Bumper scripts logs:"
           cat ${BUMP_LOG_PATH}/repository_bumper*log
-      
+
       - name: Show revert logs
         if: inputs.revert == true
         run: |
