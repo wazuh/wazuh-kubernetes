@@ -180,7 +180,7 @@ jobs:
             fi
           else
             echo "pr_head_ref=${{ needs.get_pr_info.outputs.pr_head_ref }}" >> $GITHUB_OUTPUT
-            echo "deployment_matrix=${{ needs.get_pr_info.outputs.deployment_matrix }}" >> $GITHUB_OUTPUT
+            echo 'deployment_matrix=${{ needs.get_pr_info.outputs.deployment_matrix }}' >> $GITHUB_OUTPUT
           fi
 
       - name: Show raw inputs
@@ -864,6 +864,7 @@ jobs:
               status: 'completed',
               conclusion,
               completed_at: new Date().toISOString(),
+              details_url: `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
               output: {
                 title: `${icon} ${process.env.CHECK_NAME} — ${label}`,
                 summary,
