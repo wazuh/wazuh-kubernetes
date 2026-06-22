@@ -41,7 +41,7 @@ spec:
         fsGroup: 101
       initContainers:
         - name: init-wazuh-etc
-          image: 'wazuh/wazuh-manager:5.0.0'
+          image: 'wazuh/wazuh-manager:5.0.0-alpha5'
           command:
             - /bin/sh
             - -c
@@ -62,7 +62,7 @@ spec:
               mountPath: /etc/wazuh-certs-final
       containers:
         - name: wazuh-manager
-          image: 'wazuh/wazuh-manager:5.0.0'
+          image: 'wazuh/wazuh-manager:5.0.0-alpha5'
           resources:
             limits:
               cpu: 400m
