@@ -19,6 +19,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
+- Migrate the gha runner to codebuild ([#1522](https://github.com/wazuh/wazuh-kubernetes/pull/1522))
 - PR Revamp modifications 5.x ([#1504](https://github.com/wazuh/wazuh-kubernetes/pull/1504))
 - Forbid run local deployment test in draft PRs ([#1459](https://github.com/wazuh/wazuh-kubernetes/pull/1459))
 - Change UID and GId for Wazuh deployment ([#1450](https://github.com/wazuh/wazuh-kubernetes/pull/1450))
