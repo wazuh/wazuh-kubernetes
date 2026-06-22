@@ -27,7 +27,7 @@ on:
           - eks
           - both
       version:
-        description: 'Image version to test (e.g. 5.0.0). Leave empty to use VERSION.json from the branch.'
+        description: 'Image version to test (e.g. 5.0.1). Leave empty to use VERSION.json from the branch.'
         required: false
         type: string
       stage:
