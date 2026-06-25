@@ -22,4 +22,4 @@ All notable changes to this project will be documented in this file.
 
 ## Prior version
 
-- [v5.0.0](https://github.com/wazuh/wazuh-installation-assistant/blob/v5.0.0/CHANGELOG.md)
+- [v5.0.0](https://github.com/wazuh/wazuh-kubernetes/blob/v5.0.0/CHANGELOG.md)
