@@ -12,11 +12,11 @@ All notable changes to this project will be documented in this file.
 
 - None
 
-### Fixed
+### Removed
 
 - None
 
-### Deleted
+### Fixed
 
 - None
 
