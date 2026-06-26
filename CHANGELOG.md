@@ -28,7 +28,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
-- None
+- Migrate the gha runner to codebuild ([#1523](https://github.com/wazuh/wazuh-kubernetes/pull/1523))
 
 ### Fixed
 
