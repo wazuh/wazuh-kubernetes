@@ -2,28 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
-## [1.2.3]
-
-### Added
-
-- None
-
-### Changed
-
-- None
-
-### Fixed
-
-- None
-
-### Deleted
-
-- None
-
 ## [v5.0.0]
 
 ### Added
 
+- Added bump-issue-link support for Revert Stage Bump. ([#1539](https://github.com/wazuh/wazuh-kubernetes/pull/1539))
 - Add integration test module docs ([#1534](https://github.com/wazuh/wazuh-kubernetes/pull/1534))
 - Implement the wazuh-kubernetes integration testing module ([#1310](https://github.com/wazuh/wazuh-kubernetes/issues/1310))
 - Review and Implement AWS Tagging Policy in wazuh-kubernetes ([#1460](https://github.com/wazuh/wazuh-kubernetes/issues/1460))
