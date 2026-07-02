@@ -24,3 +24,9 @@
 - [Security](ref/security.md)
 - [Performance](ref/performance.md)
 - [Glossary](ref/glossary.md)
+
+---
+
+# Integration Tests
+
+- [Kubernetes Integration Tests](ref/integration_test/k8s_integration_tests.md)
