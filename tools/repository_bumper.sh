@@ -9,6 +9,8 @@ DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 LOG_FILE="${DIR}/tools/repository_bumper_$(date +"%Y-%m-%d_%H-%M-%S-%3N").log"
 VERSION=""
 STAGE=""
+TAG=""
+REFERENCE=""
 FILES_EDITED=()
 FILES_EXCLUDED='--exclude="repository_bumper_*.log" --exclude="CHANGELOG.md" --exclude="repository_bumper.sh" --exclude="*_bumper_repository.yml" --exclude="mermaid-init.js" --exclude="mermaid.min.js" --exclude="kustomization.yml"'
 
@@ -75,25 +77,6 @@ update_stage_in_files() {
             FILES_EDITED+=("${file}")
         fi
     done
-    if [ $STAGE != "alpha0" ]; then
-        version_tag_string="default: 'v${VERSION}'"
-        files_tag=( $(grep_command "${version_tag_string}" "${DIR}") )
-        for file in "${files_tag[@]}"; do
-            sed -i "s/${version_tag_string}/default: 'v${VERSION}-${STAGE}'/g" "${file}"
-            if [[ $(git diff --name-only "${file}") ]]; then
-                FILES_EDITED+=("${file}")
-            fi
-        done
-
-        version_number_string="default: '${VERSION}'"
-        files_version=( $(grep -RlE "default: '[0-9]\.[0-9]+\.[0-9]+'" "${DIR}") )
-        for file in "${files_version[@]}"; do
-            sed -i "s/${version_number_string}/default: 'v${VERSION}-${STAGE}'/g" "${file}"
-            if [[ $(git diff --name-only "${file}") ]]; then
-                FILES_EDITED+=("${file}")
-            fi
-        done
-    fi
 }
 
 update_docker_images_tag() {
@@ -107,18 +90,43 @@ update_docker_images_tag() {
     done
 }
 
-update_main_in_files() {
-    if [[ $STAGE == "alpha0" ]]; then
-            bump_string="default: '${VERSION}'"
+# Compute the value written into branch reference defaults ("default: '...'").
+# Without --tag, references stay branch-like (e.g. 5.0.0).
+# With --tag, references become tag-like (e.g. v5.0.0-beta3), or a plain release
+# tag (e.g. v5.0.0) when no stage is provided.
+build_reference() {
+    if [[ -n "$TAG" ]]; then
+        if [[ -z "$STAGE" ]]; then
+            REFERENCE="v${VERSION}"
+        else
+            REFERENCE="v${VERSION}-${STAGE}"
+        fi
     else
-            bump_string="default: 'v${VERSION}'"
+        REFERENCE="${VERSION}"
     fi
-    main_string="default: 'main'"
+}
+
+# Tag mode only: normalize every reference to the current version
+# (branch-like "5.0.0", "v5.0.0" or "v5.0.0-<stage>") into ${REFERENCE}.
+# Matching is restricted to "default: '...'" entries so plain version strings
+# elsewhere in the repository are left untouched.
+update_tag_references() {
+    local V_ESC="${VERSION//./\\.}"
+    files=( $(grep_command "${VERSION}" "${DIR}") )
+    for file in "${files[@]}"; do
+        sed -Ei "s/(default:[[:space:]]*')v?${V_ESC}(-[A-Za-z0-9]+)?(')/\1${REFERENCE}\3/g" "${file}"
+        if [[ $(git diff --name-only "${file}") ]]; then
+            FILES_EDITED+=("${file}")
+        fi
+    done
+}
+
+update_main_in_files() {
+    local main_string="default: 'main'"
+    local bump_string="default: '${REFERENCE}'"
     files=( $(grep_command "${main_string}" "${DIR}") )
     for file in "${files[@]}"; do
-        if [[ "$skip_urls" != "yes" ]]; then
-            sed -Ei "s/${main_string}/${bump_string}/g" ${file}
-        fi
+        sed -Ei "s/${main_string}/${bump_string}/g" "${file}"
         if [[ $(git diff --name-only "${file}") ]]; then
             FILES_EDITED+=("${file}")
         fi
@@ -141,8 +149,8 @@ main() {
                 shift 2
                 ;;
             --tag)
-                TAG="$2"
-                shift 2
+                TAG="yes"
+                shift 1
                 ;;
             --set-as-main)
                 set_as_main="yes"
@@ -155,21 +163,33 @@ main() {
         esac
     done
 
-    # Set skip_urls variable based on set_as_main flag
-    if [[ -z "$set_as_main" ]]; then
-        echo "Updating version from main to $VERSION" | tee -a "${LOG_FILE}"
-        update_main_in_files "$VERSION" "$STAGE"
-    fi
-
-    # Validate arguments
-    if [[ -z "${VERSION}" ]]; then
-        echo "Error: --version argument is required." | tee -a "${LOG_FILE}"
+    # --tag rewrites branch references into tag-like references (e.g. v5.0.0-beta3)
+    # and re-tags the Docker images accordingly. It is mutually exclusive with
+    # --set-as-main, which keeps references on main.
+    if [[ -n "$TAG" && -n "$set_as_main" ]]; then
+        echo "Error: --tag cannot be combined with --set-as-main." | tee -a "${LOG_FILE}"
         exit 1
     fi
 
-    if [[ -z "${STAGE}" ]]; then
-        echo "Error: --stage argument is required." | tee -a "${LOG_FILE}"
-        exit 1
+    # Read the current version/stage early: tag scenarios may omit --version and/or
+    # --stage and reuse the values already stored in VERSION.json.
+    get_old_version_and_stage
+
+    # Resolve and validate arguments depending on the mode
+    if [[ -n "$TAG" ]]; then
+        # Tag mode: version defaults to the current one; stage is optional
+        # (absent yields a release tag without a stage suffix).
+        [[ -z "$VERSION" ]] && VERSION="$OLD_VERSION"
+    else
+        # Branch mode: a full version + stage bump is required
+        if [[ -z "${VERSION}" ]]; then
+            echo "Error: --version argument is required." | tee -a "${LOG_FILE}"
+            exit 1
+        fi
+        if [[ -z "${STAGE}" ]]; then
+            echo "Error: --stage argument is required." | tee -a "${LOG_FILE}"
+            exit 1
+        fi
     fi
 
     # Validate if version is in the correct format
@@ -178,21 +198,24 @@ main() {
         exit 1
     fi
 
-    # Validate if stage is in the correct format
-    STAGE=$(echo "${STAGE}" | tr '[:upper:]' '[:lower:]')
-    if ! [[ "${STAGE}" =~ ^(alpha[0-9]*|beta[0-9]*|rc[0-9]*|stable)$ ]]; then
-        echo "Error: Stage must be one of the following examples: alpha1, beta1, rc1, stable." | tee -a "${LOG_FILE}"
-        exit 1
+    # Validate if stage is in the correct format (when provided)
+    if [[ -n "${STAGE}" ]]; then
+        STAGE=$(echo "${STAGE}" | tr '[:upper:]' '[:lower:]')
+        if ! [[ "${STAGE}" =~ ^(alpha[0-9]*|beta[0-9]*|rc[0-9]*|stable)$ ]]; then
+            echo "Error: Stage must be one of the following examples: alpha1, beta1, rc1, stable." | tee -a "${LOG_FILE}"
+            exit 1
+        fi
     fi
 
-    # Validate if tag is true or false
-    if [[ -n "$TAG" && ! "$TAG" =~ ^(true|false)$ ]]; then
-        echo "Error: --tag must be either true or false." | tee -a "${LOG_FILE}"
-        exit 1
-    fi
+    # Compute the value written into branch reference defaults
+    build_reference
+    echo "Reference for branch defaults: ${REFERENCE}" | tee -a "${LOG_FILE}"
 
-    # Get old version and stage
-    get_old_version_and_stage
+    # Convert 'main' references unless they must keep pointing to main (set-as-main)
+    if [[ -z "$set_as_main" ]]; then
+        echo "Updating 'main' references to ${REFERENCE}" | tee -a "${LOG_FILE}"
+        update_main_in_files
+    fi
 
     if [[ "${OLD_VERSION}" != "${VERSION}" ]]; then
         echo "Updating version from ${OLD_VERSION} to ${VERSION}" | tee -a "${LOG_FILE}"
@@ -203,10 +226,13 @@ main() {
         update_stage_in_files "${VERSION}" "${STAGE}"
     fi
 
-    # Update Docker images tag if tag is true
-    if [[ "${TAG}" == "true" ]]; then
-        echo "Updating Docker images tag to ${VERSION}-${STAGE}" | tee -a "${LOG_FILE}"
-        update_docker_images_tag "${VERSION}-${STAGE}"
+    # Tag mode: normalize remaining version references and re-tag the Docker images
+    # (image tags carry no leading 'v', e.g. 5.0.0-beta3).
+    if [[ -n "$TAG" ]]; then
+        echo "Updating version references to tag reference ${REFERENCE}" | tee -a "${LOG_FILE}"
+        update_tag_references
+        echo "Updating Docker images tag to ${REFERENCE#v}" | tee -a "${LOG_FILE}"
+        update_docker_images_tag "${REFERENCE#v}"
     fi
 
     echo "The following files were edited:" | tee -a "${LOG_FILE}"

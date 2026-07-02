@@ -44,6 +44,7 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
+- Bumper script issue when the tag is set to false ([#1526](https://github.com/wazuh/wazuh-kubernetes/issues/1526))
 - Errors on bumper execution ([#1467](https://github.com/wazuh/wazuh-kubernetes/issues/1467))
 - Change API password to default ([#1449](https://github.com/wazuh/wazuh-kubernetes/issues/1449))
 - Fix test for deployment ([#1340](https://github.com/wazuh/wazuh-kubernetes/issues/1340))
