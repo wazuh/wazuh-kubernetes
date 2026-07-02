@@ -36,7 +36,7 @@ spec:
         runAsGroup: 101
       containers:
         - name: wazuh-dashboard
-          image: 'wazuh/wazuh-dashboard:5.0.0'
+          image: 'wazuh/wazuh-dashboard:5.0.0-beta3'
           resources:
             limits:
               cpu: 500m
