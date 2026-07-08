@@ -1,7 +1,3 @@
-# Change Log
-
-All notable changes to this project will be documented in this file.
-
 ## [v5.0.0]
 
 ### Added
@@ -21,6 +17,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
+- Add new WF for changelog check ([#1569](https://github.com/wazuh/wazuh-kubernetes/pull/1569))
 - Migrate the gha runner to codebuild ([#1522](https://github.com/wazuh/wazuh-kubernetes/issues/1522))
 - PR Revamp modifications 5.x ([#1504](https://github.com/wazuh/wazuh-kubernetes/issues/1504))
 - Forbid run local deployment test in draft PRs ([#1459](https://github.com/wazuh/wazuh-kubernetes/issues/1459))
