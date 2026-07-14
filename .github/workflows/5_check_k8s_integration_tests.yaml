@@ -627,7 +627,7 @@ jobs:
           STABLE=0
           for i in $(seq 1 72); do
             RESPONSE=$(kubectl exec -n wazuh wazuh-indexer-0 -- \
-              curl -s -k -u admin:admin https://127.0.0.1:9200/_cluster/health 2>/dev/null || true)
+              curl -s -k -u wazuh-admin:wazuh-admin https://127.0.0.1:9200/_cluster/health 2>/dev/null || true)
             if echo "$RESPONSE" | grep -q '"status"'; then
               STABLE=$((STABLE + 1))
               echo "  attempt $i/72: OpenSearch healthy (stable=$STABLE/3)"

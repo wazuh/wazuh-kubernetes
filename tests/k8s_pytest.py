@@ -2,8 +2,8 @@ import subprocess
 import pytest
 import re
 
-ADMIN_USER = "admin"
-ADMIN_PASSWORD = "admin"
+ADMIN_USER = "wazuh-admin"
+ADMIN_PASSWORD = "wazuh-admin"
 
 class TestWazuhKubernetes:
     """Test suite for Wazuh Kubernetes deployment"""
