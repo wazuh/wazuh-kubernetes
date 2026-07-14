@@ -17,6 +17,7 @@
 
 ### Changed
 
+- Update deployment for Wazuh Indexer 5.0.0 RBAC. ([#1567](https://github.com/wazuh/wazuh-kubernetes/issues/1567))
 - Add new WF for changelog check ([#1569](https://github.com/wazuh/wazuh-kubernetes/pull/1569))
 - Migrate the gha runner to codebuild ([#1522](https://github.com/wazuh/wazuh-kubernetes/issues/1522))
 - PR Revamp modifications 5.x ([#1504](https://github.com/wazuh/wazuh-kubernetes/issues/1504))
