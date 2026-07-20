@@ -57,6 +57,33 @@ spec:
           ports:
             - containerPort: 443
               name: dashboard
+          startupProbe:
+            exec:
+              command:
+                - /bin/sh
+                - -c
+                - curl -k -s -o /dev/null https://localhost:443/login
+            periodSeconds: 10
+            timeoutSeconds: 10
+            failureThreshold: 12
+          readinessProbe:
+            exec:
+              command:
+                - /bin/sh
+                - -c
+                - curl -k -s -o /dev/null https://localhost:443/login
+            periodSeconds: 30
+            timeoutSeconds: 10
+            failureThreshold: 3
+          livenessProbe:
+            exec:
+              command:
+                - /bin/sh
+                - -c
+                - curl -k -s -o /dev/null https://localhost:443/login
+            periodSeconds: 30
+            timeoutSeconds: 10
+            failureThreshold: 3
           env:
             - name: OPENSEARCH_HOSTS
               value: 'https://wazuh-indexer:9200'
