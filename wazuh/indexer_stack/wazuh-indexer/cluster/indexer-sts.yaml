@@ -127,6 +127,33 @@ spec:
               name: indexer-rest
             - containerPort: 9300
               name: indexer-nodes
+          startupProbe:
+            exec:
+              command:
+                - /bin/sh
+                - -c
+                - curl -fks https://localhost:9200/_plugins/_security/health | grep -q '"status":"UP"'
+            periodSeconds: 10
+            timeoutSeconds: 10
+            failureThreshold: 30
+          readinessProbe:
+            exec:
+              command:
+                - /bin/sh
+                - -c
+                - curl -fks https://localhost:9200/_plugins/_security/health | grep -q '"status":"UP"'
+            periodSeconds: 30
+            timeoutSeconds: 10
+            failureThreshold: 5
+          livenessProbe:
+            exec:
+              command:
+                - /bin/sh
+                - -c
+                - curl -fks https://localhost:9200/_plugins/_security/health | grep -q '"status":"UP"'
+            periodSeconds: 30
+            timeoutSeconds: 10
+            failureThreshold: 5
   volumeClaimTemplates:
     - metadata:
         name: wazuh-indexer
