@@ -1,0 +1,589 @@
+<!DOCTYPE HTML>
+<html lang="en" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Kubernetes Integration Tests - Wazuh Kubernetes Documentation</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="The technical documentation for Wazuh Kubernetes deployment method, composed by the development documentation and the reference manual.">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../../favicon-de23e50b.svg">
+        <link rel="shortcut icon" href="../../favicon-8114d1fc.png">
+        <link rel="stylesheet" href="../../css/variables-8adf115d.css">
+        <link rel="stylesheet" href="../../css/general-0392ca55.css">
+        <link rel="stylesheet" href="../../css/chrome-fc474251.css">
+        <link rel="stylesheet" href="../../css/print-9e4910d8.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../../fonts/fonts-9644e21d.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" id="mdbook-highlight-css" href="../../highlight-493f70e1.css">
+        <link rel="stylesheet" id="mdbook-tomorrow-night-css" href="../../tomorrow-night-4c0ae647.css">
+        <link rel="stylesheet" id="mdbook-ayu-highlight-css" href="../../ayu-highlight-3fdfc3ac.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root and default themes to javascript -->
+        <script>
+            const path_to_root = "../../";
+            const default_light_theme = "light";
+            const default_dark_theme = "navy";
+            window.path_to_searchindex_js = "../../searchindex-ec03c36a.js";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../../toc-de1670ea.js"></script>
+    </head>
+    <body>
+    <div id="mdbook-help-container">
+        <div id="mdbook-help-popup">
+            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
+            <div>
+                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
+                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
+                <p>Press <kbd>?</kbd> to show this help</p>
+                <p>Press <kbd>Esc</kbd> to hide this help</p>
+            </div>
+        </div>
+    </div>
+    <div id="mdbook-body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="mdbook-sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("mdbook-sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+                sidebar_toggle.checked = false;
+            }
+            if (sidebar === 'visible') {
+                sidebar_toggle.checked = true;
+            } else {
+                html.classList.remove('sidebar-visible');
+            }
+        </script>
+
+        <nav id="mdbook-sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../../toc.html"></iframe>
+            </noscript>
+            <div id="mdbook-sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="mdbook-page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="mdbook-menu-bar-hover-placeholder"></div>
+                <div id="mdbook-menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="mdbook-sidebar-toggle" class="icon-button" for="mdbook-sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="mdbook-sidebar">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M0 96C0 78.3 14.3 64 32 64H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32C14.3 128 0 113.7 0 96zM0 256c0-17.7 14.3-32 32-32H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32c-17.7 0-32-14.3-32-32zM448 416c0 17.7-14.3 32-32 32H32c-17.7 0-32-14.3-32-32s14.3-32 32-32H416c17.7 0 32 14.3 32 32z"/></svg></span>
+                        </label>
+                        <button id="mdbook-theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="mdbook-theme-list">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M371.3 367.1c27.3-3.9 51.9-19.4 67.2-42.9L600.2 74.1c12.6-19.5 9.4-45.3-7.6-61.2S549.7-4.4 531.1 9.6L294.4 187.2c-24 18-38.2 46.1-38.4 76.1L371.3 367.1zm-19.6 25.4l-116-104.4C175.9 290.3 128 339.6 128 400c0 3.9 .2 7.8 .6 11.6c1.8 17.5-10.2 36.4-27.8 36.4H96c-17.7 0-32 14.3-32 32s14.3 32 32 32H240c61.9 0 112-50.1 112-112c0-2.5-.1-5-.2-7.5z"/></svg></span>
+                        </button>
+                        <ul id="mdbook-theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-default_theme">Auto</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-ayu">Ayu</button></li>
+                        </ul>
+                        <button id="mdbook-search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="mdbook-searchbar">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M416 208c0 45.9-14.9 88.3-40 122.7L502.6 457.4c12.5 12.5 12.5 32.8 0 45.3s-32.8 12.5-45.3 0L330.7 376c-34.4 25.2-76.8 40-122.7 40C93.1 416 0 322.9 0 208S93.1 0 208 0S416 93.1 416 208zM208 352c79.5 0 144-64.5 144-144s-64.5-144-144-144S64 128.5 64 208s64.5 144 144 144z"/></svg></span>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">Wazuh Kubernetes Documentation</h1>
+
+                    <div class="right-buttons">
+                        <a href="../../print.html" title="Print this book" aria-label="Print this book">
+                            <span class=fa-svg id="print-button"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M128 0C92.7 0 64 28.7 64 64v96h64V64H354.7L384 93.3V160h64V93.3c0-17-6.7-33.3-18.7-45.3L400 18.7C388 6.7 371.7 0 354.7 0H128zM384 352v32 64H128V384 368 352H384zm64 32h32c17.7 0 32-14.3 32-32V256c0-35.3-28.7-64-64-64H64c-35.3 0-64 28.7-64 64v96c0 17.7 14.3 32 32 32H64v64c0 35.3 28.7 64 64 64H384c35.3 0 64-28.7 64-64V384zm-16-88c-13.3 0-24-10.7-24-24s10.7-24 24-24s24 10.7 24 24s-10.7 24-24 24z"/></svg></span>
+                        </a>
+                        <a href="https://github.com/wazuh/wazuh-kubernetes" title="Git repository" aria-label="Git repository">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg></span>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="mdbook-search-wrapper" class="hidden">
+                    <form id="mdbook-searchbar-outer" class="searchbar-outer">
+                        <div class="search-wrapper">
+                            <input type="search" id="mdbook-searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="mdbook-searchresults-outer" aria-describedby="searchresults-header">
+                            <div class="spinner-wrapper">
+                                <span class=fa-svg id="fa-spin"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M304 48c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zm0 416c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zM48 304c26.5 0 48-21.5 48-48s-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48zm464-48c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zM142.9 437c18.7-18.7 18.7-49.1 0-67.9s-49.1-18.7-67.9 0s-18.7 49.1 0 67.9s49.1 18.7 67.9 0zm0-294.2c18.7-18.7 18.7-49.1 0-67.9S93.7 56.2 75 75s-18.7 49.1 0 67.9s49.1 18.7 67.9 0zM369.1 437c18.7 18.7 49.1 18.7 67.9 0s18.7-49.1 0-67.9s-49.1-18.7-67.9 0s-18.7 49.1 0 67.9z"/></svg></span>
+                            </div>
+                        </div>
+                    </form>
+                    <div id="mdbook-searchresults-outer" class="searchresults-outer hidden">
+                        <div id="mdbook-searchresults-header" class="searchresults-header"></div>
+                        <ul id="mdbook-searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('mdbook-sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('mdbook-sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#mdbook-sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="mdbook-content" class="content">
+                    <main>
+                        <h1 id="kubernetes-integration-tests"><a class="header" href="#kubernetes-integration-tests">Kubernetes Integration Tests</a></h1>
+<p>Workflow file: <code>.github/workflows/5_check_k8s_integration_tests.yaml</code></p>
+<p>This workflow provisions a Kubernetes cluster (Minikube or EKS), deploys Wazuh, and runs the integration test suite against the live deployment. It can be triggered manually or from a PR comment.</p>
+<hr>
+<h2 id="triggers"><a class="header" href="#triggers">Triggers</a></h2>
+<p>The workflow supports two execution modes:</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Mode</th><th>Trigger</th><th>Who can trigger</th></tr>
+</thead>
+<tbody>
+<tr><td>PR comment</td><td><code>issue_comment</code> on an open PR</td><td>OWNER, MEMBER, or COLLABORATOR</td></tr>
+<tr><td>Manual</td><td><code>workflow_dispatch</code></td><td>Anyone with repo write access</td></tr>
+</tbody>
+</table>
+</div>
+<hr>
+<h2 id="execution-flows"><a class="header" href="#execution-flows">Execution Flows</a></h2>
+<h3 id="issue_comment-flow"><a class="header" href="#issue_comment-flow">issue_comment flow</a></h3>
+<p>Triggered when an authorized user posts a recognized command on an open PR.</p>
+<pre class="mermaid">flowchart TD
+    A[PR comment posted] --&gt; B{Recognized command\nand authorized user?}
+    B -- No --&gt; Z[Ignored]
+    B -- Yes --&gt; C[get_pr_info\nReact · Extract PR data\nParse command · Create Check Run]
+    C --&gt; D[prepare\nResolve branch · Read VERSION.json]
+    D --&gt; E{deployment_matrix}
+    E --&gt; F[kubernetes_test\ndeployment_type=local]
+    E --&gt; G[kubernetes_test\ndeployment_type=eks]
+    F --&gt; H[update_check\nUpdate GitHub Check Run]
+    G --&gt; H
+</pre>
+
+<p><strong>Recognized commands:</strong></p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Comment</th><th>Deployment matrix</th></tr>
+</thead>
+<tbody>
+<tr><td><code>/test-k8s</code></td><td><code>["local"]</code></td></tr>
+<tr><td><code>/test-k8s-local</code></td><td><code>["local"]</code></td></tr>
+<tr><td><code>/test-k8s-eks</code></td><td><code>["eks"]</code></td></tr>
+</tbody>
+</table>
+</div>
+<p>Only comments on <strong>open</strong> PRs from users with <code>OWNER</code>, <code>MEMBER</code>, or <code>COLLABORATOR</code> association are processed. All other comments are silently ignored.</p>
+<h3 id="workflow_dispatch-flow"><a class="header" href="#workflow_dispatch-flow">workflow_dispatch flow</a></h3>
+<p>Triggered manually. Skips <code>get_pr_info</code> and <code>update_check</code> (no Check Run is created).</p>
+<pre class="mermaid">flowchart TD
+    A[Manual trigger] --&gt; D[prepare\nResolve branch · Read VERSION.json]
+    D --&gt; E{deployment_type input}
+    E -- local --&gt; F[kubernetes_test\ndeployment_type=local]
+    E -- eks --&gt; G[kubernetes_test\ndeployment_type=eks]
+    E -- both --&gt; F &amp; G
+</pre>
+
+<hr>
+<h2 id="parameters"><a class="header" href="#parameters">Parameters</a></h2>
+<h3 id="workflow_dispatch-inputs"><a class="header" href="#workflow_dispatch-inputs">workflow_dispatch inputs</a></h3>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Input</th><th>Required</th><th>Default</th><th>Description</th></tr>
+</thead>
+<tbody>
+<tr><td><code>pr_head_ref</code></td><td>Yes</td><td>—</td><td>Branch of <code>wazuh-kubernetes</code> to check out and test</td></tr>
+<tr><td><code>automation_reference</code></td><td>No</td><td><code>main</code></td><td>Branch of <code>wazuh-automation</code> to install <code>test_runner</code> from</td></tr>
+<tr><td><code>deployment_type</code></td><td>Yes</td><td>—</td><td><code>local</code>, <code>eks</code>, or <code>both</code></td></tr>
+<tr><td><code>version</code></td><td>No</td><td>—</td><td>Override image version (e.g. <code>5.0.1</code>). If empty, reads from <code>VERSION.json</code></td></tr>
+<tr><td><code>stage</code></td><td>No</td><td>—</td><td>Image stage suffix (e.g. <code>beta1</code>, <code>beta2-latest</code>). Required when <code>version</code> is set manually</td></tr>
+<tr><td><code>registry</code></td><td>No</td><td><code>ECR</code></td><td><code>ECR</code> (dev images) or <code>DockerHub</code> (prod images)</td></tr>
+</tbody>
+</table>
+</div>
+<h3 id="issue_comment-parameters"><a class="header" href="#issue_comment-parameters">issue_comment parameters</a></h3>
+<p>When triggered by a PR comment, all parameters are derived automatically:</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Parameter</th><th>Source</th></tr>
+</thead>
+<tbody>
+<tr><td><code>pr_head_ref</code></td><td>PR head branch from GitHub API</td></tr>
+<tr><td><code>pr_head_sha</code></td><td>PR head SHA from GitHub API</td></tr>
+<tr><td><code>deployment_matrix</code></td><td>Parsed from comment command</td></tr>
+<tr><td><code>version</code> / <code>stage</code></td><td>Read from <code>VERSION.json</code> on the PR branch</td></tr>
+<tr><td><code>registry</code></td><td>Defaults to ECR</td></tr>
+<tr><td><code>automation_reference</code></td><td>Defaults to <code>main</code></td></tr>
+</tbody>
+</table>
+</div>
+<hr>
+<h2 id="image-tag-resolution"><a class="header" href="#image-tag-resolution">Image Tag Resolution</a></h2>
+<p>The effective image tag depends on which inputs are provided:</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th><code>version</code> input</th><th><code>stage</code> input</th><th>Registry</th><th>Resulting tag</th></tr>
+</thead>
+<tbody>
+<tr><td>empty</td><td>empty</td><td>ECR</td><td><code>{VERSION.json version}{-stage}-latest</code></td></tr>
+<tr><td>empty</td><td>empty</td><td>DockerHub</td><td><code>{VERSION.json version}{-stage}</code></td></tr>
+<tr><td>set</td><td>empty</td><td>ECR</td><td><code>{version}-latest</code></td></tr>
+<tr><td>set</td><td>empty</td><td>DockerHub</td><td><code>{version}</code></td></tr>
+<tr><td>set</td><td>set</td><td>ECR</td><td><code>{version}-{stage}</code></td></tr>
+<tr><td>set</td><td>set</td><td>DockerHub</td><td><code>{version}-{stage}</code></td></tr>
+<tr><td>empty</td><td>set</td><td>ECR</td><td><code>{VERSION.json version}-{stage}</code></td></tr>
+<tr><td>empty</td><td>set</td><td>DockerHub</td><td><code>{VERSION.json version}-{stage}</code></td></tr>
+</tbody>
+</table>
+</div>
+<p>The effective <code>WAZUH_VERSION</code> (passed to <code>test_runner</code>) is always the version that ends up in the tag, whether it comes from <code>VERSION.json</code> or the <code>version</code> input.</p>
+<hr>
+<h2 id="job-details"><a class="header" href="#job-details">Job Details</a></h2>
+<h3 id="job-1--get_pr_info-issue_comment-only"><a class="header" href="#job-1--get_pr_info-issue_comment-only">Job 1 — <code>get_pr_info</code> (issue_comment only)</a></h3>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Step</th><th>What it does</th></tr>
+</thead>
+<tbody>
+<tr><td>React to comment</td><td>Adds a 🚀 reaction to the triggering PR comment</td></tr>
+<tr><td>Extract PR data</td><td>Calls GitHub API to get PR <code>head_ref</code> and <code>head_sha</code></td></tr>
+<tr><td>Parse command</td><td>Maps comment text → <code>deployment_matrix</code> JSON and <code>check_name</code> string</td></tr>
+<tr><td>Create Check Run</td><td>Creates a GitHub Check Run in <code>in_progress</code> state on the PR head SHA; passes the <code>check_run_id</code> to <code>update_check</code></td></tr>
+</tbody>
+</table>
+</div>
+<h3 id="job-2--prepare-both-triggers"><a class="header" href="#job-2--prepare-both-triggers">Job 2 — <code>prepare</code> (both triggers)</a></h3>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Step</th><th>What it does</th></tr>
+</thead>
+<tbody>
+<tr><td>Resolve context</td><td>If <code>workflow_dispatch</code>: reads inputs. If <code>issue_comment</code>: reads outputs from <code>get_pr_info</code></td></tr>
+<tr><td>Checkout VERSION.json</td><td>Sparse-checks out only <code>VERSION.json</code> from the target branch</td></tr>
+<tr><td>Read version info</td><td>Extracts <code>version</code> and <code>stage</code> fields from <code>VERSION.json</code></td></tr>
+<tr><td>Show test plan</td><td>Writes a summary table to the GitHub Actions step summary</td></tr>
+</tbody>
+</table>
+</div>
+<p>Outputs passed downstream: <code>pr_head_ref</code>, <code>deployment_matrix</code>, <code>wazuh_version</code>, <code>wazuh_stage</code>.</p>
+<h3 id="job-3--kubernetes_test-matrix-both-triggers"><a class="header" href="#job-3--kubernetes_test-matrix-both-triggers">Job 3 — <code>kubernetes_test</code> (matrix, both triggers)</a></h3>
+<p>Runs once per entry in <code>deployment_matrix</code>. Each instance provisions its own cluster.</p>
+<h4 id="common-setup"><a class="header" href="#common-setup">Common setup</a></h4>
+<ol>
+<li>Checkout <code>wazuh-automation</code> at <code>automation_reference</code></li>
+<li>Checkout <code>wazuh-kubernetes</code> at <code>pr_head_ref</code></li>
+<li>Set up Python 3.12</li>
+<li>Install <code>test_runner</code>:
+<pre><code class="language-bash">pip install -r wazuh-automation/deployability/deps/requirements.txt
+pip install -r wazuh-automation/integration-test-module/requirements.txt
+pip install -e wazuh-automation/integration-test-module/
+</code></pre>
+</li>
+<li>Configure AWS credentials via OIDC (<code>AWS_IAM_ROLE</code>)</li>
+<li>Resolve <code>WAZUH_VERSION</code>, <code>IMAGE_REGISTRY</code>, <code>IMAGE_TAG</code> (see <a href="#image-tag-resolution">Image Tag Resolution</a>)</li>
+</ol>
+<h4 id="infrastructure-provisioning"><a class="header" href="#infrastructure-provisioning">Infrastructure provisioning</a></h4>
+<p><strong>Local (Minikube):</strong></p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Step</th><th>Detail</th></tr>
+</thead>
+<tbody>
+<tr><td>Free disk space</td><td>Removes pre-installed tools to free ~20 GB; removes swap</td></tr>
+<tr><td>Install Minikube</td><td>Downloads and installs latest <code>minikube-linux-amd64</code></td></tr>
+<tr><td>Start cluster</td><td><code>minikube start --memory=8192 --cpus=4 --network-plugin=cni --cni=calico</code></td></tr>
+<tr><td>Login to ECR</td><td>Only if registry is ECR; authenticates Docker daemon</td></tr>
+<tr><td>Pull + load images</td><td>Pulls <code>wazuh-dashboard</code>, <code>wazuh-indexer</code>, <code>wazuh-manager</code> and loads them into Minikube’s internal registry</td></tr>
+</tbody>
+</table>
+</div>
+<p><strong>EKS:</strong></p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Step</th><th>Detail</th></tr>
+</thead>
+<tbody>
+<tr><td>Install eksctl</td><td>Downloads latest <code>eksctl</code> binary</td></tr>
+<tr><td>Create cluster</td><td>6 managed spot nodes (<code>t3a.medium</code>), with OIDC; tagged with run metadata</td></tr>
+<tr><td>EBS CSI driver</td><td>Creates IAM service account + installs <code>aws-ebs-csi-driver</code> addon</td></tr>
+<tr><td>Network policies</td><td>Creates IAM SA for <code>aws-node</code>, enables <code>NetworkPolicy</code> support in VPC CNI</td></tr>
+</tbody>
+</table>
+</div>
+<h4 id="configuration-and-certificates"><a class="header" href="#configuration-and-certificates">Configuration and certificates</a></h4>
+<ol>
+<li><strong>Patch image references</strong>: <code>yq</code> rewrites the image field in <code>dashboard-deploy.yaml</code>, <code>indexer-sts.yaml</code>, <code>wazuh-master-sts.yaml</code>, and <code>wazuh-worker-sts.yaml</code> to <code>${IMAGE_REGISTRY}/wazuh/&lt;component&gt;:${IMAGE_TAG}</code></li>
+<li><strong>Setup artifact URLs</strong> (<code>setup_artifacts</code> composite action): downloads <code>artifact_urls.yaml</code> from S3, replaces template variables, exports <code>wazuh_certs_tool</code> and <code>wazuh_config_yml</code> as environment variables</li>
+<li><strong>Download certs tool and config</strong>: fetches <code>wazuh-certs-tool.sh</code> and <code>config.yml</code> from the S3 URLs</li>
+<li><strong>Update <code>config.yml</code> for Kubernetes</strong>: replaces IP-based node addressing with DNS names (cluster-internal service FQDNs)</li>
+<li><strong>Generate certificates</strong>: runs <code>tools/utils/deployment/certificates-conf.sh --cert --copy --priv</code></li>
+</ol>
+<h4 id="ingress-configuration"><a class="header" href="#ingress-configuration">Ingress configuration</a></h4>
+<p><strong>Local:</strong></p>
+<ul>
+<li>Patches <code>storage-class.yaml</code> to use <code>k8s.io/minikube-hostpath</code> provisioner</li>
+<li>Sets ingress match to <code>HostSNI(\</code>localhost`)`</li>
+<li>Deploys Traefik CRD only (no Traefik runtime for Minikube)</li>
+</ul>
+<p><strong>EKS:</strong></p>
+<ul>
+<li>Deploys Traefik CRDs and runtime (<code>kubectl apply -k traefik/runtime/</code>)</li>
+<li>Waits 5 minutes for the Traefik LoadBalancer to get a hostname</li>
+<li>Reads the LoadBalancer hostname and sets <code>HostSNI(\</code>{hostname}`)` in the ingress route</li>
+</ul>
+<h4 id="wazuh-deployment"><a class="header" href="#wazuh-deployment">Wazuh deployment</a></h4>
+<pre><code class="language-bash"># EKS
+kubectl apply -k envs/eks/
+
+# Local
+kubectl apply -k envs/local-env/
+</code></pre>
+<p>Waits up to <strong>15 minutes</strong> for all pods in the <code>wazuh</code> namespace to reach <code>Running</code> or <code>Completed</code> state, polling every 10 seconds.</p>
+<p>Then waits up to <strong>10 minutes</strong> for:</p>
+<ul>
+<li>OpenSearch to report <code>"status"</code> in cluster health (requires 3 consecutive healthy responses)</li>
+<li>Dashboard to return HTTP 200/302 on <code>/app/status</code></li>
+</ul>
+<h4 id="test-execution"><a class="header" href="#test-execution">Test execution</a></h4>
+<pre><code class="language-bash">test_runner \
+  --test-type "kubernetes-${DEPLOY}" \
+  --deployment-type "kubernetes-${DEPLOY}" \
+  --use-local \
+  --version "${WAZUH_VERSION}" \
+  --log-level INFO \
+  --output github \
+  --output-file "test-results-k8s-${DEPLOY}.github"
+</code></pre>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Argument</th><th>Value</th><th>Notes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>--test-type</code></td><td><code>kubernetes-local</code> or <code>kubernetes-eks</code></td><td>Selects the test module set</td></tr>
+<tr><td><code>--deployment-type</code></td><td><code>kubernetes-local</code> or <code>kubernetes-eks</code></td><td>Selects the deployment profile</td></tr>
+<tr><td><code>--use-local</code></td><td>—</td><td><code>kubectl</code> runs locally, not via SSH</td></tr>
+<tr><td><code>--version</code></td><td>Resolved <code>WAZUH_VERSION</code></td><td>Used for version assertion tests</td></tr>
+<tr><td><code>--output github</code></td><td>—</td><td>Emits GitHub Actions annotations</td></tr>
+<tr><td><code>--output-file</code></td><td><code>test-results-k8s-{deploy}.github</code></td><td>Saved for PR comment and artifact upload</td></tr>
+</tbody>
+</table>
+</div>
+<p>For details on what <code>kubernetes-local</code> and <code>kubernetes-eks</code> test types validate, see the <a href="https://documentation.xdrsiem.wazuh.info/repos/wazuh-automation/main/ref/integration_test_module/description.html">Integration Test Module — Description</a>.</p>
+<h4 id="reporting"><a class="header" href="#reporting">Reporting</a></h4>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Output</th><th>When</th><th>Content</th></tr>
+</thead>
+<tbody>
+<tr><td>Step summary</td><td>Always</td><td>Test results appended to <code>$GITHUB_STEP_SUMMARY</code></td></tr>
+<tr><td>PR comment</td><td><code>issue_comment</code> trigger only</td><td>Posts or updates a comment (identified by HTML marker <code>&lt;!-- k8s-integration-check-{deploy} --&gt;</code>) with ✅/❌ and the results file content</td></tr>
+<tr><td>Artifact: <code>test-results-k8s-{deploy}-{run_id}</code></td><td>Always</td><td>The <code>.github</code> results file, retained 7 days</td></tr>
+<tr><td>Artifact: <code>k8s-logs-{deploy}-{run_id}</code></td><td>On failure only</td><td>Full <code>kubectl</code> pod logs for all pods in <code>wazuh</code> namespace, retained 7 days</td></tr>
+</tbody>
+</table>
+</div>
+<h4 id="eks-cleanup-always-runs-even-on-failure"><a class="header" href="#eks-cleanup-always-runs-even-on-failure">EKS cleanup (always runs, even on failure)</a></h4>
+<pre><code class="language-bash">eksctl delete cluster --name k8s-integration-test-{run_number}-eks --region {AWS_REGION}
+
+# Delete any EBS volumes tagged with the cluster name
+aws ec2 delete-volume --volume-id &lt;id&gt;
+</code></pre>
+<p>Minikube clusters are ephemeral — no explicit cleanup is needed for local deployments.</p>
+<h3 id="job-4--update_check-issue_comment-only"><a class="header" href="#job-4--update_check-issue_comment-only">Job 4 — <code>update_check</code> (issue_comment only)</a></h3>
+<p>Updates the GitHub Check Run created in Job 1 with the final conclusion:</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th><code>kubernetes_test</code> result</th><th>Check conclusion</th></tr>
+</thead>
+<tbody>
+<tr><td><code>success</code></td><td><code>success</code> — ✅ All Kubernetes integration tests passed</td></tr>
+<tr><td><code>failure</code></td><td><code>failure</code> — ❌ One or more tests failed</td></tr>
+<tr><td><code>cancelled</code></td><td><code>cancelled</code></td></tr>
+<tr><td><code>skipped</code></td><td><code>skipped</code></td></tr>
+</tbody>
+</table>
+</div>
+<hr>
+<h2 id="required-secrets-and-variables"><a class="header" href="#required-secrets-and-variables">Required Secrets and Variables</a></h2>
+<h3 id="secrets"><a class="header" href="#secrets">Secrets</a></h3>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Secret</th><th>Used by</th></tr>
+</thead>
+<tbody>
+<tr><td><code>AWS_ACCOUNT_ID</code></td><td>ECR registry URL construction</td></tr>
+<tr><td><code>AWS_REGION</code></td><td>All AWS operations</td></tr>
+<tr><td><code>AWS_IAM_ROLE</code></td><td>OIDC role assumption for AWS credentials</td></tr>
+<tr><td><code>ARTIFACTS_S3_BUCKET</code></td><td>Download <code>artifact_urls.yaml</code></td></tr>
+<tr><td><code>GH_CLONE_TOKEN</code></td><td>Checkout <code>wazuh-automation</code> (private repo)</td></tr>
+<tr><td><code>GITHUB_TOKEN</code></td><td>PR comments and Check Run updates (built-in)</td></tr>
+</tbody>
+</table>
+</div>
+<h3 id="repository-variables"><a class="header" href="#repository-variables">Repository variables</a></h3>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Variable</th><th>Used by</th></tr>
+</thead>
+<tbody>
+<tr><td><code>IMAGE_REGISTRY_PROD</code></td><td>DockerHub registry URL</td></tr>
+<tr><td><code>IMAGE_REGISTRY_DEV</code></td><td>ECR registry URL fallback label</td></tr>
+<tr><td><code>AWS_S3_BUCKET_DEV</code></td><td>Artifact URL template expansion</td></tr>
+</tbody>
+</table>
+</div>
+<hr>
+<h2 id="permissions"><a class="header" href="#permissions">Permissions</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Permission</th><th>Scope</th><th>Purpose</th></tr>
+</thead>
+<tbody>
+<tr><td><code>id-token: write</code></td><td>OIDC token</td><td>Authenticate to AWS via IAM role</td></tr>
+<tr><td><code>contents: read</code></td><td>Repository</td><td>Checkout the PR branch</td></tr>
+<tr><td><code>pull-requests: write</code></td><td>PR</td><td>Post/update PR comments</td></tr>
+<tr><td><code>issues: write</code></td><td>Issues</td><td>Post comments (PR comments use the issues API)</td></tr>
+<tr><td><code>checks: write</code></td><td>Checks</td><td>Create and update GitHub Check Runs</td></tr>
+</tbody>
+</table>
+</div>
+<hr>
+<h2 id="cluster-naming"><a class="header" href="#cluster-naming">Cluster Naming</a></h2>
+<p>EKS clusters are named:</p>
+<pre><code>k8s-integration-test-{github.run_number}-{deployment_type}
+</code></pre>
+<p>Example: <code>k8s-integration-test-4217-eks</code></p>
+<p>This name is used for both cluster creation and deletion, and appears in resource tags for cost attribution.</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../../ref/glossary.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
+                            </a>
+
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../../ref/glossary.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
+                    </a>
+
+            </nav>
+
+        </div>
+
+        <template id=fa-eye><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M288 32c-80.8 0-145.5 36.8-192.6 80.6C48.6 156 17.3 208 2.5 243.7c-3.3 7.9-3.3 16.7 0 24.6C17.3 304 48.6 356 95.4 399.4C142.5 443.2 207.2 480 288 480s145.5-36.8 192.6-80.6c46.8-43.5 78.1-95.4 93-131.1c3.3-7.9 3.3-16.7 0-24.6c-14.9-35.7-46.2-87.7-93-131.1C433.5 68.8 368.8 32 288 32zM432 256c0 79.5-64.5 144-144 144s-144-64.5-144-144s64.5-144 144-144s144 64.5 144 144zM288 192c0 35.3-28.7 64-64 64c-11.5 0-22.3-3-31.6-8.4c-.2 2.8-.4 5.5-.4 8.4c0 53 43 96 96 96s96-43 96-96s-43-96-96-96c-2.8 0-5.6 .1-8.4 .4c5.3 9.3 8.4 20.1 8.4 31.6z"/></svg></span></template>
+        <template id=fa-eye-slash><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M38.8 5.1C28.4-3.1 13.3-1.2 5.1 9.2S-1.2 34.7 9.2 42.9l592 464c10.4 8.2 25.5 6.3 33.7-4.1s6.3-25.5-4.1-33.7L525.6 386.7c39.6-40.6 66.4-86.1 79.9-118.4c3.3-7.9 3.3-16.7 0-24.6c-14.9-35.7-46.2-87.7-93-131.1C465.5 68.8 400.8 32 320 32c-68.2 0-125 26.3-169.3 60.8L38.8 5.1zM223.1 149.5C248.6 126.2 282.7 112 320 112c79.5 0 144 64.5 144 144c0 24.9-6.3 48.3-17.4 68.7L408 294.5c5.2-11.8 8-24.8 8-38.5c0-53-43-96-96-96c-2.8 0-5.6 .1-8.4 .4c5.3 9.3 8.4 20.1 8.4 31.6c0 10.2-2.4 19.8-6.6 28.3l-90.3-70.8zm223.1 298L373 389.9c-16.4 6.5-34.3 10.1-53 10.1c-79.5 0-144-64.5-144-144c0-6.9 .5-13.6 1.4-20.2L83.1 161.5C60.3 191.2 44 220.8 34.5 243.7c-3.3 7.9-3.3 16.7 0 24.6c14.9 35.7 46.2 87.7 93 131.1C174.5 443.2 239.2 480 320 480c47.8 0 89.9-12.9 126.2-32.5z"/></svg></span></template>
+        <template id=fa-copy><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M502.6 70.63l-61.25-61.25C435.4 3.371 427.2 0 418.7 0H255.1c-35.35 0-64 28.66-64 64l.0195 256C192 355.4 220.7 384 256 384h192c35.2 0 64-28.8 64-64V93.25C512 84.77 508.6 76.63 502.6 70.63zM464 320c0 8.836-7.164 16-16 16H255.1c-8.838 0-16-7.164-16-16L239.1 64.13c0-8.836 7.164-16 16-16h128L384 96c0 17.67 14.33 32 32 32h47.1V320zM272 448c0 8.836-7.164 16-16 16H63.1c-8.838 0-16-7.164-16-16L47.98 192.1c0-8.836 7.164-16 16-16H160V128H63.99c-35.35 0-64 28.65-64 64l.0098 256C.002 483.3 28.66 512 64 512h192c35.2 0 64-28.8 64-64v-32h-47.1L272 448z"/></svg></span></template>
+        <template id=fa-play><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M73 39c-14.8-9.1-33.4-9.4-48.5-.9S0 62.6 0 80V432c0 17.4 9.4 33.4 24.5 41.9s33.7 8.1 48.5-.9L361 297c14.3-8.7 23-24.2 23-41s-8.7-32.2-23-41L73 39z"/></svg></span></template>
+        <template id=fa-clock-rotate-left><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M75 75L41 41C25.9 25.9 0 36.6 0 57.9V168c0 13.3 10.7 24 24 24H134.1c21.4 0 32.1-25.9 17-41l-30.8-30.8C155 85.5 203 64 256 64c106 0 192 86 192 192s-86 192-192 192c-40.8 0-78.6-12.7-109.7-34.4c-14.5-10.1-34.4-6.6-44.6 7.9s-6.6 34.4 7.9 44.6C151.2 495 201.7 512 256 512c141.4 0 256-114.6 256-256S397.4 0 256 0C185.3 0 121.3 28.7 75 75zm181 53c-13.3 0-24 10.7-24 24V256c0 6.4 2.5 12.5 7 17l72 72c9.4 9.4 24.6 9.4 33.9 0s9.4-24.6 0-33.9l-65-65V152c0-13.3-10.7-24-24-24z"/></svg></span></template>
+
+        <!-- Livereload script (if served using the cli tool) -->
+        <script>
+            const wsProtocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const wsAddress = wsProtocol + "//" + location.host + "/" + "__livereload";
+            const socket = new WebSocket(wsAddress);
+            socket.onmessage = function (event) {
+                if (event.data === "reload") {
+                    socket.close();
+                    location.reload();
+                }
+            };
+
+            window.onbeforeunload = function() {
+                socket.close();
+            }
+        </script>
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../../elasticlunr-ef4e11c1.min.js"></script>
+        <script src="../../mark-09e88c2c.min.js"></script>
+        <script src="../../searcher-09f2665d.js"></script>
+
+        <script src="../../clipboard-1626706a.min.js"></script>
+        <script src="../../highlight-abc7f01d.js"></script>
+        <script src="../../book-c22b7243.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script src="../../mermaid-bf4a4f1d.min.js"></script>
+        <script src="../../mermaid-init-025d9952.js"></script>
+
+
+
+    </div>
+    </body>
+</html>

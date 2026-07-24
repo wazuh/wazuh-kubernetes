@@ -1,0 +1,2239 @@
+<!DOCTYPE HTML>
+<html lang="en" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Wazuh Kubernetes Documentation</title>
+        <meta name="robots" content="noindex">
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="The technical documentation for Wazuh Kubernetes deployment method, composed by the development documentation and the reference manual.">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="favicon-de23e50b.svg">
+        <link rel="shortcut icon" href="favicon-8114d1fc.png">
+        <link rel="stylesheet" href="css/variables-8adf115d.css">
+        <link rel="stylesheet" href="css/general-0392ca55.css">
+        <link rel="stylesheet" href="css/chrome-fc474251.css">
+        <link rel="stylesheet" href="css/print-9e4910d8.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="fonts/fonts-9644e21d.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" id="mdbook-highlight-css" href="highlight-493f70e1.css">
+        <link rel="stylesheet" id="mdbook-tomorrow-night-css" href="tomorrow-night-4c0ae647.css">
+        <link rel="stylesheet" id="mdbook-ayu-highlight-css" href="ayu-highlight-3fdfc3ac.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root and default themes to javascript -->
+        <script>
+            const path_to_root = "";
+            const default_light_theme = "light";
+            const default_dark_theme = "navy";
+            window.path_to_searchindex_js = "searchindex-ec03c36a.js";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="toc-de1670ea.js"></script>
+    </head>
+    <body>
+    <div id="mdbook-help-container">
+        <div id="mdbook-help-popup">
+            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
+            <div>
+                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
+                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
+                <p>Press <kbd>?</kbd> to show this help</p>
+                <p>Press <kbd>Esc</kbd> to hide this help</p>
+            </div>
+        </div>
+    </div>
+    <div id="mdbook-body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="mdbook-sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("mdbook-sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+                sidebar_toggle.checked = false;
+            }
+            if (sidebar === 'visible') {
+                sidebar_toggle.checked = true;
+            } else {
+                html.classList.remove('sidebar-visible');
+            }
+        </script>
+
+        <nav id="mdbook-sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="toc.html"></iframe>
+            </noscript>
+            <div id="mdbook-sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="mdbook-page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="mdbook-menu-bar-hover-placeholder"></div>
+                <div id="mdbook-menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="mdbook-sidebar-toggle" class="icon-button" for="mdbook-sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="mdbook-sidebar">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M0 96C0 78.3 14.3 64 32 64H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32C14.3 128 0 113.7 0 96zM0 256c0-17.7 14.3-32 32-32H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32c-17.7 0-32-14.3-32-32zM448 416c0 17.7-14.3 32-32 32H32c-17.7 0-32-14.3-32-32s14.3-32 32-32H416c17.7 0 32 14.3 32 32z"/></svg></span>
+                        </label>
+                        <button id="mdbook-theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="mdbook-theme-list">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M371.3 367.1c27.3-3.9 51.9-19.4 67.2-42.9L600.2 74.1c12.6-19.5 9.4-45.3-7.6-61.2S549.7-4.4 531.1 9.6L294.4 187.2c-24 18-38.2 46.1-38.4 76.1L371.3 367.1zm-19.6 25.4l-116-104.4C175.9 290.3 128 339.6 128 400c0 3.9 .2 7.8 .6 11.6c1.8 17.5-10.2 36.4-27.8 36.4H96c-17.7 0-32 14.3-32 32s14.3 32 32 32H240c61.9 0 112-50.1 112-112c0-2.5-.1-5-.2-7.5z"/></svg></span>
+                        </button>
+                        <ul id="mdbook-theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-default_theme">Auto</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-ayu">Ayu</button></li>
+                        </ul>
+                        <button id="mdbook-search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="mdbook-searchbar">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M416 208c0 45.9-14.9 88.3-40 122.7L502.6 457.4c12.5 12.5 12.5 32.8 0 45.3s-32.8 12.5-45.3 0L330.7 376c-34.4 25.2-76.8 40-122.7 40C93.1 416 0 322.9 0 208S93.1 0 208 0S416 93.1 416 208zM208 352c79.5 0 144-64.5 144-144s-64.5-144-144-144S64 128.5 64 208s64.5 144 144 144z"/></svg></span>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">Wazuh Kubernetes Documentation</h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <span class=fa-svg id="print-button"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M128 0C92.7 0 64 28.7 64 64v96h64V64H354.7L384 93.3V160h64V93.3c0-17-6.7-33.3-18.7-45.3L400 18.7C388 6.7 371.7 0 354.7 0H128zM384 352v32 64H128V384 368 352H384zm64 32h32c17.7 0 32-14.3 32-32V256c0-35.3-28.7-64-64-64H64c-35.3 0-64 28.7-64 64v96c0 17.7 14.3 32 32 32H64v64c0 35.3 28.7 64 64 64H384c35.3 0 64-28.7 64-64V384zm-16-88c-13.3 0-24-10.7-24-24s10.7-24 24-24s24 10.7 24 24s-10.7 24-24 24z"/></svg></span>
+                        </a>
+                        <a href="https://github.com/wazuh/wazuh-kubernetes" title="Git repository" aria-label="Git repository">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg></span>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="mdbook-search-wrapper" class="hidden">
+                    <form id="mdbook-searchbar-outer" class="searchbar-outer">
+                        <div class="search-wrapper">
+                            <input type="search" id="mdbook-searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="mdbook-searchresults-outer" aria-describedby="searchresults-header">
+                            <div class="spinner-wrapper">
+                                <span class=fa-svg id="fa-spin"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M304 48c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zm0 416c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zM48 304c26.5 0 48-21.5 48-48s-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48zm464-48c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zM142.9 437c18.7-18.7 18.7-49.1 0-67.9s-49.1-18.7-67.9 0s-18.7 49.1 0 67.9s49.1 18.7 67.9 0zm0-294.2c18.7-18.7 18.7-49.1 0-67.9S93.7 56.2 75 75s-18.7 49.1 0 67.9s49.1 18.7 67.9 0zM369.1 437c18.7 18.7 49.1 18.7 67.9 0s18.7-49.1 0-67.9s-49.1-18.7-67.9 0s-18.7 49.1 0 67.9z"/></svg></span>
+                            </div>
+                        </div>
+                    </form>
+                    <div id="mdbook-searchresults-outer" class="searchresults-outer hidden">
+                        <div id="mdbook-searchresults-header" class="searchresults-header"></div>
+                        <ul id="mdbook-searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('mdbook-sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('mdbook-sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#mdbook-sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="mdbook-content" class="content">
+                    <main>
+                        <h1 id="introduction"><a class="header" href="#introduction">Introduction</a></h1>
+<p><a href="https://wazuh.com/community/join-us-on-slack/"><img src="https://img.shields.io/badge/slack-join-blue.svg" alt="Slack"></a>
+<a href="https://groups.google.com/forum/#!forum/wazuh"><img src="https://img.shields.io/badge/email-join-blue.svg" alt="Email"></a>
+<a href="https://documentation.wazuh.com"><img src="https://img.shields.io/badge/docs-view-green.svg" alt="Documentation"></a>
+<a href="https://wazuh.com"><img src="https://img.shields.io/badge/web-view-green.svg" alt="Documentation"></a></p>
+<h1 id="wazuh-kubernetes-documentation"><a class="header" href="#wazuh-kubernetes-documentation">Wazuh Kubernetes Documentation</a></h1>
+<h2 id="amazon-eks-development"><a class="header" href="#amazon-eks-development">Amazon EKS development</a></h2>
+<p>To deploy a cluster on Amazon EKS read the instructions on <a href="#eks-deployment">Usage: AWS EKS Deployment</a>.
+Note: For Kubernetes version 1.23 or higher, the assignment of an IAM Role is necessary for the CSI driver to function correctly. Within the AWS documentation you can find the instructions for the assignment: https://docs.aws.amazon.com/eks/latest/userguide/ebs-csi.html
+The installation of the CSI driver is mandatory for new and old deployments if you are going to use Kubernetes 1.23 for the first time or you need to upgrade the cluster.</p>
+<h2 id="local-development"><a class="header" href="#local-development">Local development</a></h2>
+<p>To deploy a cluster on your local environment (like Minikube, Kind or Microk8s) read the instructions on <a href="#local-deployment">Usage: Local Deployment</a>.</p>
+<h2 id="diagram"><a class="header" href="#diagram">Diagram</a></h2>
+<p><img src="wazuh-namespace.png" alt="Wazuh Kubernetes Architecture"></p>
+<h2 id="directory-structure"><a class="header" href="#directory-structure">Directory structure</a></h2>
+<pre><code class="language-bash">├── docs
+│   ├── dev
+│   │   ├── run-tests.md
+│   │   └── setup.md
+│   ├── ref
+│   │   ├── getting-started
+│   │   ├── introduction
+│   │   ├── backup-restore.md
+│   │   ├── glossary.md
+│   │   ├── introduction.md
+│   │   ├── performance.md
+│   │   ├── uninstall.md
+│   │   └── upgrade.md
+│   ├── README.md
+│   ├── SUMMARY.md
+│   ├── book.toml
+│   ├── build.sh
+│   ├── server.sh
+│   └── wazuh-namespace.png
+├── envs
+│   ├── eks
+│   │   ├── network-policies
+│   │   ├── dashboard-resources.yaml
+│   │   ├── indexer-resources.yaml
+│   │   ├── kustomization.yml
+│   │   ├── storage-class.yaml
+│   │   ├── wazuh-master-resources.yaml
+│   │   └── wazuh-worker-resources.yaml
+│   └── local-env
+│       ├── indexer-resources.yaml
+│       ├── kustomization.yml
+│       ├── storage-class.yaml
+│       └── wazuh-resources.yaml
+├── tests
+│   ├── conftest.py
+│   └── k8s_pytest.py
+├── tools
+│   └── repository_bumper.sh
+├── traefik
+│   ├── crd
+│   │   └── kubernetes-crd-definition-v1.yml
+│   └── runtime
+│       ├── kustomization.yml
+│       ├── traefik-cluster-role-binding.yaml
+│       ├── traefik-cluster-role.yaml
+│       ├── traefik-deployment.yaml
+│       ├── traefik-ns.yaml
+│       ├── traefik-sa.yaml
+│       └── traefik-service.yaml
+├── wazuh
+│   ├── base
+│   │   ├── Allow-DNS-np.yaml
+│   │   ├── default-deny-all.yaml
+│   │   ├── ingressRoute-tcp-dashboard.yaml
+│   │   ├── ingressRoute-tcp-events.yaml
+│   │   ├── ingressRoute-tcp-registration.yaml
+│   │   ├── middleware.yaml
+│   │   ├── storage-class.yaml
+│   │   └── wazuh-ns.yaml
+│   ├── indexer_stack
+│   │   ├── wazuh-dashboard
+│   │   └── wazuh-indexer
+│   ├── secrets
+│   │   ├── dashboard-cred-secret.yaml
+│   │   ├── indexer-cred-secret.yaml
+│   │   ├── wazuh-api-cred-secret.yaml
+│   │   ├── wazuh-authd-pass-secret.yaml
+│   │   └── wazuh-cluster-key-secret.yaml
+│   ├── wazuh_managers
+│   │   ├── network-policies
+│   │   ├── wazuh-api-svc.yaml
+│   │   ├── wazuh-cluster-svc.yaml
+│   │   ├── wazuh-events-svc.yaml
+│   │   ├── wazuh-master-sts.yaml
+│   │   ├── wazuh-registration-svc.yaml
+│   │   └── wazuh-worker-sts.yaml
+│   └── kustomization.yml
+├── CHANGELOG.md
+├── LICENSE
+├── README.md
+├── SECURITY.md
+├── VERSION.json
+</code></pre>
+<h2 id="docs-requirements"><a class="header" href="#docs-requirements">Docs requirements</a></h2>
+<p>To work with this documentation, you need <strong>mdBook</strong> installed. For installation instructions, refer to the <a href="https://rust-lang.github.io/mdBook/">mdBook documentation</a>.</p>
+<h2 id="usage"><a class="header" href="#usage">Usage</a></h2>
+<ul>
+<li>
+<p>To build the documentation, run:</p>
+<pre><code class="language-bash">./build.sh
+</code></pre>
+<p>The output will be generated in the <code>book</code> directory.</p>
+</li>
+<li>
+<p>To serve the documentation locally for preview, run:</p>
+<pre><code class="language-bash">./server.sh
+</code></pre>
+<p>The documentation will be available at <a href="http://127.0.0.1:3000">http://127.0.0.1:3000</a>.</p>
+</li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="set-up-the-development-environment"><a class="header" href="#set-up-the-development-environment">Set up the Development Environment</a></h1>
+<h2 id="pre-requisites"><a class="header" href="#pre-requisites">Pre-requisites</a></h2>
+<ul>
+<li>kubectl (1.14 or higher)
+<ul>
+<li>kustomize (built into kubectl 1.14+)</li>
+</ul>
+</li>
+</ul>
+<p><strong>Local</strong>:</p>
+<ul>
+<li>Running Kubernetes cluster. For instance, you can use <a href="https://minikube.sigs.k8s.io/docs/">Minikube</a> or <a href="https://kind.sigs.k8s.io/docs/user/quick-start/">Kind</a></li>
+</ul>
+<p><strong>Cloud</strong>:</p>
+<ul>
+<li>Kubernetes cluster already deployed.
+<ul>
+<li>Kubernetes can run on a wide range of Cloud providers and bare-metal environments. However, this repository focuses on <a href="https://aws.amazon.com/">AWS</a> and <a href="https://docs.aws.amazon.com/eks">Amazon EKS</a></li>
+<li>You should be able to:
+<ul>
+<li>Create Persistent Volumes on top of AWS EBS when using a volumeClaimTemplates</li>
+<li>Create a record set in AWS Route 53 from a Kubernetes LoadBalancer</li>
+</ul>
+</li>
+<li>Having at least two Kubernetes nodes in order to meet the <em>podAntiAffinity</em> policy</li>
+<li>For Kubernetes version 1.23 or higher, the assignment of an IAM Role is necessary for the CSI driver to function correctly. Within the AWS documentation you can find the instructions for the assignment: <a href="https://docs.aws.amazon.com/eks/latest/userguide/ebs-csi.html">https://docs.aws.amazon.com/eks/latest/userguide/ebs-csi.html</a></li>
+<li>The installation of the CSI driver is necessary for new and old deployments, since it is a Kubernetes feature</li>
+</ul>
+</li>
+</ul>
+<p><strong>Testing</strong>:</p>
+<ul>
+<li>Python 3</li>
+<li>Pytest (as used in <a href="#run-tests">docs/dev/run-tests.md</a>).</li>
+</ul>
+<h2 id="resource-requirements"><a class="header" href="#resource-requirements">Resource requirements</a></h2>
+<h3 id="eks"><a class="header" href="#eks">EKS</a></h3>
+<p>To deploy Wazuh on Kubernetes on AWS EKS, the cluster should have at least the following resources available:</p>
+<ul>
+<li>4 CPU units</li>
+<li>5.5 Gi of memory</li>
+</ul>
+<h3 id="locally"><a class="header" href="#locally">Locally</a></h3>
+<p>To deploy Wazuh on Kubernetes locally, the cluster should have at least the following resources available:</p>
+<ul>
+<li>2 CPU units</li>
+<li>3 Gi of memory</li>
+</ul>
+<h2 id="set-up-the-editordebugger"><a class="header" href="#set-up-the-editordebugger">Set up the editor/debugger</a></h2>
+<p>Any editor and debugger can be used, feel free to use your favorite one</p>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="run-tests"><a class="header" href="#run-tests">Run tests</a></h1>
+<p>This section describes how to run the automated tests for Wazuh Kubernetes deployments. The test suite validates that all Wazuh components are correctly deployed and functioning in the Kubernetes cluster.</p>
+<h2 id="prerequisites"><a class="header" href="#prerequisites">Prerequisites</a></h2>
+<p>The following tests require these tools and dependencies:</p>
+<ul>
+<li><strong>Python</strong>: Python 3.x</li>
+<li><strong>pytest</strong>: Install via package manager or pip</li>
+<li><strong>kubectl</strong>: Configured to communicate with your Kubernetes cluster</li>
+</ul>
+<h2 id="test-coverage"><a class="header" href="#test-coverage">Test coverage</a></h2>
+<p>The test suite validates the following aspects of the Wazuh Kubernetes deployment:</p>
+<ul>
+<li><strong>Indexer cluster health</strong>: Verifies that the Wazuh indexer cluster health status is <code>green</code></li>
+<li><strong>Indexer indices health</strong>: Confirms all Wazuh indexer indices are in a <code>green</code> state</li>
+<li><strong>Indexer nodes count</strong>: Checks the expected number of indexer nodes based on the deployment type (3 for EKS, 1 for local)</li>
+<li><strong>Wazuh templates</strong>: Validates that required Wazuh templates are present in the indexer</li>
+<li><strong>Manager services</strong>: Ensures at least 10 Wazuh manager services are running correctly</li>
+<li><strong>Dashboard accessibility</strong>: Confirms the Wazuh dashboard service returns HTTP 200 status</li>
+</ul>
+<h2 id="automated-testing-workflows"><a class="header" href="#automated-testing-workflows">Automated testing workflows</a></h2>
+<p>The repository includes two GitHub Actions workflows for automated testing:</p>
+<h3 id="eks-deployment-test"><a class="header" href="#eks-deployment-test">EKS deployment test</a></h3>
+<p>The EKS workflow (eks-deployment-test.yml) performs a full end-to-end test on AWS EKS:</p>
+<ol>
+<li>Deploys a temporary multi-node EKS cluster</li>
+<li>Configures AWS EBS CSI driver and network policies</li>
+<li>Generates SSL certificates for Wazuh components</li>
+<li>Deploys the Traefik ingress controller</li>
+<li>Deploys the Wazuh stack using the eks overlay</li>
+<li>Runs the complete test suite with <code>--deployment-type eks</code></li>
+<li>Cleans up all resources (cluster and EBS volumes)</li>
+</ol>
+<p>Trigger this workflow manually from the Actions tab by specifying the branch version to test.</p>
+<h3 id="local-deployment-test"><a class="header" href="#local-deployment-test">Local deployment test</a></h3>
+<p>The local workflow (local-deployment-test.yml) tests on a Minikube cluster:</p>
+<ol>
+<li>Sets up a Minikube cluster with Calico CNI</li>
+<li>Pulls Wazuh container images from AWS ECR</li>
+<li>Generates SSL certificates for Wazuh components</li>
+<li>Configures the Minikube storage provisioner</li>
+<li>Deploys the Wazuh stack using the local-env overlay</li>
+<li>Runs the complete test suite with <code>--deployment-type local</code></li>
+</ol>
+<p>This workflow runs automatically on pull requests and can be triggered manually from the Actions tab.</p>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="introduction-to-the-reference-manual"><a class="header" href="#introduction-to-the-reference-manual">Introduction to the Reference Manual</a></h1>
+<p>This reference manual provides comprehensive documentation for deploying and managing Wazuh on Kubernetes clusters. It covers deployment architecture, configuration management with Kustomize, compatibility requirements, and step-by-step instructions for both cloud and local environments.</p>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="description"><a class="header" href="#description">Description</a></h1>
+<p>This repository enables you to deploy a complete Wazuh stack on a Kubernetes cluster. It provides manifests and Kustomize overlays for deploying Wazuh managers, indexers, and dashboards with high availability and persistent storage.</p>
+<h3 id="key-features"><a class="header" href="#key-features">Key Features</a></h3>
+<ul>
+<li><strong>Kustomize-based configuration</strong>: Modular and reusable manifests organized with Kustomize for environment-specific customization without template duplication</li>
+<li><strong>Multi-environment support</strong>: Pre-configured overlays for Amazon EKS clusters and local development environments (Minikube, Kind)</li>
+<li><strong>High availability</strong>: StatefulSet controllers for Wazuh managers and indexers with pod anti-affinity rules for distributing workloads across nodes</li>
+<li><strong>Persistent storage</strong>: Automatic provisioning of persistent volumes for data retention across pod restarts</li>
+<li><strong>Secure by default</strong>: TLS/SSL certificate management, secrets handling, and network isolation via Kubernetes namespaces</li>
+<li><strong>Components</strong>:
+<ul>
+<li>Wazuh manager cluster (master and worker nodes) for security event processing</li>
+<li>Wazuh indexer cluster for data storage and search capabilities</li>
+<li>Wazuh dashboard for visualization and management interface</li>
+</ul>
+</li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="compatibility"><a class="header" href="#compatibility">Compatibility</a></h1>
+<p>This section provides information about the compatibility of the Wazuh Kubernetes deployment with different platforms and configurations.</p>
+<h2 id="supported-platforms"><a class="header" href="#supported-platforms">Supported platforms</a></h2>
+<h3 id="kubernetes-versions"><a class="header" href="#kubernetes-versions">Kubernetes versions</a></h3>
+<ul>
+<li>Kubernetes 1.23 or higher is recommended for optimal compatibility with storage drivers and features.</li>
+<li>Earlier versions may work but are not officially tested or supported.</li>
+</ul>
+<h3 id="cloud-platforms-and-distributions"><a class="header" href="#cloud-platforms-and-distributions">Cloud platforms and distributions</a></h3>
+<ul>
+<li><strong>Amazon EKS</strong>: Supported with the Amazon EBS CSI driver for persistent storage.</li>
+<li><strong>Local Kubernetes distributions</strong>: Including Minikube, MicroK8s, and kind for development and testing.</li>
+<li><strong>Other managed Kubernetes services</strong>: Google GKE, Azure AKS, and similar platforms should work with appropriate storage class configurations.</li>
+</ul>
+<h3 id="storage-class-requirements"><a class="header" href="#storage-class-requirements">Storage class requirements</a></h3>
+<p>A compatible StorageClass must be available in your cluster:</p>
+<ul>
+<li><strong>Local environments</strong>: Local storage provisioners such as <code>microk8s.io/hostpath</code>, <code>k8s.io/minikube-hostpath</code>, or <code>standard</code>.</li>
+<li><strong>Amazon EKS</strong>: Requires the Amazon EBS CSI driver with appropriate IAM role configuration for Kubernetes 1.23+.</li>
+<li><strong>Other cloud providers</strong>: Use the respective CSI drivers (e.g., GCE Persistent Disk for GKE, Azure Disk for AKS).</li>
+</ul>
+<p>The storage class must support dynamic volume provisioning and should provide low-latency storage, especially for the Wazuh Indexer component.</p>
+<h3 id="container-runtime"><a class="header" href="#container-runtime">Container runtime</a></h3>
+<ul>
+<li>Compatible with any Kubernetes-compliant container runtime (i.e., containerd or CRI-O).</li>
+<li>No specific runtime dependencies or restrictions.</li>
+</ul>
+<h2 id="resource-constraints"><a class="header" href="#resource-constraints">Resource constraints</a></h2>
+<p>For detailed information on resource requirements and recommendations, refer to the <a href="#requirements">Requirements</a> section.</p>
+<h3 id="network-requirements"><a class="header" href="#network-requirements">Network requirements</a></h3>
+<ul>
+<li>The cluster must support NetworkPolicies if network segmentation is desired.</li>
+<li>Ingress controller required for external access to the Wazuh Dashboard (e.g., Traefik, NGINX Ingress).</li>
+<li>DNS resolution must be functional within the cluster for service discovery.</li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="getting-started"><a class="header" href="#getting-started">Getting Started</a></h1>
+<p>This guide provides a quick introduction to deploying Wazuh on Kubernetes using this repository. It covers the deployment options available and outlines the basic steps required to get Wazuh running in your Kubernetes cluster.</p>
+<h2 id="deployment-options"><a class="header" href="#deployment-options">Deployment Options</a></h2>
+<p>Two pre-configured deployment environments are available:</p>
+<h3 id="local-environment"><a class="header" href="#local-environment">Local Environment</a></h3>
+<p>Designed for development, testing, and evaluation purposes using local Kubernetes clusters such as Minikube or Kind. This environment uses:</p>
+<ul>
+<li>Single-node deployment with reduced resource requirements</li>
+<li>Local storage provisioner for persistent volumes</li>
+<li>Simplified networking configuration</li>
+</ul>
+<p>For detailed instructions, see <a href="#local-deployment">Usage: Local Deployment</a>.</p>
+<h3 id="amazon-eks"><a class="header" href="#amazon-eks">Amazon EKS</a></h3>
+<p>Optimized for deployments on Amazon Elastic Kubernetes Service (EKS). This environment includes:</p>
+<ul>
+<li>Multi-node cluster with high availability</li>
+<li>Amazon EBS-backed persistent storage</li>
+<li>Load balancer integration for service exposure</li>
+<li>Separate resource configurations for master and worker nodes</li>
+</ul>
+<p>For detailed instructions, see <a href="#eks-deployment">Usage: AWS EKS Deployment</a>.</p>
+<h2 id="next-steps"><a class="header" href="#next-steps">Next Steps</a></h2>
+<ul>
+<li>Review the <a href="#requirements">Requirements</a> to ensure your cluster is properly configured</li>
+<li>Follow the <a href="#installation">Installation</a> guide for step-by-step deployment instructions</li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="requirements"><a class="header" href="#requirements">Requirements</a></h1>
+<p>This page outlines the prerequisites and resource requirements for deploying Wazuh on Kubernetes. Ensure your cluster meets these requirements before proceeding with the deployment.</p>
+<h2 id="prerequisites-1"><a class="header" href="#prerequisites-1">Prerequisites</a></h2>
+<h3 id="kubernetes-cluster"><a class="header" href="#kubernetes-cluster">Kubernetes Cluster</a></h3>
+<ul>
+<li>A running Kubernetes cluster</li>
+<li><code>kubectl</code> command-line tool configured to communicate with your cluster</li>
+<li><code>kustomize</code> for applying manifests (built into kubectl 1.14+)</li>
+</ul>
+<h3 id="storage-class"><a class="header" href="#storage-class">Storage Class</a></h3>
+<p>A StorageClass must be configured in your cluster to provision persistent volumes for Wazuh components:</p>
+<ul>
+<li><strong>Local environments</strong>: Uses local storage provisioners (e.g., <code>microk8s.io/hostpath</code>, <code>k8s.io/minikube-hostpath</code>)</li>
+<li><strong>Amazon EKS</strong>: Requires Amazon EBS CSI driver with appropriate IAM role configuration</li>
+</ul>
+<p>For EKS deployments using Kubernetes 1.23 or higher, you must configure an IAM role for the Amazon EBS CSI driver. Refer to the <a href="https://docs.aws.amazon.com/eks/latest/userguide/ebs-csi.html">AWS documentation</a> for detailed instructions.</p>
+<h2 id="resource-requirements-1"><a class="header" href="#resource-requirements-1">Resource Requirements</a></h2>
+<h3 id="minimum-cluster-resources"><a class="header" href="#minimum-cluster-resources">Minimum Cluster Resources</a></h3>
+<p>Production environments may require additional CPU, memory, and storage depending on the workload and number of monitored agents.</p>
+<h4 id="eks-1"><a class="header" href="#eks-1">EKS</a></h4>
+<p>To deploy Wazuh on Kubernetes on AWS EKS, the cluster should have at least the following resources available:</p>
+<ul>
+<li>4 CPU units</li>
+<li>8 Gi of memory</li>
+</ul>
+<h4 id="locally-1"><a class="header" href="#locally-1">Locally</a></h4>
+<p>To deploy Wazuh on Kubernetes locally, the cluster should have at least the following resources available:</p>
+<ul>
+<li>2 CPU units</li>
+<li>4.5 Gi of memory</li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="installation"><a class="header" href="#installation">Installation</a></h1>
+<p>This section describes the procedures to deploy the Wazuh stack using a Kubernetes cluster, trhough the manifests and Kustomize overlays provided in this repository.</p>
+<h2 id="eks-deployment"><a class="header" href="#eks-deployment">EKS deployment</a></h2>
+<p>This guide provides instructions for deploying Wazuh on a Kubernetes cluster in Amazon EKS.</p>
+<h3 id="pre-requisites-1"><a class="header" href="#pre-requisites-1">Pre-requisites</a></h3>
+<ul>
+<li>Kubernetes cluster already deployed.
+<ul>
+<li>Kubernetes can run on a wide range of Cloud providers and bare-metal environments, this documentation section focuses on <a href="https://aws.amazon.com/">AWS</a>. It was tested using <a href="https://docs.aws.amazon.com/eks">Amazon EKS</a>.</li>
+</ul>
+</li>
+<li>You should be able to:
+<ul>
+<li>Create Persistent Volumes on top of AWS EBS when using a volumeClaimTemplates</li>
+<li>Create a record set in AWS Route 53 from a Kubernetes LoadBalancer.</li>
+</ul>
+</li>
+<li>Having at least two Kubernetes nodes in order to meet the <em>podAntiAffinity</em> policy.</li>
+<li>For Kubernetes version 1.23 or higher, the assignment of an IAM Role is necessary for the CSI driver to function correctly. Within the AWS documentation you can find the instructions for the assignment: <a href="https://docs.aws.amazon.com/eks/latest/userguide/ebs-csi.html">https://docs.aws.amazon.com/eks/latest/userguide/ebs-csi.html</a>
+<ul>
+<li>The installation of the CSI driver is necessary for new and old deployments, since it is a Kubernetes feature.</li>
+</ul>
+</li>
+<li>Wazuh deployment includes Network policy configurations to filter communication between pods. Verify EKS cluster configuration has Network policy configuration enabled.</li>
+</ul>
+<h3 id="overview"><a class="header" href="#overview">Overview</a></h3>
+<h4 id="statefulset-and-deployments-controllers"><a class="header" href="#statefulset-and-deployments-controllers">StateFulSet and Deployments Controllers</a></h4>
+<p>Like a Deployment, a StatefulSet manages Pods that are based on an identical container specification, but it maintains an identity attached to each of its pods. These pods are created from the same specification, but they are not interchangeable: each one has a persistent identifier maintained across any rescheduling.</p>
+<p>It is useful for stateful applications like databases that save the data to a persistent storage. The states of each Wazuh manager as well as Wazuh indexer are desirable to maintain, so we declare them using StatefulSet to ensure that they maintain their states in every startup.</p>
+<p>Deployments are intended for stateless use and are quite lightweight and seem to be appropriate for Wazuh dashboard and Traefik, where it is not necessary to maintain the states.</p>
+<h4 id="pods"><a class="header" href="#pods">Pods</a></h4>
+<p><strong>Wazuh master</strong>:</p>
+<p>This pod contains the master node of the Wazuh cluster. The master node centralizes and coordinates worker nodes, making sure the critical and required data is consistent across all nodes.
+The management is performed only in this node, so the agent registration service (authd) and the API are placed here.</p>
+<p>Details:</p>
+<ul>
+<li>Image: Docker Hub ‘wazuh/wazuh-manager’</li>
+<li>Controller: StatefulSet</li>
+</ul>
+<p><strong>Wazuh worker 0 / 1</strong>:</p>
+<p>These pods contain a worker node of the Wazuh cluster. They will receive the agent events.</p>
+<p>Details:</p>
+<ul>
+<li>Image: Docker Hub ‘wazuh/wazuh-manager’</li>
+<li>Controller: StatefulSet</li>
+</ul>
+<p><strong>Wazuh indexer</strong>:</p>
+<p>Wazuh indexer pod. Used to build an Wazuh indexer cluster.</p>
+<p>Details:</p>
+<ul>
+<li>Image: wazuh/wazuh-indexer</li>
+<li>Controller: StatefulSet</li>
+</ul>
+<p><strong>Wazuh dashboard</strong>:</p>
+<p>Wazuh dashboard pod. It lets you visualize your Wazuh indexer data, along with other features as the Wazuh app.</p>
+<p>Details:</p>
+<ul>
+<li>image: Docker Hub ‘wazuh/wazuh-dashboard’</li>
+<li>Controller: Deployment</li>
+</ul>
+<h4 id="services"><a class="header" href="#services">Services</a></h4>
+<p><strong>Wazuh Indexer stack</strong>:</p>
+<ul>
+<li>wazuh-indexer:
+<ul>
+<li>Internal service for Wazuh indexer pods.</li>
+<li>Exposes ports 9200 (REST API) and 9300 (cluster transport) inside the Kubernetes cluster.</li>
+</ul>
+</li>
+<li>dashboard:
+<ul>
+<li>Internal service for the Wazuh dashboard on port 443.</li>
+<li>Exposed externally through the Traefik ingress controller (ingressRoute-tcp-dashboard) at the configured FQDN.</li>
+</ul>
+</li>
+</ul>
+<p><strong>Wazuh Server stack</strong>:</p>
+<ul>
+<li>wazuh-api:
+<ul>
+<li>Internal service for the Wazuh API on port 55000.</li>
+<li>Consumed by the Wazuh dashboard and by external clients through the ingress TCP mappings.</li>
+</ul>
+</li>
+<li>wazuh-events:
+<ul>
+<li>Internal service for agent event traffic on port 1514.</li>
+</ul>
+</li>
+<li>wazuh-registration:
+<ul>
+<li>Internal service for agent enrollment (authd) on port 1515.</li>
+</ul>
+</li>
+<li>wazuh-cluster:
+<ul>
+<li>Headless service for internal communication between Wazuh manager nodes on port 1516.</li>
+</ul>
+</li>
+</ul>
+<h4 id="network-policies"><a class="header" href="#network-policies">Network policies</a></h4>
+<ul>
+<li>allow-dns
+<ul>
+<li>Allows DNS traffic within the cluster.</li>
+</ul>
+</li>
+<li>allow-ingress-to-dashboard
+<ul>
+<li>Allows incoming traffic from the ingress controller to port 443 of wazuh-dashboard.</li>
+</ul>
+</li>
+<li>allow-ingress-to-manager-master
+<ul>
+<li>Allows incoming traffic from the ingress controller to port 1515 of wazuh-manager (master).</li>
+</ul>
+</li>
+<li>allow-ingress-to-manager-worker
+<ul>
+<li>Allows incoming traffic from the ingress controller to port 1514 of wazuh-manager (worker).</li>
+</ul>
+</li>
+<li>dashboard-egress
+<ul>
+<li>Allows outgoing traffic from wazuh-dashboard pods to port 9200 of wazuh-indexer and port 55000 of wazuh-manager (master).</li>
+</ul>
+</li>
+<li>default-deny-all
+<ul>
+<li>Denies all incoming and outgoing traffic not explicitly declared in a network policy.</li>
+</ul>
+</li>
+<li>indexer-egress
+<ul>
+<li>Allows outgoing traffic from wazuh-indexer pods to ports 9200 and 9300 of wazuh-indexer nodes.</li>
+</ul>
+</li>
+<li>indexer-ingress
+<ul>
+<li>Allows incoming traffic from wazuh-dashboard (9200), wazuh-manager (9200), and wazuh-indexer (9300) pods to wazuh-indexer pods.</li>
+</ul>
+</li>
+<li>manager-egress-external
+<ul>
+<li>Allows outgoing traffic from wazuh-manager pods to the internet (for downloading CTI and external resources).</li>
+</ul>
+</li>
+<li>manager-egress
+<ul>
+<li>Allows outgoing traffic from wazuh-manager pods to wazuh-indexer on port 9200.</li>
+</ul>
+</li>
+<li>wazuh-api-ingress
+<ul>
+<li>Allows incoming traffic from wazuh-dashboard (55000) and other wazuh-manager pods to port 1516 of the manager master.</li>
+</ul>
+</li>
+<li>wazuh-worker-egress
+<ul>
+<li>Allows outgoing traffic from wazuh-manager worker pods to wazuh-manager ports 1516 and 55000.</li>
+</ul>
+</li>
+</ul>
+<p>Base policies (such as default-deny-all and DNS) are always applied with the Wazuh namespace. Additional ingress policies for the dashboard and managers are added by the EKS overlay to integrate with the Traefik ingress controller.</p>
+<h3 id="deploy"><a class="header" href="#deploy">Deploy</a></h3>
+<h4 id="step-1-deploy-kubernetes"><a class="header" href="#step-1-deploy-kubernetes">Step 1: Deploy Kubernetes</a></h4>
+<p>Deploying the Kubernetes cluster is out of the scope of this guide.</p>
+<p>This repository focuses on <a href="https://aws.amazon.com/">AWS</a> but it should be easy to adapt it to another Cloud provider. In case you are using AWS, we recommend <a href="https://docs.aws.amazon.com/en_us/eks/latest/userguide/getting-started.html">EKS</a>.</p>
+<h4 id="step-2-create-domains-to-access-the-services"><a class="header" href="#step-2-create-domains-to-access-the-services">Step 2: Create domains to access the services</a></h4>
+<p>We recommend creating domains and certificates to access the services. Examples:</p>
+<ul>
+<li>wazuh-master.your-domain.com: Wazuh API and authd registration service.</li>
+<li>wazuh-manager.your-domain.com: Reporting service.</li>
+<li>wazuh.your-domain.com: Wazuh dashboard app.</li>
+</ul>
+<p>Note: You can skip this step and the services will be accessible using the Load balancer DNS from the VPC.</p>
+<h4 id="step-3-deployment"><a class="header" href="#step-3-deployment">Step 3: Deployment</a></h4>
+<p>Clone this repository to deploy the necessary services and pods.</p>
+<pre><code class="language-bash">git clone https://github.com/wazuh/wazuh-kubernetes.git -b v5.0.0 --depth=1
+cd wazuh-kubernetes
+</code></pre>
+<h4 id="step-31-setup-ssl-certificates"><a class="header" href="#step-31-setup-ssl-certificates">Step 3.1: Setup SSL certificates</a></h4>
+<p>Wazuh uses certificates to establish confidentiality and encrypt communications between its central components. Follow these steps to create certificates for the Wazuh central components.</p>
+<p>Download the <code>wazuh-certs-tool.sh</code> script. This creates the certificates that encrypt communications between the Wazuh central components.</p>
+<p><strong>3.1.1 Download the Wazuh certificates tool script and config.yml file</strong>:</p>
+<pre><code class="language-bash">cd wazuh
+curl -so wazuh-certs-tool.sh https://packages.wazuh.com/5.0/wazuh-certs-tool-5.0.0-1.sh
+curl -so config.yml https://packages.wazuh.com/5.0/config-5.0.0-1.yml
+</code></pre>
+<p><strong>3.1.2 Edit the config.yml file with the configuration of the Wazuh components to be deployed</strong>:</p>
+<pre><code class="language-yaml">nodes:
+  # Wazuh indexer nodes
+  indexer:
+    - name: indexer
+      dns:
+        - "wazuh-indexer"
+        - "wazuh-indexer.wazuh.svc.cluster.local"
+
+  # Wazuh server nodes
+  manager:
+    - name: manager
+      dns:
+        - "wazuh-api"
+        - "wazuh-api.wazuh.svc.cluster.local"
+
+  # Wazuh dashboard nodes
+  dashboard:
+    - name: dashboard
+      dns:
+        - "dashboard"
+        - "dashboard.wazuh.svc.cluster.local"
+</code></pre>
+<p><strong>3.1.3 Run the Wazuh certificates tool script</strong>:</p>
+<pre><code class="language-bash">sudo bash ../tools/utils/deployment/certificates-conf.sh --cert --copy --priv
+</code></pre>
+<p>The required certificates are imported via secretGenerator on the <code>kustomization.yml</code> file:</p>
+<pre><code class="language-yaml">secretGenerator:
+  - name: indexer-certs
+    files:
+      - config/indexer/certs/admin-key.pem
+      - config/indexer/certs/admin.pem
+      - config/indexer/certs/indexer-key.pem
+      - config/indexer/certs/indexer.pem
+      - config/root-ca/certs/root-ca.pem
+  - name: dashboard-certs
+    files:
+      - config/dashboard/certs/dashboard-key.pem
+      - config/dashboard/certs/dashboard.pem
+      - config/root-ca/certs/root-ca.pem
+  - name: manager-certs
+    files:
+      - config/manager/certs/manager-key.pem
+      - config/manager/certs/manager.pem
+      - config/root-ca/certs/root-ca.pem
+</code></pre>
+<h4 id="step-32-apply-traefik-ingress-controller"><a class="header" href="#step-32-apply-traefik-ingress-controller">Step 3.2: Apply Traefik ingress controller</a></h4>
+<p>To expose services outside the <code>EKS</code> cluster, we are using the Traefik ingress controller. We need to deploy the Traefik CRD first:</p>
+<p>First, return to the root of the repository.</p>
+<pre><code class="language-bash">cd ..
+</code></pre>
+<p>Then, apply the Traefik CRD definitions:</p>
+<pre><code class="language-bash">kubectl apply -f traefik/crd/kubernetes-crd-definition-v1.yml
+</code></pre>
+<p>Expected output:</p>
+<pre><code class="language-bash">$ kubectl apply -f traefik/crd/kubernetes-crd-definition-v1.yml
+customresourcedefinition.apiextensions.k8s.io/ingressroutes.traefik.io created
+customresourcedefinition.apiextensions.k8s.io/ingressroutetcps.traefik.io created
+customresourcedefinition.apiextensions.k8s.io/ingressrouteudps.traefik.io created
+customresourcedefinition.apiextensions.k8s.io/middlewares.traefik.io created
+customresourcedefinition.apiextensions.k8s.io/middlewaretcps.traefik.io created
+customresourcedefinition.apiextensions.k8s.io/serverstransports.traefik.io created
+customresourcedefinition.apiextensions.k8s.io/serverstransporttcps.traefik.io created
+customresourcedefinition.apiextensions.k8s.io/tlsoptions.traefik.io created
+customresourcedefinition.apiextensions.k8s.io/tlsstores.traefik.io created
+customresourcedefinition.apiextensions.k8s.io/traefikservices.traefik.io created
+</code></pre>
+<p>Then, you can deploy the Traefik runtime for the ingress controller:</p>
+<pre><code class="language-bash">kubectl apply -k traefik/runtime/
+</code></pre>
+<p>Expected output:</p>
+<pre><code class="language-bash">$ kubectl apply -k traefik/runtime/
+namespace/traefik created
+serviceaccount/traefik created
+clusterrole.rbac.authorization.k8s.io/traefik created
+clusterrolebinding.rbac.authorization.k8s.io/traefik created
+service/traefik created
+deployment.apps/traefik created
+</code></pre>
+<p>Wait until the load balancer is created, you can check it with the following command:</p>
+<pre><code class="language-bash">kubectl -n traefik get svc
+</code></pre>
+<p>Expected output:</p>
+<pre><code class="language-bash">$ kubectl -n traefik get svc
+NAME      TYPE           CLUSTER-IP     EXTERNAL-IP                                                              PORT(S)                                       AGE
+traefik   LoadBalancer   10.100.34.51   a7ffe29bfcf38420988fd52a698be422-862207742.us-west-1.elb.amazonaws.com   443:30725/TCP,1514:32036/TCP,1515:30354/TCP   6m29s
+</code></pre>
+<h4 id="step-33-apply-all-manifests-using-kustomize"><a class="header" href="#step-33-apply-all-manifests-using-kustomize">Step 3.3: Apply all manifests using kustomize</a></h4>
+<p>We are using the overlay feature of kustomize to create two variants: <code>eks</code> and <code>local-env</code>, in this guide we’re using <code>eks</code>.</p>
+<p>You can adjust resources for the cluster on <code>envs/eks/</code>, you can tune cpu, memory as well as storage for persistent volumes of each of the cluster objects.</p>
+<p>Follow the steps below:</p>
+<h4 id="step-331-update-the-ingress-host"><a class="header" href="#step-331-update-the-ingress-host">Step 3.3.1: Update the Ingress host</a></h4>
+<p>For TLS Passthrough to work correctly, it is necessary to modify the ingress host <code>wazuh-ingress</code> in <code>wazuh/base/ingressRoute-tcp-dashboard.yaml</code> with the <code>FQDN</code> of the load balancer obtained in the command <code>kubectl -n traefik get svc</code></p>
+<p>for example:</p>
+<pre><code class="language-yaml">apiVersion: traefik.io/v1alpha1
+kind: IngressRouteTCP
+metadata:
+  name: wazuh-dashboard
+  namespace: wazuh
+spec:
+  entryPoints:
+    - websecure
+  routes:
+  - match: HostSNI(`a7f3cfbd27cee45559254f08b24651ed-448249308.us-west-1.elb.amazonaws.com`)
+    middlewares:
+    - name: ip-allowlist
+    services:
+    - name: dashboard
+      port: 443
+  tls:
+    passthrough: true
+</code></pre>
+<h4 id="step-332-deploy-wazuh-cluster"><a class="header" href="#step-332-deploy-wazuh-cluster">Step 3.3.2: Deploy Wazuh cluster</a></h4>
+<p>By using the kustomization file on the <code>eks</code> variant we can now deploy the whole cluster with a single command:</p>
+<pre><code class="language-bash">kubectl apply -k envs/eks/
+</code></pre>
+<h4 id="conclusion"><a class="header" href="#conclusion">Conclusion</a></h4>
+<p>At this point, the Wazuh stack should be deployed in your EKS cluster.</p>
+<p>To validate the deployment and open the web UI, follow the steps in the <strong>Accessing Wazuh dashboard</strong> section: <a href="ref/getting-started/verify.html#accessing-wazuh-dashboard">verify.md</a>.</p>
+<h2 id="local-deployment"><a class="header" href="#local-deployment">Local deployment</a></h2>
+<p>This guide describes the necessary steps to deploy Wazuh on local Kubernetes environment using Minikube and Calico as the CNI.
+As an important additional isolation layer, this deployment includes NetworkPolicy configurations to restrict communication between pods.</p>
+<h3 id="pre-requisites-1-1"><a class="header" href="#pre-requisites-1-1">Pre-requisites</a></h3>
+<ul>
+<li>Kubernetes cluster running</li>
+<li>kubectl installed and configured to connect to the cluster</li>
+</ul>
+<h4 id="resource-requirements-2"><a class="header" href="#resource-requirements-2">Resource requirements</a></h4>
+<p>To deploy the <code>local-env</code> variant the Kubernetes cluster should have at least the following resources <strong>available</strong>:</p>
+<ul>
+<li>2 CPU units</li>
+<li>3 Gi of memory</li>
+<li>2 Gi of storage</li>
+</ul>
+<h3 id="deployment"><a class="header" href="#deployment">Deployment</a></h3>
+<p><strong>Note</strong>:</p>
+<p>If you are using Minikube, make sure to start the cluster with Calico CNI:</p>
+<pre><code class="language-bash">minikube start --network-plugin=cni --cni=calico
+</code></pre>
+<p>You will also have to load the docker images used by Wazuh into Minikube:</p>
+<pre><code class="language-bash">docker pull wazuh/wazuh-indexer:5.0.0
+docker pull wazuh/wazuh-manager:5.0.0
+docker pull wazuh/wazuh-dashboard:5.0.0
+minikube image load wazuh/wazuh-indexer:5.0.0
+minikube image load wazuh/wazuh-manager:5.0.0
+minikube image load wazuh/wazuh-dashboard:5.0.0
+</code></pre>
+<h4 id="clone-this-repository"><a class="header" href="#clone-this-repository">Clone this repository</a></h4>
+<pre><code class="language-bash">git clone https://github.com/wazuh/wazuh-kubernetes.git -b v5.0.0 --depth=1
+cd wazuh-kubernetes
+</code></pre>
+<h4 id="setup-ssl-certificates"><a class="header" href="#setup-ssl-certificates">Setup SSL certificates</a></h4>
+<p>Wazuh uses certificates to establish confidentiality and encrypt communications between its central components. Follow these steps to create certificates for the Wazuh central components.</p>
+<p>Download the <code>wazuh-certs-tool.sh</code> script. This creates the certificates that encrypt communications between the Wazuh central components.</p>
+<pre><code class="language-bash">cd wazuh/
+curl -so wazuh-certs-tool.sh https://packages.wazuh.com/5.0/wazuh-certs-tool-5.0.0-1.sh
+curl -so config.yml https://packages.wazuh.com/5.0/config-5.0.0-1.yml
+</code></pre>
+<p>Edit the <code>config.yml</code> file to set corresponding name and IP address for each Wazuh component.
+For a local environment, you can use:</p>
+<pre><code class="language-yaml">nodes:
+  # Wazuh indexer nodes
+  indexer:
+    - name: indexer
+      dns:
+        - "wazuh-indexer"
+        - "wazuh-indexer.wazuh.svc.cluster.local"
+
+  # Wazuh server nodes
+  manager:
+    - name: manager
+      dns:
+        - "wazuh-api"
+        - "wazuh-api.wazuh.svc.cluster.local"
+
+  # Wazuh dashboard nodes
+  dashboard:
+    - name: dashboard
+      dns:
+        - "dashboard"
+        - "dashboard.wazuh.svc.cluster.local"
+</code></pre>
+<p>Run <code>wazuh-certs-tool.sh</code> to create the certificates.</p>
+<pre><code class="language-bash">sudo bash ../tools/utils/deployment/certificates-conf.sh --cert --copy --priv
+</code></pre>
+<p>Return to the root of the repository.</p>
+<pre><code class="language-bash">cd ..
+</code></pre>
+<p><strong>Note</strong>:</p>
+<p>The required certificates are imported via secretGenerator on the <code>kustomization.yml</code> file:</p>
+<pre><code class="language-yaml">secretGenerator:
+  - name: indexer-certs
+    files:
+      - config/indexer/certs/admin-key.pem
+      - config/indexer/certs/admin.pem
+      - config/indexer/certs/indexer-key.pem
+      - config/indexer/certs/indexer.pem
+      - config/root-ca/certs/root-ca.pem
+  - name: dashboard-certs
+    files:
+      - config/dashboard/certs/dashboard-key.pem
+      - config/dashboard/certs/dashboard.pem
+      - config/root-ca/certs/root-ca.pem
+  - name: manager-certs
+    files:
+      - config/manager/certs/manager-key.pem
+      - config/manager/certs/manager.pem
+      - config/root-ca/certs/root-ca.pem
+</code></pre>
+<h4 id="tune-storage-class-with-custom-provisioner"><a class="header" href="#tune-storage-class-with-custom-provisioner">Tune storage class with custom provisioner</a></h4>
+<p>Depending on the type of cluster you’re running for local development the Storage Class may have a different provisioner.</p>
+<p>You can check yours by running</p>
+<pre><code class="language-bash">kubectl get sc
+</code></pre>
+<p>You will see something like this:</p>
+<pre><code class="language-bash">$ kubectl get sc
+NAME                          PROVISIONER            RECLAIMPOLICY   VOLUMEBINDINGMODE   ALLOWVOLUMEEXPANSION   AGE
+elk-gp2                       microk8s.io/hostpath   Delete          Immediate           false                  67d
+microk8s-hostpath (default)   microk8s.io/hostpath   Delete          Immediate           false                  54d
+
+</code></pre>
+<p>The provisioner column displays <code>microk8s.io/hostpath</code>, you must edit the file <code>envs/local-env/storage-class.yaml</code> and setup this provisioner.</p>
+<h4 id="change-wazuh-ingress-host"><a class="header" href="#change-wazuh-ingress-host">Change Wazuh ingress host</a></h4>
+<!-- To deploy correctly in a local environment, it is necessary to change the parameter `<UPDATE-WITH-THE-FQDN-OF-THE-INGRESS>` to `localhost` in the file `wazuh/base/ingressRoute-tcp-dashboard.yaml`, for example:
+
+```yaml
+apiVersion: traefik.io/v1alpha1
+kind: IngressRouteTCP
+metadata:
+  name: wazuh-dashboard
+  namespace: wazuh
+spec:
+  entryPoints:
+    - websecure
+  routes:
+  - match: HostSNI(`localhost`)
+    middlewares:
+    - name: ip-allowlist
+    services:
+    - name: dashboard
+      port: 443
+  tls:
+    passthrough: true
+
+``` -->
+<p>The <code>wazuh/base/ingressRoute-tcp-dashboard.yaml</code> file configures the Wazuh Dashboard ingress and is primarily intended for EKS deployments. To prevent this file from affecting your local deployment, it is recommended to either delete its contents or leave it empty.</p>
+<pre><code class="language-bash">echo "" &gt; wazuh/base/ingressRoute-tcp-dashboard.yaml
+</code></pre>
+<h4 id="apply-all-manifests-using-kustomize"><a class="header" href="#apply-all-manifests-using-kustomize">Apply all manifests using kustomize</a></h4>
+<p>We are using the overlay feature of kustomize to create two variants: <code>eks</code> and <code>local-env</code>, in this guide we’re using <code>local-env</code>.</p>
+<p>It is possible to adjust resources for the cluster by editing patches on <code>envs/local-env/</code>, the number of replicas for Wazuh Indexer nodes and Wazuh Server workers are reduced on the <code>local-env</code> variant to save resources. This could be undone by removing these patches from the <code>kustomization.yaml</code> or alter the patches themselves with different values.</p>
+<blockquote>
+<p><strong>Note</strong>: This guide was created using Minikube and Calico as the CNI.</p>
+</blockquote>
+<p>Deploy Traefik CRD</p>
+<pre><code class="language-bash">kubectl apply -f traefik/crd/
+</code></pre>
+<p>Expected output:</p>
+<pre><code class="language-bash">$ kubectl apply -f traefik/crd/
+customresourcedefinition.apiextensions.k8s.io/ingressroutes.traefik.io created
+customresourcedefinition.apiextensions.k8s.io/ingressroutetcps.traefik.io created
+customresourcedefinition.apiextensions.k8s.io/ingressrouteudps.traefik.io created
+Warning: unrecognized format "int64"
+customresourcedefinition.apiextensions.k8s.io/middlewares.traefik.io created
+customresourcedefinition.apiextensions.k8s.io/middlewaretcps.traefik.io created
+customresourcedefinition.apiextensions.k8s.io/serverstransports.traefik.io created
+customresourcedefinition.apiextensions.k8s.io/serverstransporttcps.traefik.io created
+customresourcedefinition.apiextensions.k8s.io/tlsoptions.traefik.io created
+customresourcedefinition.apiextensions.k8s.io/tlsstores.traefik.io created
+customresourcedefinition.apiextensions.k8s.io/traefikservices.traefik.io created
+</code></pre>
+<p>By using the kustomization file on the <code>local-env</code> variant we can now deploy the whole cluster with a single command:</p>
+<pre><code class="language-bash">kubectl apply -k envs/local-env/
+</code></pre>
+<h5 id="accessing-dashboard"><a class="header" href="#accessing-dashboard">Accessing Dashboard</a></h5>
+<p>To access the Dashboard interface you can use port-forward:</p>
+<pre><code class="language-bash">kubectl -n wazuh port-forward service/dashboard 8443:443
+</code></pre>
+<p>Access to Wazuh dashboard using <a href="https://localhost:8443">https://localhost:8443</a></p>
+<!-- If you need to access the dashboard from another host (or register agents pointing to the Minikube host IP), you can bind the port-forward to a specific interface/IP address: -->
+<p>If you need to access the dashboard from another host, you can bind the port-forward to a specific interface/IP address:</p>
+<pre><code class="language-bash">kubectl -n wazuh port-forward service/dashboard 8443:443 --address 192.168.1.34 &amp;
+</code></pre>
+<h5 id="exposing-wazuh-server-ports"><a class="header" href="#exposing-wazuh-server-ports">Exposing Wazuh server ports</a></h5>
+<pre><code class="language-bash">kubectl -n wazuh port-forward service/wazuh-events 1514:1514
+</code></pre>
+<pre><code class="language-bash">kubectl -n wazuh port-forward service/wazuh-registration 1515:1515
+</code></pre>
+<p>If you need to register agents pointing directly to the Minikube host IP, bind the port-forward to a specific interface/IP address adding the <code>--address</code> flag (as done previously for the dashboard).</p>
+<blockquote>
+<p><strong>Note</strong>: You can run the process in background adding <code>&amp;</code> to the port-forward command, for example: kubectl -n wazuh port-forward service/wazuh-events 1514:1514 &amp;</p>
+</blockquote>
+<h3 id="conclusion-1"><a class="header" href="#conclusion-1">Conclusion</a></h3>
+<p>At this point, the Wazuh stack should be deployed in your local Kubernetes cluster.</p>
+<p>To validate the deployment and its created resources check the following section: <a href="ref/getting-started/verify.html">verify.md</a>.</p>
+<h2 id="verifying-the-deployment"><a class="header" href="#verifying-the-deployment">Verifying the deployment</a></h2>
+<h3 id="namespace"><a class="header" href="#namespace">Namespace</a></h3>
+<pre><code class="language-bash">kubectl get namespaces | grep wazuh
+</code></pre>
+<p>Expected output:</p>
+<pre><code class="language-bash">$ kubectl get namespaces | grep wazuh
+wazuh         Active    12m
+</code></pre>
+<h3 id="services-1"><a class="header" href="#services-1">Services</a></h3>
+<pre><code class="language-bash">kubectl get services -n wazuh
+</code></pre>
+<p>Expected output:</p>
+<pre><code class="language-bash">$ kubectl get services -n wazuh
+NAME                 TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)             AGE
+dashboard            ClusterIP   10.100.196.140   &lt;none&gt;        443/TCP             23m
+wazuh-api            ClusterIP   10.100.58.98     &lt;none&gt;        55000/TCP           23m
+wazuh-cluster        ClusterIP   None             &lt;none&gt;        1516/TCP            23m
+wazuh-events         ClusterIP   10.100.63.117    &lt;none&gt;        1514/TCP            23m
+wazuh-indexer        ClusterIP   None             &lt;none&gt;        9300/TCP,9200/TCP   23m
+wazuh-registration   ClusterIP   10.100.40.83     &lt;none&gt;        1515/TCP            23m
+
+</code></pre>
+<h3 id="deployments"><a class="header" href="#deployments">Deployments</a></h3>
+<pre><code class="language-bash">kubectl get deployments -n wazuh
+</code></pre>
+<p>Expected output:</p>
+<pre><code class="language-bash">$ kubectl get deployments -n wazuh
+NAME              READY   UP-TO-DATE   AVAILABLE   AGE
+wazuh-dashboard   1/1     1            1           4h16m
+</code></pre>
+<h3 id="statefulsets"><a class="header" href="#statefulsets">Statefulsets</a></h3>
+<pre><code class="language-bash">kubectl get statefulsets -n wazuh
+</code></pre>
+<p>Expected output:</p>
+<pre><code class="language-bash">$ kubectl get statefulsets -n wazuh
+NAME                   READY   AGE
+wazuh-indexer          3/3     4h17m
+wazuh-manager-master   1/1     4h17m
+wazuh-manager-worker   2/2     4h17m
+</code></pre>
+<h3 id="pods-1"><a class="header" href="#pods-1">Pods</a></h3>
+<pre><code class="language-bash">kubectl get pods -n wazuh
+</code></pre>
+<p>Expected output:</p>
+<pre><code class="language-bash">$ kubectl get pods -n wazuh
+NAME                               READY   STATUS    RESTARTS   AGE
+wazuh-dashboard-57d455f894-ffwsk   1/1     Running   0          4h17m
+wazuh-indexer-0                    1/1     Running   0          4h17m
+wazuh-indexer-1                    1/1     Running   0          4h17m
+wazuh-indexer-2                    1/1     Running   0          4h17m
+wazuh-manager-master-0             1/1     Running   0          4h17m
+wazuh-manager-worker-0             1/1     Running   0          4h17m
+wazuh-manager-worker-1             1/1     Running   0          4h17m
+</code></pre>
+<h3 id="network-policies-1"><a class="header" href="#network-policies-1">Network Policies</a></h3>
+<pre><code class="language-bash">kubectl -n wazuh get networkpolicy
+</code></pre>
+<p>Expected output:</p>
+<pre><code class="language-bash">$ kubectl -n wazuh get networkpolicy
+NAME                              POD-SELECTOR                         AGE
+allow-dns                         &lt;none&gt;                               51s
+allow-ingress-to-dashboard        app=wazuh-dashboard                  50s
+allow-ingress-to-manager-master   app=wazuh-manager,node-type=master   49s
+allow-ingress-to-manager-worker   app=wazuh-manager,node-type=worker   48s
+dashboard-egress                  app=wazuh-dashboard                  47s
+default-deny-all                  &lt;none&gt;                               46s
+indexer-egress                    app=wazuh-indexer                    45s
+indexer-ingress                   app=wazuh-indexer                    44s
+manager-egress                    app=wazuh-manager,node-type=master   43s
+manager-egress-external           app=wazuh-manager                    42s
+wazuh-api-ingress                 app=wazuh-manager,node-type=master   42s
+wazuh-worker-egress               app=wazuh-manager,node-type=worker   41s
+</code></pre>
+<h3 id="accessing-wazuh-dashboard-eks"><a class="header" href="#accessing-wazuh-dashboard-eks">Accessing Wazuh dashboard (EKS)</a></h3>
+<p>In case you created domain names for the services, you should be able to access Wazuh dashboard using the proposed domain name: <a href="https://wazuh.your-domain.com">https://wazuh.your-domain.com</a>.
+Also, you can access using the External-IP (from the VPC): <a href="https://xxx-yyy-zzz.us-east-1.elb.amazonaws.com:443">https://xxx-yyy-zzz.us-east-1.elb.amazonaws.com:443</a>
+To access the Wazuh dashboard of a local deployment, please refer to <a href="ref/getting-started/local.html#accessing-dashboard">local.md</a>.</p>
+<pre><code class="language-bash">kubectl -n traefik get svc
+</code></pre>
+<p>Expected output:</p>
+<pre><code class="language-bash">$ kubectl -n traefik get svc
+NAME      TYPE           CLUSTER-IP     EXTERNAL-IP                                                              PORT(S)                                       AGE
+traefik   LoadBalancer   10.100.34.51   a7ffe29bfcf38420988fd52a698be422-862207742.us-west-1.elb.amazonaws.com   443:30725/TCP,1514:32036/TCP,1515:30354/TCP   6m29s
+</code></pre>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="configuration"><a class="header" href="#configuration">Configuration</a></h1>
+<p>This page describes the main configuration options for deploying Wazuh using this repository. It explains how to adjust the manifests for your environment before applying the Kustomize overlays</p>
+<h2 id="configuration-overview"><a class="header" href="#configuration-overview">Configuration overview</a></h2>
+<p>The deployment is organized in two layers:</p>
+<ul>
+<li><strong>Base manifests</strong>: Located in <code>wazuh/</code>. They define the Wazuh namespace, storage class, ingress, services, StatefulSets, Deployments, and Secrets</li>
+<li><strong>Environment overlays</strong>: Located in <code>envs/eks/</code> and <code>envs/local-env/</code>. They reuse the base manifests and apply environment‑specific patches (storage, resources, replicas)</li>
+</ul>
+<p>Select the overlay that matches your environment and customize the files in <code>envs/&lt;environment&gt;/</code> before running <code>kubectl apply -k</code></p>
+<p>For deployment steps, refer to:</p>
+<ul>
+<li>EKS clusters: <a href="ref/installation.html#eks-deployment">Usage: AWS EKS Deployment</a></li>
+<li>Local clusters: <a href="ref/installation.html#local-deployment">Usage: Local Deployment</a></li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="environment-variables"><a class="header" href="#environment-variables">Environment Variables</a></h1>
+<p>This page documents the runtime environment variables used by the Wazuh Kubernetes deployment in this repository.</p>
+<p>Environment variables are defined directly in the workload manifests under <code>wazuh/</code> and, for credentials, are populated from Kubernetes Secrets.</p>
+<h2 id="how-variables-are-provided"><a class="header" href="#how-variables-are-provided">How variables are provided</a></h2>
+<p>Variables are provided in two ways:</p>
+<ul>
+<li><strong>Literal values in manifests</strong>: Set with <code>value</code> in the container <code>env</code> section.</li>
+<li><strong>Secret-backed values</strong>: Set with <code>valueFrom.secretKeyRef</code> and resolved from files under <code>wazuh/secrets/</code>.</li>
+</ul>
+<p>For security, use custom secret values in your environment.</p>
+<h2 id="wazuh-manager-variables"><a class="header" href="#wazuh-manager-variables">Wazuh manager variables</a></h2>
+<p>Defined in:</p>
+<ul>
+<li><code>wazuh/wazuh_managers/wazuh-master-sts.yaml</code></li>
+<li><code>wazuh/wazuh_managers/wazuh-worker-sts.yaml</code></li>
+</ul>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Variable</th><th>Purpose</th><th>Source</th><th>Required</th><th>Default/current value</th></tr>
+</thead>
+<tbody>
+<tr><td><code>WAZUH_INDEXER_HOSTS</code></td><td>Indexer endpoint used by managers.</td><td>Literal</td><td>Yes</td><td><code>wazuh-indexer:9200</code></td></tr>
+<tr><td><code>WAZUH_NODE_NAME</code></td><td>Manager node identifier in the Wazuh cluster.</td><td>Literal (master), downward API (worker pod name)</td><td>Yes</td><td>Master: <code>master</code>; Worker: pod metadata name</td></tr>
+<tr><td><code>WAZUH_NODE_TYPE</code></td><td>Declares manager role in cluster mode.</td><td>Literal</td><td>Yes</td><td>Master: <code>master</code>; Worker: <code>worker</code></td></tr>
+<tr><td><code>WAZUH_CLUSTER_BIND_ADDR</code></td><td>Bind address for cluster communications.</td><td>Literal</td><td>Yes</td><td><code>0.0.0.0</code></td></tr>
+<tr><td><code>WAZUH_CLUSTER_NODES</code></td><td>Cluster service name used for peer discovery.</td><td>Literal</td><td>Yes</td><td><code>wazuh-cluster</code></td></tr>
+<tr><td><code>INDEXER_USERNAME</code></td><td>Indexer authentication username.</td><td>Secret <code>indexer-cred</code></td><td>Yes</td><td><code>&lt;indexer-username&gt;</code></td></tr>
+<tr><td><code>INDEXER_PASSWORD</code></td><td>Indexer authentication password.</td><td>Secret <code>indexer-cred</code></td><td>Yes</td><td><code>&lt;indexer-password&gt;</code></td></tr>
+<tr><td><code>SSL_CERTIFICATE_AUTHORITIES</code></td><td>CA certificate path used for indexer TLS.</td><td>Literal</td><td>Yes</td><td><code>/etc/ssl/root-ca.pem</code></td></tr>
+<tr><td><code>SSL_CERTIFICATE</code></td><td>Client certificate path used for indexer TLS.</td><td>Literal</td><td>Yes</td><td><code>/etc/ssl/filebeat.pem</code></td></tr>
+<tr><td><code>SSL_KEY</code></td><td>Client key path used for indexer TLS.</td><td>Literal</td><td>Yes</td><td><code>/etc/ssl/filebeat-key.pem</code></td></tr>
+<tr><td><code>API_USERNAME</code></td><td>Wazuh API authentication username.</td><td>Secret <code>wazuh-api-cred</code></td><td>Yes</td><td><code>&lt;wazuh-api-username&gt;</code></td></tr>
+<tr><td><code>API_PASSWORD</code></td><td>Wazuh API authentication password.</td><td>Secret <code>wazuh-api-cred</code></td><td>Yes</td><td><code>&lt;wazuh-api-password&gt;</code></td></tr>
+<tr><td><code>WAZUH_CLUSTER_KEY</code></td><td>Shared key for manager cluster membership.</td><td>Secret <code>wazuh-cluster-key</code></td><td>Yes</td><td><code>&lt;wazuh-cluster-key&gt;</code></td></tr>
+</tbody>
+</table>
+</div>
+<h3 id="manager-customization-notes"><a class="header" href="#manager-customization-notes">Manager customization notes</a></h3>
+<ul>
+<li>Keep <code>WAZUH_NODE_TYPE</code> and <code>WAZUH_NODE_NAME</code> aligned with each StatefulSet role.</li>
+<li>Update <code>WAZUH_INDEXER_HOSTS</code> only if your Indexer service name/port differs from the default.</li>
+<li>Do not hardcode credentials in manifests; update the corresponding Secrets instead.</li>
+</ul>
+<h2 id="wazuh-indexer-variables"><a class="header" href="#wazuh-indexer-variables">Wazuh indexer variables</a></h2>
+<p>Defined in:</p>
+<ul>
+<li><code>wazuh/indexer_stack/wazuh-indexer/cluster/indexer-sts.yaml</code></li>
+</ul>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Variable</th><th>Purpose</th><th>Source</th><th>Required</th><th>Default/current value</th></tr>
+</thead>
+<tbody>
+<tr><td><code>bootstrap.memory_lock</code></td><td>Prevents indexer memory from being swapped.</td><td>Literal</td><td>Yes</td><td><code>"true"</code></td></tr>
+<tr><td><code>network.host</code></td><td>Bind address for indexer node network interface.</td><td>Literal</td><td>Yes</td><td><code>0.0.0.0</code></td></tr>
+<tr><td><code>node.name</code></td><td>Node name from pod metadata.</td><td>Downward API</td><td>Yes</td><td>Pod metadata name</td></tr>
+<tr><td><code>cluster.initial_cluster_manager_nodes</code></td><td>Initial manager node list for cluster bootstrap.</td><td>Literal</td><td>Yes</td><td><code>wazuh-indexer-0,wazuh-indexer-1,wazuh-indexer-2</code></td></tr>
+<tr><td><code>discovery.seed_hosts</code></td><td>Seed hosts for node discovery.</td><td>Literal (base and overlays may override)</td><td>Yes</td><td>Base: <code>wazuh-indexer-cluster</code></td></tr>
+<tr><td><code>node.max_local_storage_nodes</code></td><td>Maximum local storage nodes for shared storage path.</td><td>Literal</td><td>Optional</td><td><code>3</code></td></tr>
+<tr><td><code>plugins.security.allow_default_init_securityindex</code></td><td>Enables initial security index bootstrap behavior.</td><td>Literal</td><td>Optional</td><td><code>true</code></td></tr>
+<tr><td><code>NODES_DN</code></td><td>Distinguished names allowed for indexer nodes.</td><td>Literal</td><td>Yes</td><td>Certificate DNs for indexer nodes</td></tr>
+<tr><td><code>OPENSEARCH_JAVA_OPTS</code></td><td>Java heap and JVM options for indexer process.</td><td>Literal</td><td>Yes</td><td><code>-Xms1024m -Xmx1024m</code></td></tr>
+<tr><td><code>DISCOVERY_SERVICE</code></td><td>Headless service used for peer discovery.</td><td>Literal</td><td>Yes</td><td><code>wazuh-indexer-cluster</code></td></tr>
+<tr><td><code>KUBERNETES_NAMESPACE</code></td><td>Runtime namespace from pod metadata.</td><td>Downward API</td><td>Yes</td><td>Pod metadata namespace</td></tr>
+<tr><td><code>DISABLE_INSTALL_DEMO_CONFIG</code></td><td>Skips demo config installation in startup script.</td><td>Literal</td><td>Yes</td><td><code>true</code></td></tr>
+</tbody>
+</table>
+</div>
+<h3 id="indexer-customization-notes"><a class="header" href="#indexer-customization-notes">Indexer customization notes</a></h3>
+<ul>
+<li><code>OPENSEARCH_JAVA_OPTS</code> is the primary memory tuning variable for performance sizing.</li>
+<li>For local/single-node deployments, overlays can change <code>discovery.seed_hosts</code> (for example in <code>envs/local-env/indexer-resources.yaml</code>).</li>
+<li>Dotted variable names (such as <code>discovery.seed_hosts</code>) are intentional and used by the container startup scripts.</li>
+</ul>
+<h2 id="wazuh-dashboard-variables"><a class="header" href="#wazuh-dashboard-variables">Wazuh dashboard variables</a></h2>
+<p>Defined in:</p>
+<ul>
+<li><code>wazuh/indexer_stack/wazuh-dashboard/dashboard-deploy.yaml</code></li>
+</ul>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Variable</th><th>Purpose</th><th>Source</th><th>Required</th><th>Default/current value</th></tr>
+</thead>
+<tbody>
+<tr><td><code>OPENSEARCH_HOSTS</code></td><td>HTTPS endpoint for Wazuh Indexer.</td><td>Literal</td><td>Yes</td><td><code>https://wazuh-indexer:9200</code></td></tr>
+<tr><td><code>INDEXER_USERNAME</code></td><td>Indexer authentication username for dashboard.</td><td>Secret <code>indexer-cred</code></td><td>Yes</td><td><code>&lt;indexer-username&gt;</code></td></tr>
+<tr><td><code>INDEXER_PASSWORD</code></td><td>Indexer authentication password for dashboard.</td><td>Secret <code>indexer-cred</code></td><td>Yes</td><td><code>&lt;indexer-password&gt;</code></td></tr>
+<tr><td><code>DASHBOARD_USERNAME</code></td><td>Dashboard internal service username.</td><td>Secret <code>dashboard-cred</code></td><td>Yes</td><td><code>&lt;dashboard-username&gt;</code></td></tr>
+<tr><td><code>DASHBOARD_PASSWORD</code></td><td>Dashboard internal service password.</td><td>Secret <code>dashboard-cred</code></td><td>Yes</td><td><code>&lt;dashboard-password&gt;</code></td></tr>
+<tr><td><code>SERVER_SSL_ENABLED</code></td><td>Enables HTTPS on dashboard server.</td><td>Literal</td><td>Yes</td><td><code>"true"</code></td></tr>
+<tr><td><code>SERVER_SSL_CERTIFICATE</code></td><td>Dashboard TLS certificate path.</td><td>Literal</td><td>Yes</td><td><code>/usr/share/wazuh-dashboard/certs/wazuh-dashboard.pem</code></td></tr>
+<tr><td><code>SERVER_SSL_KEY</code></td><td>Dashboard TLS key path.</td><td>Literal</td><td>Yes</td><td><code>/usr/share/wazuh-dashboard/certs/wazuh-dashboard-key.pem</code></td></tr>
+<tr><td><code>OPENSEARCH_SSL_CERTIFICATE_AUTHORITIES</code></td><td>CA path used for indexer TLS verification.</td><td>Literal</td><td>Yes</td><td><code>/usr/share/wazuh-dashboard/certs/root-ca.pem</code></td></tr>
+<tr><td><code>WAZUH_API_URL</code></td><td>Wazuh manager API endpoint used by dashboard.</td><td>Literal</td><td>Yes</td><td><code>https://wazuh-api</code></td></tr>
+<tr><td><code>API_USERNAME</code></td><td>Wazuh API authentication username for dashboard.</td><td>Secret <code>wazuh-api-cred</code></td><td>Yes</td><td><code>&lt;wazuh-api-username&gt;</code></td></tr>
+<tr><td><code>API_PASSWORD</code></td><td>Wazuh API authentication password for dashboard.</td><td>Secret <code>wazuh-api-cred</code></td><td>Yes</td><td><code>&lt;wazuh-api-password&gt;</code></td></tr>
+</tbody>
+</table>
+</div>
+<h3 id="dashboard-customization-notes"><a class="header" href="#dashboard-customization-notes">Dashboard customization notes</a></h3>
+<ul>
+<li>If you change service names, update <code>OPENSEARCH_HOSTS</code> and <code>WAZUH_API_URL</code> accordingly.</li>
+<li>Keep TLS-related variables consistent with mounted certificate paths.</li>
+<li>Rotate credentials by updating Secrets and redeploying workloads.</li>
+</ul>
+<h2 id="secret-backed-variable-mapping"><a class="header" href="#secret-backed-variable-mapping">Secret-backed variable mapping</a></h2>
+<p>The following Secret manifests provide values for environment variables:</p>
+<ul>
+<li><code>wazuh/secrets/indexer-cred-secret.yaml</code>
+<ul>
+<li><code>INDEXER_USERNAME</code>, <code>INDEXER_PASSWORD</code></li>
+</ul>
+</li>
+<li><code>wazuh/secrets/wazuh-api-cred-secret.yaml</code>
+<ul>
+<li><code>API_USERNAME</code>, <code>API_PASSWORD</code></li>
+</ul>
+</li>
+<li><code>wazuh/secrets/dashboard-cred-secret.yaml</code>
+<ul>
+<li><code>DASHBOARD_USERNAME</code>, <code>DASHBOARD_PASSWORD</code></li>
+</ul>
+</li>
+<li><code>wazuh/secrets/wazuh-cluster-key-secret.yaml</code>
+<ul>
+<li><code>WAZUH_CLUSTER_KEY</code></li>
+</ul>
+</li>
+</ul>
+<p>After changing Secret values, re-apply your overlay and restart affected pods if required.</p>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="configuration-files"><a class="header" href="#configuration-files">Configuration Files</a></h1>
+<h2 id="storage-configuration"><a class="header" href="#storage-configuration">Storage configuration</a></h2>
+<p>Persistent volumes are provisioned through the <code>wazuh-storage</code> <code>StorageClass</code></p>
+<ul>
+<li><strong>Base definition</strong>: The base StorageClass is defined in <code>wazuh/base/storage-class.yaml</code></li>
+<li><strong>EKS overlay</strong>: <code>envs/eks/storage-class.yaml</code> configures <code>wazuh-storage</code> to use AWS EBS with encrypted volumes and a <code>Retain</code> reclaim policy</li>
+<li><strong>Local overlay</strong>: <code>envs/local-env/storage-class.yaml</code> configures <code>wazuh-storage</code> for local provisioners such as <code>microk8s.io/hostpath</code> or <code>k8s.io/minikube-hostpath</code></li>
+</ul>
+<p>Before deployment:</p>
+<ul>
+<li>Verify that the <code>provisioner</code> value matches a valid storage provisioner in your cluster (<code>kubectl get sc</code>), and in case of local deployment verify the contents of <code>envs/local-env/storage-class.yaml</code></li>
+</ul>
+<h2 id="resource-requests-and-replicas"><a class="header" href="#resource-requests-and-replicas">Resource requests and replicas</a></h2>
+<p>CPU, memory, and storage settings are controlled via Kustomize patches under <code>envs/</code></p>
+<ul>
+<li>
+<p><strong>Indexer resources</strong>:</p>
+<ul>
+<li>EKS: <code>envs/eks/indexer-resources.yaml</code> adjusts <code>resources</code> and persistent volume size for the <code>wazuh-indexer</code> StatefulSet</li>
+<li>Local: <code>envs/local-env/indexer-resources.yaml</code> reduces replicas and keeps modest resource requests for local development</li>
+</ul>
+</li>
+<li>
+<p><strong>Manager resources</strong>:</p>
+<ul>
+<li>EKS: <code>envs/eks/wazuh-master-resources.yaml</code> and <code>envs/eks/wazuh-worker-resources.yaml</code> configure CPU, memory, and persistent volume size for the Wazuh manager master and worker StatefulSets</li>
+<li>Local: <code>envs/local-env/wazuh-resources.yaml</code> reduces the number of Wazuh manager worker replicas</li>
+</ul>
+</li>
+</ul>
+<h2 id="ingress-and-external-access"><a class="header" href="#ingress-and-external-access">Ingress and external access</a></h2>
+<p>External access to the Wazuh dashboard is provided through an Ingress resource</p>
+<ul>
+<li>The base ingress is defined in <code>wazuh/base/wazuh-ingress.yaml</code></li>
+<li>The <code>rules.host</code> field must be updated with the fully qualified domain name (FQDN) or host you will use to access the dashboard</li>
+</ul>
+<p>Typical values:</p>
+<ul>
+<li><strong>EKS</strong>: DNS name of the load balancer created by the ingress controller</li>
+<li><strong>Local environment</strong>: <code>localhost</code> or another local hostname</li>
+</ul>
+<h2 id="network-policies-2"><a class="header" href="#network-policies-2">Network policies</a></h2>
+<p>Network policies restrict communication between pods to enforce security boundaries</p>
+<ul>
+<li>
+<p><strong>Base policies</strong>: Located in <code>wazuh/base/</code></p>
+<ul>
+<li><code>default-deny-all.yaml</code>: Denies all ingress and egress traffic not explicitly allowed by other policies</li>
+<li><code>Allow-DNS-np.yaml</code>: Permits DNS resolution traffic to <code>kube-dns</code> in the <code>kube-system</code> namespace</li>
+</ul>
+</li>
+<li>
+<p><strong>EKS-specific policies</strong>: Located in <code>envs/eks/network-policies/</code></p>
+<ul>
+<li><code>allow-ingress-to-dashboard.yaml</code>: Allows ingress controller traffic to the Wazuh dashboard</li>
+<li><code>allow-ingress-to-manager-master.yaml</code>: Allows ingress controller traffic to the Wazuh manager master</li>
+<li><code>allow-ingress-to-manager-worker.yaml</code>: Allows ingress controller traffic to the Wazuh manager workers</li>
+</ul>
+</li>
+</ul>
+<h2 id="credentials-and-secrets"><a class="header" href="#credentials-and-secrets">Credentials and secrets</a></h2>
+<p>Default credentials and keys are provided as Kubernetes Secrets under <code>wazuh/secrets/</code>. These values are meant to be customized before any production deployment.</p>
+<p>Main secrets:</p>
+<ul>
+<li><code>wazuh/secrets/wazuh-api-cred-secret.yaml</code>
+Wazuh API username and password.</li>
+<li><code>wazuh/secrets/dashboard-cred-secret.yaml</code>
+Wazuh dashboard (Kibana) username and password.</li>
+<li><code>wazuh/secrets/indexer-cred-secret.yaml</code>
+Wazuh indexer username and password.</li>
+</ul>
+<h2 id="persistence-configuration"><a class="header" href="#persistence-configuration">Persistence configuration</a></h2>
+<p>When customizing your Wazuh Kubernetes deployment, certain files and directories must be persisted to retain your changes across pod restarts and recreations. This is critical for maintaining custom configurations, user credentials, and security settings.</p>
+<h3 id="persistentvolumeclaims-and-configmaps"><a class="header" href="#persistentvolumeclaims-and-configmaps">PersistentVolumeClaims and ConfigMaps</a></h3>
+<p>Kubernetes uses PersistentVolumeClaims (PVCs) and ConfigMaps to persist data outside of pod lifecycles:</p>
+<ul>
+<li><strong>PersistentVolumeClaims</strong>: Used for stateful data like logs, queues, and Indexer data. When a pod is deleted and recreated, data in PVCs remains intact.</li>
+<li><strong>ConfigMaps</strong>: Used for configuration files. ConfigMaps can be mounted as files in pods and updated independently of the pod lifecycle.</li>
+</ul>
+<p>The Wazuh deployment already uses PVCs for critical directories like <code>/var/wazuh-manager/etc</code>, <code>/var/wazuh-manager/logs</code>, and <code>/var/lib/wazuh-indexer</code>. For additional configuration files, use ConfigMaps as described above.</p>
+<blockquote>
+<p><strong>Important</strong>: When creating ConfigMaps for configuration files, ensure the file content is properly formatted and validated before applying. Malformed configuration files can prevent pods from starting.</p>
+</blockquote>
+<p>For more information on Kubernetes storage concepts, refer to the official Kubernetes documentation:</p>
+<ul>
+<li><a href="https://kubernetes.io/docs/concepts/storage/persistent-volumes/">Persistent Volumes</a></li>
+<li><a href="https://kubernetes.io/docs/concepts/configuration/configmap/">ConfigMaps</a></li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="wazuh-upgrade"><a class="header" href="#wazuh-upgrade">Wazuh Upgrade</a></h1>
+<p>When upgrading our version of Wazuh installed in Kubernetes we must follow the following steps.</p>
+<h2 id="check-which-files-are-exported-to-the-volume"><a class="header" href="#check-which-files-are-exported-to-the-volume">Check which files are exported to the volume</a></h2>
+<p>Our Kubernetes deployment uses our Wazuh images from Docker. If we look at the following code extracted from the Wazuh configuration using Docker we can see which directories and files are used in the upgrades.</p>
+<pre><code>PERMANENT_DATA[((i++))]="/var/wazuh-manager/api/configuration"
+PERMANENT_DATA[((i++))]="/var/wazuh-manager/etc"
+PERMANENT_DATA[((i++))]="/var/wazuh-manager/logs"
+PERMANENT_DATA[((i++))]="/var/wazuh-manager/queue"
+PERMANENT_DATA[((i++))]="/var/wazuh-manager/var/multigroups"
+PERMANENT_DATA[((i++))]="/var/wazuh-manager/active-response/bin"
+</code></pre>
+<p>Any file that we modify referring to the files previously mentioned, will be changed also the corresponding volume. When the corresponding Wazuh pod is created again, it will get the cited files from the volume, thus keeping the changes made previously.</p>
+<p>To better understand it, we will give an example:</p>
+<p>We have our newly created Kubernetes environment following our instructions. In this example, the image of Wazuh used has been <code>wazuh/wazuh:3.13.1_7.8.0</code>.</p>
+<pre><code>containers:
+- name: wazuh-manager
+  image: 'wazuh/wazuh:3.13.2_7.9.1'
+</code></pre>
+<p>Let’s proceed by creating a set of rules in our <code>local_rules.xml</code> file at location <code>/var/wazuh-manager/etc/rules</code> in our wazuh manager master pod.</p>
+<pre><code>root@wazuh-manager-master-0:/# vim /var/wazuh-manager/etc/rules/local_rules.xml
+root@wazuh-manager-master-0:/# cat /var/wazuh-manager/etc/rules/local_rules.xml
+&lt;!-- Local rules --&gt;
+
+&lt;!-- Modify it at your will. --&gt;
+
+&lt;!-- Example --&gt;
+&lt;group name="local,syslog,sshd,"&gt;
+
+  &lt;!--
+  Dec 10 01:02:02 host sshd[1234]: Failed none for root from 1.1.1.1 port 1066 ssh2
+  --&gt;
+  &lt;rule id="100001" level="5"&gt;
+    &lt;if_sid&gt;5716&lt;/if_sid&gt;
+    &lt;srcip&gt;1.1.1.1&lt;/srcip&gt;
+    &lt;description&gt;sshd: authentication failed from IP 1.1.1.1.&lt;/description&gt;
+    &lt;group&gt;authentication_failed,pci_dss_10.2.4,pci_dss_10.2.5,&lt;/group&gt;
+  &lt;/rule&gt;
+
+  &lt;rule id="100002" level="5"&gt;
+    &lt;if_sid&gt;5716&lt;/if_sid&gt;
+    &lt;srcip&gt;2.1.1.1&lt;/srcip&gt;
+    &lt;description&gt;sshd: authentication failed from IP 2.1.1.1.&lt;/description&gt;
+    &lt;group&gt;authentication_failed,pci_dss_10.2.4,pci_dss_10.2.5,&lt;/group&gt;
+  &lt;/rule&gt;
+
+  &lt;rule id="100003" level="7"&gt;
+    &lt;if_sid&gt;5716&lt;/if_sid&gt;
+    &lt;srcip&gt;3.1.1.1&lt;/srcip&gt;
+    &lt;description&gt;sshd: authentication failed from IP 3.1.1.1.&lt;/description&gt;
+    &lt;group&gt;authentication_failed,pci_dss_10.2.4,pci_dss_10.2.5,&lt;/group&gt;
+  &lt;/rule&gt;
+
+&lt;/group&gt;
+
+</code></pre>
+<p>This action has modified the <code>local_rules.xml</code> file in the <code>/var/wazuh-manager/data/etc/rules</code> path and in the <code>/etc/postfix/etc/</code> rules path due these routes reference our volume assembly points.</p>
+<pre><code>volumeMounts:
+- name: config
+  mountPath: /wazuh-config-mount/etc/wazuh-manager.conf
+  subPath: wazuh-manager.conf
+  readOnly: true
+- name: wazuh-manager-master
+  mountPath: /var/wazuh-manager/data
+- name: wazuh-manager-master
+  mountPath: /etc/postfix
+</code></pre>
+<p>We can see their content.</p>
+<pre><code>root@wazuh-manager-master-0:/# cat /var/wazuh-manager/data/etc/rules/local_rules.xml
+&lt;!-- Local rules --&gt;
+
+&lt;!-- Modify it at your will. --&gt;
+
+&lt;!-- Example --&gt;
+&lt;group name="local,syslog,sshd,"&gt;
+
+  &lt;!--
+  Dec 10 01:02:02 host sshd[1234]: Failed none for root from 1.1.1.1 port 1066 ssh2
+  --&gt;
+  &lt;rule id="100001" level="5"&gt;
+    &lt;if_sid&gt;5716&lt;/if_sid&gt;
+    &lt;srcip&gt;1.1.1.1&lt;/srcip&gt;
+    &lt;description&gt;sshd: authentication failed from IP 1.1.1.1.&lt;/description&gt;
+    &lt;group&gt;authentication_failed,pci_dss_10.2.4,pci_dss_10.2.5,&lt;/group&gt;
+  &lt;/rule&gt;
+
+  &lt;rule id="100002" level="5"&gt;
+    &lt;if_sid&gt;5716&lt;/if_sid&gt;
+    &lt;srcip&gt;2.1.1.1&lt;/srcip&gt;
+    &lt;description&gt;sshd: authentication failed from IP 2.1.1.1.&lt;/description&gt;
+    &lt;group&gt;authentication_failed,pci_dss_10.2.4,pci_dss_10.2.5,&lt;/group&gt;
+  &lt;/rule&gt;
+
+  &lt;rule id="100003" level="7"&gt;
+    &lt;if_sid&gt;5716&lt;/if_sid&gt;
+    &lt;srcip&gt;3.1.1.1&lt;/srcip&gt;
+    &lt;description&gt;sshd: authentication failed from IP 3.1.1.1.&lt;/description&gt;
+    &lt;group&gt;authentication_failed,pci_dss_10.2.4,pci_dss_10.2.5,&lt;/group&gt;
+  &lt;/rule&gt;
+
+&lt;/group&gt;
+root@wazuh-manager-master-0:/# cat /etc/postfix/etc/rules/local_rules.xml
+&lt;!-- Local rules --&gt;
+
+&lt;!-- Modify it at your will. --&gt;
+
+&lt;!-- Example --&gt;
+&lt;group name="local,syslog,sshd,"&gt;
+
+  &lt;!--
+  Dec 10 01:02:02 host sshd[1234]: Failed none for root from 1.1.1.1 port 1066 ssh2
+  --&gt;
+  &lt;rule id="100001" level="5"&gt;
+    &lt;if_sid&gt;5716&lt;/if_sid&gt;
+    &lt;srcip&gt;1.1.1.1&lt;/srcip&gt;
+    &lt;description&gt;sshd: authentication failed from IP 1.1.1.1.&lt;/description&gt;
+    &lt;group&gt;authentication_failed,pci_dss_10.2.4,pci_dss_10.2.5,&lt;/group&gt;
+  &lt;/rule&gt;
+
+  &lt;rule id="100002" level="5"&gt;
+    &lt;if_sid&gt;5716&lt;/if_sid&gt;
+    &lt;srcip&gt;2.1.1.1&lt;/srcip&gt;
+    &lt;description&gt;sshd: authentication failed from IP 2.1.1.1.&lt;/description&gt;
+    &lt;group&gt;authentication_failed,pci_dss_10.2.4,pci_dss_10.2.5,&lt;/group&gt;
+  &lt;/rule&gt;
+
+  &lt;rule id="100003" level="7"&gt;
+    &lt;if_sid&gt;5716&lt;/if_sid&gt;
+    &lt;srcip&gt;3.1.1.1&lt;/srcip&gt;
+    &lt;description&gt;sshd: authentication failed from IP 3.1.1.1.&lt;/description&gt;
+    &lt;group&gt;authentication_failed,pci_dss_10.2.4,pci_dss_10.2.5,&lt;/group&gt;
+  &lt;/rule&gt;
+
+&lt;/group&gt;
+
+</code></pre>
+<p>At this point, if the pod was dropped or updated, Kubernetes would be in charge of creating a replica of it that would link to the volumes created and would maintain any changes referenced in the files and directories that we export to those volumes.</p>
+<p>Once explained the operation regarding the volumes, we proceed to update Wazuh in two simple steps.</p>
+<h2 id="1-change-the-image-of-the-container"><a class="header" href="#1-change-the-image-of-the-container">1. Change the image of the container</a></h2>
+<p>The first step is to change the image of the pod in each file that deploys each node of the Wazuh cluster.</p>
+<p>These files are the statefulSet files:</p>
+<ul>
+<li>wazuh-master-sts.yaml</li>
+<li>wazuh-worker-sts.yaml</li>
+</ul>
+<p>For example we had this version before:</p>
+<pre><code>containers:
+- name: wazuh-manager
+  image: 'wazuh/wazuh:3.13.1_7.8.0'
+</code></pre>
+<p>And now we’re going to upgrade to the next version:</p>
+<pre><code>containers:
+- name: wazuh-manager
+  image: 'wazuh/wazuh:3.13.2_7.9.1'
+</code></pre>
+<h2 id="2-apply-the-new-configuration"><a class="header" href="#2-apply-the-new-configuration">2. Apply the new configuration</a></h2>
+<p>The second and last step is to apply the new configuration of each pod. For example for the wazuh manager master:</p>
+<pre><code>ubuntu@k8s-control-server:~/wazuh-kubernetes/manager_cluster$ kubectl apply -f wazuh-manager-master-sts.yaml
+statefulset.apps "wazuh-manager-master" configured
+</code></pre>
+<p>This process will end the old pod while creating a new one with the new version, linked to the same volume. Once the Pods are booted, we will have our update ready and we can check the new version of Wazuh installed, the cluster and the changes that have been maintained through the use of the volumes.</p>
+<h3 id="note-it-is-important-to-update-all-wazuh-node-pods-because-the-cluster-only-works-when-all-nodes-have-the-same-version"><a class="header" href="#note-it-is-important-to-update-all-wazuh-node-pods-because-the-cluster-only-works-when-all-nodes-have-the-same-version">Note: It is important to update all Wazuh node pods, because the cluster only works when all nodes have the same version.</a></h3>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="clean-up"><a class="header" href="#clean-up">Clean up</a></h1>
+<p>Steps to perform a clean up of our deployments, services and volumes used in our environment.</p>
+<h2 id="delete-the-cluster"><a class="header" href="#delete-the-cluster">Delete the cluster</a></h2>
+<p>To delete your Wazuh cluster just use <code>kubectl delete -k envs/&lt;ENVIRONMENT&gt;</code> from this repository directory. (being <code>&lt;ENVIRONMENT&gt;</code> one of <code>EKS</code> or <code>local-env</code>)</p>
+<h2 id="delete-traefik-ingress-controller"><a class="header" href="#delete-traefik-ingress-controller">Delete Traefik Ingress Controller</a></h2>
+<p>To remove the Traefik Ingress Controller, run the following command from your repository directory:</p>
+<pre><code class="language-sh">kubectl delete -k traefik/runtime/
+kubectl delete -f traefik/crd/kubernetes-crd-definition-v1.yml
+</code></pre>
+<h2 id="delete-the-persistent-volumes-manually"><a class="header" href="#delete-the-persistent-volumes-manually">Delete the persistent volumes manually</a></h2>
+<p>Since we use <code>reclaimPolicy: Retain</code> in the storage class definition you must delete volumes manually if you want to clean these as well.</p>
+<pre><code class="language-console">kubectl get persistentvolume
+</code></pre>
+<p>And then delete persistent volumes using:</p>
+<pre><code class="language-console">kubectl delete persistentvolume &lt;PV_NAME&gt;
+</code></pre>
+<p>Expected output:</p>
+<pre><code class="language-console">ubuntu@k8s-control-server:~$ kubectl get persistentvolume
+NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS        CLAIM                                                         STORAGECLASS             REASON    AGE
+pvc-024466da-f7c5-11e8-b9b8-022ada63b4ac   10Gi       RWO            Retain           Released      wazuh/wazuh-manager-worker-wazuh-manager-worker-1             wazuh-storage                      6d
+pvc-b3226ad3-f7c4-11e8-b9b8-022ada63b4ac   30Gi       RWO            Retain           Bound         wazuh/wazuh-elasticsearch-wazuh-elasticsearch-0               wazuh-storage                      6d
+pvc-fb821971-f7c4-11e8-b9b8-022ada63b4ac   10Gi       RWO            Retain           Released      wazuh/wazuh-manager-master-wazuh-manager-master-0             wazuh-storage                      6d
+pvc-ffe7bf66-f7c4-11e8-b9b8-022ada63b4ac   10Gi       RWO            Retain           Released      wazuh/wazuh-manager-worker-wazuh-manager-worker-0             wazuh-storage                      6d
+</code></pre>
+<pre><code class="language-console">ubuntu@k8s-control-server:~$ kubectl delete persistentvolume pvc-b3226ad3-f7c4-11e8-b9b8-022ada63b4ac
+</code></pre>
+<p>Once these steps are completed, our Wazuh deployment will have been removed from the Kubernetes environment.</p>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="backup-and-restore"><a class="header" href="#backup-and-restore">Backup and restore</a></h1>
+<p>For backup and restore procedures, refer to the documentation for each component:</p>
+<ul>
+<li><a href="https://github.com/wazuh/wazuh/blob/v5.0.0/docs/ref/backup-restore.md">Wazuh manager</a></li>
+<li><a href="https://github.com/wazuh/wazuh-agent/blob/v5.0.0/docs/ref/backup-restore.md">Wazuh agent</a></li>
+</ul>
+<h2 id="kubernetes-specific-considerations"><a class="header" href="#kubernetes-specific-considerations">Kubernetes-specific considerations</a></h2>
+<p>When backing up Wazuh deployments on Kubernetes, also consider:</p>
+<h3 id="persistentvolume-backups"><a class="header" href="#persistentvolume-backups">PersistentVolume backups</a></h3>
+<ul>
+<li>Wazuh Manager and Indexer data are stored in PersistentVolumes.</li>
+<li>The indexer PersistentVolume contains the index data and indexer security state (including internal users).</li>
+<li>Use your storage provider’s snapshot or backup capabilities:
+<ul>
+<li><strong>AWS EBS</strong>: EBS snapshots via AWS Backup or manual snapshots</li>
+<li><strong>GCP Persistent Disk</strong>: Disk snapshots</li>
+<li><strong>Azure Disk</strong>: Disk snapshots</li>
+<li><strong>On-premises</strong>: Storage backend-specific backup tools</li>
+</ul>
+</li>
+<li>Consider using Kubernetes backup tools like Velero for automated PV backups.</li>
+</ul>
+<h3 id="secrets-and-configuration"><a class="header" href="#secrets-and-configuration">Secrets and configuration</a></h3>
+<p>Back up the following Kubernetes Secrets containing credentials and certificates:</p>
+<ul>
+<li><code>wazuh/secrets/wazuh-api-cred-secret.yaml</code> - Wazuh API credentials</li>
+<li><code>wazuh/secrets/dashboard-cred-secret.yaml</code> - Dashboard credentials</li>
+<li><code>wazuh/secrets/indexer-cred-secret.yaml</code> - Indexer credentials</li>
+<li><code>wazuh/secrets/wazuh-authd-pass-secret.yaml</code> - Agent enrollment password</li>
+<li><code>wazuh/secrets/wazuh-cluster-key-secret.yaml</code> - Cluster communication key</li>
+<li>Certificate secrets generated by the <code>wazuh-certs-tool.sh</code> script</li>
+</ul>
+<p>Also back up any custom ConfigMaps you have created for configuration file persistence.</p>
+<p>Store backups securely and encrypt them if they contain sensitive data.</p>
+<h3 id="manifest-files"><a class="header" href="#manifest-files">Manifest files</a></h3>
+<ul>
+<li>Maintain version-controlled copies of all Kubernetes manifests, including customizations in <code>envs/</code>.</li>
+<li>This allows you to recreate the deployment configuration even if the cluster is lost.</li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="security"><a class="header" href="#security">Security</a></h1>
+<p>This section summarizes security recommendations for Wazuh Kubernetes deployments. Apply the controls that match your environment and risk profile.</p>
+<h2 id="credentials-and-secrets-1"><a class="header" href="#credentials-and-secrets-1">Credentials and secrets</a></h2>
+<ul>
+<li>Do not use default credentials. The default values for the Wazuh API, Dashboard, and Indexer credentials are stored in <code>wazuh/secrets/</code>.</li>
+<li>Update the base64-encoded values in the following secret files before deploying to production:
+<ul>
+<li><code>wazuh/secrets/wazuh-api-cred-secret.yaml</code> - Wazuh API username and password</li>
+<li><code>wazuh/secrets/dashboard-cred-secret.yaml</code> - Dashboard username and password</li>
+<li><code>wazuh/secrets/indexer-cred-secret.yaml</code> - Indexer username and password</li>
+<li><code>wazuh/secrets/wazuh-authd-pass-secret.yaml</code> - Authd password for agent enrollment</li>
+<li><code>wazuh/secrets/wazuh-cluster-key-secret.yaml</code> - Cluster communication key</li>
+</ul>
+</li>
+<li>For production deployments, consider using external secret management solutions integrated with Kubernetes.</li>
+<li>Rotate credentials regularly and after any suspected exposure.</li>
+</ul>
+<h2 id="certificates-and-tls"><a class="header" href="#certificates-and-tls">Certificates and TLS</a></h2>
+<ul>
+<li>Protect the generated certificates created by the <code>wazuh-certs-tool.sh</code> script. Limit filesystem permissions and do not commit them to version control.</li>
+<li>The deployment uses TLS for:
+<ul>
+<li>Indexer cluster communication (node-to-node)</li>
+<li>Indexer API access (dashboard and manager connections)</li>
+<li>Manager-to-indexer communication</li>
+<li>Dashboard HTTPS access (when using ingress with TLS)</li>
+</ul>
+</li>
+<li>Certificates are stored as Kubernetes Secrets and mounted into pods at runtime.</li>
+<li>For production deployments, use certificates signed by a trusted Certificate Authority (CA) rather than self-signed certificates.</li>
+<li>Ensure certificate DNS names match the service names and external endpoints used in your deployment.</li>
+</ul>
+<h2 id="network-exposure"><a class="header" href="#network-exposure">Network exposure</a></h2>
+<ul>
+<li>Restrict access to exposed service ports using Kubernetes NetworkPolicies, cloud provider security groups, and firewall rules.</li>
+<li>The deployment includes NetworkPolicies in <code>wazuh/base/</code> and <code>envs/eks/network-policies/</code>:
+<ul>
+<li><code>default-deny-all.yaml</code> - Denies all traffic by default</li>
+<li><code>Allow-DNS-np.yaml</code> - Permits DNS resolution</li>
+<li>EKS-specific policies for ingress controller access</li>
+</ul>
+</li>
+<li>Review and customize NetworkPolicies for your environment before deployment.</li>
+<li>Do not expose internal-only endpoints to untrusted networks. In particular:
+<ul>
+<li><strong>Indexer API</strong> (port <code>9200</code>): Restrict to manager and dashboard pods only</li>
+<li><strong>Wazuh API</strong> (port <code>55000</code>): Limit access to dashboard and administrative networks</li>
+<li><strong>Cluster communication</strong> (port <code>1516</code>): Keep internal to the cluster</li>
+</ul>
+</li>
+<li>Use Ingress resources with TLS termination for external access to the dashboard.</li>
+<li>Consider using a service mesh (e.g., Istio, Linkerd) for additional network security controls and mTLS between services.</li>
+</ul>
+<h2 id="rbac-and-service-accounts"><a class="header" href="#rbac-and-service-accounts">RBAC and service accounts</a></h2>
+<ul>
+<li>Apply the principle of least privilege to Kubernetes RBAC roles and service accounts.</li>
+<li>Review the default service accounts used by Wazuh pods and create custom ServiceAccounts with minimal permissions if needed.</li>
+<li>Restrict <code>kubectl</code> access to the <code>wazuh</code> namespace to authorized administrators only.</li>
+<li>Use Kubernetes audit logging to monitor access to secrets and sensitive resources.</li>
+<li>Consider using Pod Security Standards or Pod Security Policies to restrict pod capabilities:
+<ul>
+<li>The indexer requires <code>SYS_CHROOT</code> capability and privileged init containers for <code>vm.max_map_count</code></li>
+<li>The manager requires <code>SYS_CHROOT</code> capability</li>
+<li>Review and minimize capabilities based on your security requirements</li>
+</ul>
+</li>
+</ul>
+<h2 id="storage-and-persistent-volumes"><a class="header" href="#storage-and-persistent-volumes">Storage and persistent volumes</a></h2>
+<ul>
+<li>Ensure PersistentVolumes are backed by encrypted storage:
+<ul>
+<li>For EKS: Use encrypted EBS volumes (configured in <code>envs/eks/storage-class.yaml</code>)</li>
+<li>For other cloud providers: Enable encryption in the StorageClass configuration</li>
+<li>For on-premises: Use encrypted storage backends</li>
+</ul>
+</li>
+<li>Set appropriate <code>reclaimPolicy</code> on StorageClasses:
+<ul>
+<li><code>Retain</code> for production data (prevents accidental deletion)</li>
+<li><code>Delete</code> only for development environments</li>
+</ul>
+</li>
+<li>Restrict access to PersistentVolumes at the storage layer (filesystem permissions, volume encryption).</li>
+<li>Regularly back up PersistentVolumes containing critical data.</li>
+</ul>
+<h2 id="host-and-cluster-hardening"><a class="header" href="#host-and-cluster-hardening">Host and cluster hardening</a></h2>
+<ul>
+<li>Run Kubernetes on hardened nodes (patched OS, minimal installed packages, restricted SSH access).</li>
+<li>Keep Kubernetes and node components up to date with security patches.</li>
+<li>Use private node pools or networks for sensitive workloads.</li>
+<li>Enable Kubernetes audit logging and monitor for suspicious activity.</li>
+<li>Consider using container security scanning tools to detect vulnerabilities in Wazuh images.</li>
+<li>Apply resource limits to prevent resource exhaustion attacks (already configured in the deployment manifests).</li>
+<li>Use namespace isolation and resource quotas to limit the impact of compromised workloads.</li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="performance"><a class="header" href="#performance">Performance</a></h1>
+<p>This section provides practical recommendations to improve performance for Wazuh Kubernetes deployments. Apply the controls that match your workload and environment.</p>
+<h2 id="performance-drivers"><a class="header" href="#performance-drivers">Performance drivers</a></h2>
+<ul>
+<li><strong>Wazuh Indexer</strong> is typically the main bottleneck (JVM heap, disk I/O, and CPU).</li>
+<li><strong>Wazuh Manager</strong> load grows with the number of connected agents and event throughput.</li>
+<li><strong>Wazuh Dashboard</strong> mainly affects interactive usage and depends on Indexer and Manager responsiveness.</li>
+</ul>
+<p>For baseline resource sizing and prerequisites, see <a href="requirements.html">Requirements</a>.</p>
+<h2 id="storage-and-persistent-volumes-1"><a class="header" href="#storage-and-persistent-volumes-1">Storage and persistent volumes</a></h2>
+<ul>
+<li>Use low-latency storage for the Indexer PersistentVolumes. Performance depends heavily on disk I/O.</li>
+<li>Monitor disk space growth. Index data and persistent volumes can grow quickly in high-ingest environments.</li>
+<li>Configure appropriate <code>storageClassName</code> in the environment overlays (<code>envs/eks/</code> or <code>envs/local-env/</code>).</li>
+</ul>
+<h2 id="wazuh-indexer-opensearch"><a class="header" href="#wazuh-indexer-opensearch">Wazuh Indexer (OpenSearch)</a></h2>
+<p>The Indexer is typically the most resource-intensive component. Performance tuning focuses on JVM heap sizing, CPU allocation, and storage.</p>
+<h3 id="jvm-heap-sizing"><a class="header" href="#jvm-heap-sizing">JVM heap sizing</a></h3>
+<ul>
+<li>Set the JVM heap explicitly using the <code>OPENSEARCH_JAVA_OPTS</code> environment variable in the indexer StatefulSet.</li>
+<li>Current default: <code>-Xms1g -Xmx1g</code> (1 GB heap)</li>
+<li><strong>Recommendations</strong>:
+<ul>
+<li>Keep heap sizing conservative relative to available memory so the OS can cache filesystem data</li>
+<li>Allocate 50% of pod memory to JVM heap, leaving the rest for OS filesystem caching</li>
+<li>For production: Start with 4-8 GB heap and adjust based on monitoring</li>
+<li>Oversized heap commonly degrades disk-heavy workloads due to longer GC pauses</li>
+</ul>
+</li>
+<li>Ensure the Linux host meets the required <code>vm.max_map_count</code> prerequisite (set via init container in the deployment).</li>
+</ul>
+<p>To adjust JVM heap size and memory allocation for the Indexer, edit the relevant configuration files:</p>
+<ul>
+<li>Update the <code>OPENSEARCH_JAVA_OPTS</code> environment variable in <code>wazuh/indexer_stack/wazuh-indexer/cluster/indexer-sts.yaml</code> or apply a Kustomize patch in the <code>envs/</code> directory.</li>
+<li>Modify the memory requests and limits in the resource specification within the same files or environment overlays.</li>
+</ul>
+<p>Ensure that the memory limit is set appropriately to allow for both JVM heap and OS filesystem caching. Apply changes using <code>kubectl apply -k envs/&lt;environment&gt;/</code> and monitor performance after adjustments.</p>
+<h3 id="cpu-and-memory-allocation"><a class="header" href="#cpu-and-memory-allocation">CPU and memory allocation</a></h3>
+<p>The default resource allocation varies by environment:</p>
+<ul>
+<li>
+<p><strong>Local deployment</strong>:</p>
+<ul>
+<li>CPU: 500m request, 1 core limit</li>
+<li>Memory: 1 Gi request, 3 Gi limit</li>
+<li>Replicas: 1</li>
+</ul>
+</li>
+<li>
+<p><strong>EKS deployment</strong>:</p>
+<ul>
+<li>CPU: 500m request, 1 core limit</li>
+<li>Memory: 1 Gi request, 2 Gi limit</li>
+<li>Replicas: 3</li>
+</ul>
+</li>
+</ul>
+<p>These defaults are suitable for development and testing environments with low to moderate workloads.
+For production environments, adjust resource allocation based on your workload:</p>
+<ul>
+<li>Prioritize CPU availability during ingest peaks</li>
+<li>Higher CPU allocation improves indexing and query performance</li>
+<li>Allocate 50% to JVM heap (configure via <code>OPENSEARCH_JAVA_OPTS</code>)</li>
+<li>Reserve 50% for OS filesystem caching (improves disk I/O performance)</li>
+</ul>
+<p><strong>How to adjust</strong>:</p>
+<p>Edit the environment-specific resource patches to match your requirements:</p>
+<ul>
+<li>EKS: <code>envs/eks/indexer-resources.yaml</code></li>
+<li>Local: <code>envs/local-env/indexer-resources.yaml</code></li>
+</ul>
+<p>After editing, apply the changes with <code>kubectl apply -k envs/&lt;environment&gt;/</code>.</p>
+<h3 id="storage-volume-sizing"><a class="header" href="#storage-volume-sizing">Storage volume sizing</a></h3>
+<ul>
+<li>Monitor index data growth and provision sufficient storage.</li>
+<li>Default PVC size: 500 Mi (development only)</li>
+<li>Monitor disk usage and expand PVCs before reaching 80% capacity</li>
+<li>Adjust storage size in the environment overlays (<code>indexer-resources.yaml</code>) and apply changes with <code>kubectl apply -k envs/&lt;environment&gt;/</code>.</li>
+</ul>
+<h3 id="indexer-cluster-scaling"><a class="header" href="#indexer-cluster-scaling">Indexer cluster scaling</a></h3>
+<ul>
+<li>The default EKS deployment uses 3 indexer replicas for high availability, and only 1 replica for local deployments.</li>
+<li>Horizontal scaling (adding more replicas) improves:
+<ul>
+<li>Query performance (more nodes to distribute search load)</li>
+<li>Indexing throughput (parallel processing)</li>
+<li>Resilience (data replication across nodes)</li>
+</ul>
+</li>
+<li>Update <code>discovery.seed_hosts</code> in the indexer StatefulSet (<code>wazuh/indexer_stack/wazuh-indexer/cluster/indexer-sts.yaml</code>) when adding nodes.</li>
+<li>Apply changes with <code>kubectl apply -k envs/&lt;environment&gt;/</code> and monitor cluster health and performance.</li>
+</ul>
+<h2 id="wazuh-manager"><a class="header" href="#wazuh-manager">Wazuh Manager</a></h2>
+<p>Manager performance depends on the number of connected agents, event processing rules, and active response configurations.</p>
+<h3 id="resource-allocation"><a class="header" href="#resource-allocation">Resource allocation</a></h3>
+<ul>
+<li>Default resource limits are suitable for small deployments</li>
+<li>For production with higher event throughput, increase CPU and memory allocation</li>
+<li>Adjust resource requests and limits in the environment-specific resource patches:
+<ul>
+<li>EKS: <code>envs/eks/wazuh-master-resources.yaml</code> and <code>envs/eks/wazuh-worker-resources.yaml</code></li>
+<li>Local: <code>envs/local-env/wazuh-resources.yaml</code></li>
+</ul>
+</li>
+</ul>
+<h3 id="manager-scaling"><a class="header" href="#manager-scaling">Manager scaling</a></h3>
+<ul>
+<li>The deployment includes a master node and worker nodes.</li>
+<li><strong>Master node</strong>: Handles cluster coordination, API requests, and dashboard communication.</li>
+<li><strong>Worker nodes</strong>: Handle agent connections and event processing.</li>
+<li>Scale worker nodes horizontally to distribute agent load:
+<ul>
+<li>Default: 2 worker replicas</li>
+<li>If required: increase worker replicas in <code>wazuh/wazuh_managers/wazuh-worker-sts.yaml</code> and apply changes with <code>kubectl apply -k envs/&lt;environment&gt;/</code>.</li>
+</ul>
+</li>
+<li>Ensure sufficient CPU and memory for event processing and rule evaluation.</li>
+</ul>
+<h3 id="storage-for-manager"><a class="header" href="#storage-for-manager">Storage for manager</a></h3>
+<p>Manager PersistentVolumes store logs, queues, and configuration.</p>
+<ul>
+<li>Default PVC size:
+<ul>
+<li>Local deployment: 500 Mi</li>
+<li>EKS deployment:
+<ul>
+<li>Master node: 50 Gi</li>
+<li>Worker nodes: 50 Gi</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p>How to adjust: edit the <code>volumeClaimTemplates</code> section in the environment-specific resource patches:
+- EKS:
+- Master: <code>envs/eks/wazuh-master-resources.yaml</code>
+- Workers: <code>envs/eks/wazuh-worker-resources.yaml</code>
+- Local: Edit <code>envs/local-env/wazuh-resources.yaml</code> to add volume claim overrides
+- After editing, apply the changes with <code>kubectl apply -k envs/&lt;environment&gt;/</code>.</p>
+<h3 id="backpressure-and-queue-management"><a class="header" href="#backpressure-and-queue-management">Backpressure and queue management</a></h3>
+<ul>
+<li>If you observe ingestion backpressure or delayed processing:
+<ul>
+<li>Validate that the manager has sufficient CPU and memory</li>
+<li>Check that PersistentVolumes are not constrained by slow storage</li>
+<li>Review manager logs for queue growth and connection retries</li>
+<li>Consider adding more worker nodes to distribute load</li>
+</ul>
+</li>
+</ul>
+<h2 id="wazuh-dashboard"><a class="header" href="#wazuh-dashboard">Wazuh Dashboard</a></h2>
+<ul>
+<li>Dashboard responsiveness depends on Indexer and Manager health.</li>
+<li>Address Indexer/Manager resource constraints first when troubleshooting slow queries.</li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="glossary"><a class="header" href="#glossary">Glossary</a></h1>
+<p>This section defines key terms used in the Wazuh Kubernetes documentation.</p>
+<h2 id="clusterip-service"><a class="header" href="#clusterip-service">ClusterIP Service</a></h2>
+<p>A Kubernetes Service type that exposes an internal virtual IP reachable only from within the cluster. In this deployment, services such as <code>wazuh-api</code>, <code>wazuh-events</code>, <code>wazuh-registration</code>, and <code>dashboard</code> use this internal-only model for component-to-component communication.</p>
+<h2 id="headless-service"><a class="header" href="#headless-service">Headless Service</a></h2>
+<p>A Kubernetes Service with <code>clusterIP: None</code> that provides direct DNS records for each pod instead of a single virtual IP. In this deployment, headless services support stable peer discovery for stateful components such as clustered managers and indexers.</p>
+<h2 id="ingress-resource"><a class="header" href="#ingress-resource">Ingress resource</a></h2>
+<p>A Kubernetes API resource that defines HTTP(S) routing rules from external traffic to internal Services. In this repository, the external exposure path is primarily implemented with Traefik CRDs (<code>IngressRouteTCP</code> and <code>MiddlewareTCP</code>), so Ingress is useful as a general concept and compatibility reference.</p>
+<h2 id="ingress-controller"><a class="header" href="#ingress-controller">Ingress controller</a></h2>
+<p>A Kubernetes component that watches ingress-related resources and configures a reverse proxy or load balancer. In this deployment, Traefik acts as the ingress controller and handles external routing to Wazuh endpoints.</p>
+<h2 id="ingressroutetcp"><a class="header" href="#ingressroutetcp">IngressRouteTCP</a></h2>
+<p>A Traefik custom resource that defines TCP entrypoints, matching rules, and backend service routing. In this repository, <code>IngressRouteTCP</code> objects expose Wazuh dashboard and manager ports while preserving protocol-specific behavior.</p>
+<h2 id="init-container"><a class="header" href="#init-container">Init container</a></h2>
+<p>A container that runs before application containers in the same pod to prepare runtime prerequisites. In this deployment, init containers are used for setup tasks such as seeding persistent configuration, fixing volume permissions, and applying required kernel tuning.</p>
+<h2 id="kustomization"><a class="header" href="#kustomization">Kustomization</a></h2>
+<p>A Kustomize configuration file (<code>kustomization.yml</code>) that declares resources, generators, and patches to build final manifests. This repository uses Kustomization files as the main deployment entrypoints for base and environment-specific stacks.</p>
+<h2 id="middlewaretcp"><a class="header" href="#middlewaretcp">MiddlewareTCP</a></h2>
+<p>A Traefik custom resource used to apply middleware to TCP routes (for example, source IP allow lists). In this deployment, <code>MiddlewareTCP</code> (<code>ip-allowlist</code>) is attached to TCP routes and can be tightened to trusted source ranges as needed.</p>
+<h2 id="networkpolicy"><a class="header" href="#networkpolicy">NetworkPolicy</a></h2>
+<p>A Kubernetes resource that controls how pods are allowed to communicate with each other and with external endpoints. In this deployment, NetworkPolicy objects are used to enforce default-deny behavior and to explicitly allow only the ingress and egress traffic required by the Wazuh managers, indexers, and dashboard.</p>
+<h2 id="overlay-kustomize-overlay"><a class="header" href="#overlay-kustomize-overlay">Overlay (Kustomize overlay)</a></h2>
+<p>A Kustomize configuration that modifies a set of base manifests for a specific environment. In this repository, overlays such as the EKS and local environment variants adjust storage classes, resource requests, replicas, and networking configuration while reusing the common Wazuh base manifests.</p>
+<h2 id="persistentvolumeclaim-pvc"><a class="header" href="#persistentvolumeclaim-pvc">PersistentVolumeClaim (PVC)</a></h2>
+<p>A Kubernetes claim for persistent storage requested by a pod. In this deployment, PVCs back stateful data for Wazuh managers and indexers so data survives pod restarts and rescheduling.</p>
+<h2 id="secret"><a class="header" href="#secret">Secret</a></h2>
+<p>A Kubernetes object used to store sensitive data such as credentials, passwords, and keys. In this repository, secrets provide authentication and trust material for manager, indexer, dashboard, and inter-service communication.</p>
+<h2 id="statefulset"><a class="header" href="#statefulset">StatefulSet</a></h2>
+<p>A Kubernetes workload controller for stateful applications that require stable pod identity and ordered lifecycle operations. In this deployment, StatefulSets run manager and indexer nodes that depend on stable naming and persistent volumes.</p>
+<h2 id="storageclass"><a class="header" href="#storageclass">StorageClass</a></h2>
+<p>A Kubernetes resource that defines classes of storage with specific provisioner and parameters. In this repository, <code>wazuh-storage</code> is customized by environment overlays to match local or cloud storage backends.</p>
+<h2 id="traefik-crd"><a class="header" href="#traefik-crd">Traefik CRD</a></h2>
+<p>A Traefik Custom Resource Definition that extends Kubernetes with Traefik-native routing objects. This deployment uses Traefik CRDs such as <code>IngressRouteTCP</code> and <code>MiddlewareTCP</code> to publish Wazuh endpoints.</p>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="kubernetes-integration-tests"><a class="header" href="#kubernetes-integration-tests">Kubernetes Integration Tests</a></h1>
+<p>Workflow file: <code>.github/workflows/5_check_k8s_integration_tests.yaml</code></p>
+<p>This workflow provisions a Kubernetes cluster (Minikube or EKS), deploys Wazuh, and runs the integration test suite against the live deployment. It can be triggered manually or from a PR comment.</p>
+<hr>
+<h2 id="triggers"><a class="header" href="#triggers">Triggers</a></h2>
+<p>The workflow supports two execution modes:</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Mode</th><th>Trigger</th><th>Who can trigger</th></tr>
+</thead>
+<tbody>
+<tr><td>PR comment</td><td><code>issue_comment</code> on an open PR</td><td>OWNER, MEMBER, or COLLABORATOR</td></tr>
+<tr><td>Manual</td><td><code>workflow_dispatch</code></td><td>Anyone with repo write access</td></tr>
+</tbody>
+</table>
+</div>
+<hr>
+<h2 id="execution-flows"><a class="header" href="#execution-flows">Execution Flows</a></h2>
+<h3 id="issue_comment-flow"><a class="header" href="#issue_comment-flow">issue_comment flow</a></h3>
+<p>Triggered when an authorized user posts a recognized command on an open PR.</p>
+<pre class="mermaid">flowchart TD
+    A[PR comment posted] --&gt; B{Recognized command\nand authorized user?}
+    B -- No --&gt; Z[Ignored]
+    B -- Yes --&gt; C[get_pr_info\nReact · Extract PR data\nParse command · Create Check Run]
+    C --&gt; D[prepare\nResolve branch · Read VERSION.json]
+    D --&gt; E{deployment_matrix}
+    E --&gt; F[kubernetes_test\ndeployment_type=local]
+    E --&gt; G[kubernetes_test\ndeployment_type=eks]
+    F --&gt; H[update_check\nUpdate GitHub Check Run]
+    G --&gt; H
+</pre>
+
+<p><strong>Recognized commands:</strong></p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Comment</th><th>Deployment matrix</th></tr>
+</thead>
+<tbody>
+<tr><td><code>/test-k8s</code></td><td><code>["local"]</code></td></tr>
+<tr><td><code>/test-k8s-local</code></td><td><code>["local"]</code></td></tr>
+<tr><td><code>/test-k8s-eks</code></td><td><code>["eks"]</code></td></tr>
+</tbody>
+</table>
+</div>
+<p>Only comments on <strong>open</strong> PRs from users with <code>OWNER</code>, <code>MEMBER</code>, or <code>COLLABORATOR</code> association are processed. All other comments are silently ignored.</p>
+<h3 id="workflow_dispatch-flow"><a class="header" href="#workflow_dispatch-flow">workflow_dispatch flow</a></h3>
+<p>Triggered manually. Skips <code>get_pr_info</code> and <code>update_check</code> (no Check Run is created).</p>
+<pre class="mermaid">flowchart TD
+    A[Manual trigger] --&gt; D[prepare\nResolve branch · Read VERSION.json]
+    D --&gt; E{deployment_type input}
+    E -- local --&gt; F[kubernetes_test\ndeployment_type=local]
+    E -- eks --&gt; G[kubernetes_test\ndeployment_type=eks]
+    E -- both --&gt; F &amp; G
+</pre>
+
+<hr>
+<h2 id="parameters"><a class="header" href="#parameters">Parameters</a></h2>
+<h3 id="workflow_dispatch-inputs"><a class="header" href="#workflow_dispatch-inputs">workflow_dispatch inputs</a></h3>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Input</th><th>Required</th><th>Default</th><th>Description</th></tr>
+</thead>
+<tbody>
+<tr><td><code>pr_head_ref</code></td><td>Yes</td><td>—</td><td>Branch of <code>wazuh-kubernetes</code> to check out and test</td></tr>
+<tr><td><code>automation_reference</code></td><td>No</td><td><code>main</code></td><td>Branch of <code>wazuh-automation</code> to install <code>test_runner</code> from</td></tr>
+<tr><td><code>deployment_type</code></td><td>Yes</td><td>—</td><td><code>local</code>, <code>eks</code>, or <code>both</code></td></tr>
+<tr><td><code>version</code></td><td>No</td><td>—</td><td>Override image version (e.g. <code>5.0.1</code>). If empty, reads from <code>VERSION.json</code></td></tr>
+<tr><td><code>stage</code></td><td>No</td><td>—</td><td>Image stage suffix (e.g. <code>beta1</code>, <code>beta2-latest</code>). Required when <code>version</code> is set manually</td></tr>
+<tr><td><code>registry</code></td><td>No</td><td><code>ECR</code></td><td><code>ECR</code> (dev images) or <code>DockerHub</code> (prod images)</td></tr>
+</tbody>
+</table>
+</div>
+<h3 id="issue_comment-parameters"><a class="header" href="#issue_comment-parameters">issue_comment parameters</a></h3>
+<p>When triggered by a PR comment, all parameters are derived automatically:</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Parameter</th><th>Source</th></tr>
+</thead>
+<tbody>
+<tr><td><code>pr_head_ref</code></td><td>PR head branch from GitHub API</td></tr>
+<tr><td><code>pr_head_sha</code></td><td>PR head SHA from GitHub API</td></tr>
+<tr><td><code>deployment_matrix</code></td><td>Parsed from comment command</td></tr>
+<tr><td><code>version</code> / <code>stage</code></td><td>Read from <code>VERSION.json</code> on the PR branch</td></tr>
+<tr><td><code>registry</code></td><td>Defaults to ECR</td></tr>
+<tr><td><code>automation_reference</code></td><td>Defaults to <code>main</code></td></tr>
+</tbody>
+</table>
+</div>
+<hr>
+<h2 id="image-tag-resolution"><a class="header" href="#image-tag-resolution">Image Tag Resolution</a></h2>
+<p>The effective image tag depends on which inputs are provided:</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th><code>version</code> input</th><th><code>stage</code> input</th><th>Registry</th><th>Resulting tag</th></tr>
+</thead>
+<tbody>
+<tr><td>empty</td><td>empty</td><td>ECR</td><td><code>{VERSION.json version}{-stage}-latest</code></td></tr>
+<tr><td>empty</td><td>empty</td><td>DockerHub</td><td><code>{VERSION.json version}{-stage}</code></td></tr>
+<tr><td>set</td><td>empty</td><td>ECR</td><td><code>{version}-latest</code></td></tr>
+<tr><td>set</td><td>empty</td><td>DockerHub</td><td><code>{version}</code></td></tr>
+<tr><td>set</td><td>set</td><td>ECR</td><td><code>{version}-{stage}</code></td></tr>
+<tr><td>set</td><td>set</td><td>DockerHub</td><td><code>{version}-{stage}</code></td></tr>
+<tr><td>empty</td><td>set</td><td>ECR</td><td><code>{VERSION.json version}-{stage}</code></td></tr>
+<tr><td>empty</td><td>set</td><td>DockerHub</td><td><code>{VERSION.json version}-{stage}</code></td></tr>
+</tbody>
+</table>
+</div>
+<p>The effective <code>WAZUH_VERSION</code> (passed to <code>test_runner</code>) is always the version that ends up in the tag, whether it comes from <code>VERSION.json</code> or the <code>version</code> input.</p>
+<hr>
+<h2 id="job-details"><a class="header" href="#job-details">Job Details</a></h2>
+<h3 id="job-1--get_pr_info-issue_comment-only"><a class="header" href="#job-1--get_pr_info-issue_comment-only">Job 1 — <code>get_pr_info</code> (issue_comment only)</a></h3>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Step</th><th>What it does</th></tr>
+</thead>
+<tbody>
+<tr><td>React to comment</td><td>Adds a 🚀 reaction to the triggering PR comment</td></tr>
+<tr><td>Extract PR data</td><td>Calls GitHub API to get PR <code>head_ref</code> and <code>head_sha</code></td></tr>
+<tr><td>Parse command</td><td>Maps comment text → <code>deployment_matrix</code> JSON and <code>check_name</code> string</td></tr>
+<tr><td>Create Check Run</td><td>Creates a GitHub Check Run in <code>in_progress</code> state on the PR head SHA; passes the <code>check_run_id</code> to <code>update_check</code></td></tr>
+</tbody>
+</table>
+</div>
+<h3 id="job-2--prepare-both-triggers"><a class="header" href="#job-2--prepare-both-triggers">Job 2 — <code>prepare</code> (both triggers)</a></h3>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Step</th><th>What it does</th></tr>
+</thead>
+<tbody>
+<tr><td>Resolve context</td><td>If <code>workflow_dispatch</code>: reads inputs. If <code>issue_comment</code>: reads outputs from <code>get_pr_info</code></td></tr>
+<tr><td>Checkout VERSION.json</td><td>Sparse-checks out only <code>VERSION.json</code> from the target branch</td></tr>
+<tr><td>Read version info</td><td>Extracts <code>version</code> and <code>stage</code> fields from <code>VERSION.json</code></td></tr>
+<tr><td>Show test plan</td><td>Writes a summary table to the GitHub Actions step summary</td></tr>
+</tbody>
+</table>
+</div>
+<p>Outputs passed downstream: <code>pr_head_ref</code>, <code>deployment_matrix</code>, <code>wazuh_version</code>, <code>wazuh_stage</code>.</p>
+<h3 id="job-3--kubernetes_test-matrix-both-triggers"><a class="header" href="#job-3--kubernetes_test-matrix-both-triggers">Job 3 — <code>kubernetes_test</code> (matrix, both triggers)</a></h3>
+<p>Runs once per entry in <code>deployment_matrix</code>. Each instance provisions its own cluster.</p>
+<h4 id="common-setup"><a class="header" href="#common-setup">Common setup</a></h4>
+<ol>
+<li>Checkout <code>wazuh-automation</code> at <code>automation_reference</code></li>
+<li>Checkout <code>wazuh-kubernetes</code> at <code>pr_head_ref</code></li>
+<li>Set up Python 3.12</li>
+<li>Install <code>test_runner</code>:
+<pre><code class="language-bash">pip install -r wazuh-automation/deployability/deps/requirements.txt
+pip install -r wazuh-automation/integration-test-module/requirements.txt
+pip install -e wazuh-automation/integration-test-module/
+</code></pre>
+</li>
+<li>Configure AWS credentials via OIDC (<code>AWS_IAM_ROLE</code>)</li>
+<li>Resolve <code>WAZUH_VERSION</code>, <code>IMAGE_REGISTRY</code>, <code>IMAGE_TAG</code> (see <a href="#image-tag-resolution">Image Tag Resolution</a>)</li>
+</ol>
+<h4 id="infrastructure-provisioning"><a class="header" href="#infrastructure-provisioning">Infrastructure provisioning</a></h4>
+<p><strong>Local (Minikube):</strong></p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Step</th><th>Detail</th></tr>
+</thead>
+<tbody>
+<tr><td>Free disk space</td><td>Removes pre-installed tools to free ~20 GB; removes swap</td></tr>
+<tr><td>Install Minikube</td><td>Downloads and installs latest <code>minikube-linux-amd64</code></td></tr>
+<tr><td>Start cluster</td><td><code>minikube start --memory=8192 --cpus=4 --network-plugin=cni --cni=calico</code></td></tr>
+<tr><td>Login to ECR</td><td>Only if registry is ECR; authenticates Docker daemon</td></tr>
+<tr><td>Pull + load images</td><td>Pulls <code>wazuh-dashboard</code>, <code>wazuh-indexer</code>, <code>wazuh-manager</code> and loads them into Minikube’s internal registry</td></tr>
+</tbody>
+</table>
+</div>
+<p><strong>EKS:</strong></p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Step</th><th>Detail</th></tr>
+</thead>
+<tbody>
+<tr><td>Install eksctl</td><td>Downloads latest <code>eksctl</code> binary</td></tr>
+<tr><td>Create cluster</td><td>6 managed spot nodes (<code>t3a.medium</code>), with OIDC; tagged with run metadata</td></tr>
+<tr><td>EBS CSI driver</td><td>Creates IAM service account + installs <code>aws-ebs-csi-driver</code> addon</td></tr>
+<tr><td>Network policies</td><td>Creates IAM SA for <code>aws-node</code>, enables <code>NetworkPolicy</code> support in VPC CNI</td></tr>
+</tbody>
+</table>
+</div>
+<h4 id="configuration-and-certificates"><a class="header" href="#configuration-and-certificates">Configuration and certificates</a></h4>
+<ol>
+<li><strong>Patch image references</strong>: <code>yq</code> rewrites the image field in <code>dashboard-deploy.yaml</code>, <code>indexer-sts.yaml</code>, <code>wazuh-master-sts.yaml</code>, and <code>wazuh-worker-sts.yaml</code> to <code>${IMAGE_REGISTRY}/wazuh/&lt;component&gt;:${IMAGE_TAG}</code></li>
+<li><strong>Setup artifact URLs</strong> (<code>setup_artifacts</code> composite action): downloads <code>artifact_urls.yaml</code> from S3, replaces template variables, exports <code>wazuh_certs_tool</code> and <code>wazuh_config_yml</code> as environment variables</li>
+<li><strong>Download certs tool and config</strong>: fetches <code>wazuh-certs-tool.sh</code> and <code>config.yml</code> from the S3 URLs</li>
+<li><strong>Update <code>config.yml</code> for Kubernetes</strong>: replaces IP-based node addressing with DNS names (cluster-internal service FQDNs)</li>
+<li><strong>Generate certificates</strong>: runs <code>tools/utils/deployment/certificates-conf.sh --cert --copy --priv</code></li>
+</ol>
+<h4 id="ingress-configuration"><a class="header" href="#ingress-configuration">Ingress configuration</a></h4>
+<p><strong>Local:</strong></p>
+<ul>
+<li>Patches <code>storage-class.yaml</code> to use <code>k8s.io/minikube-hostpath</code> provisioner</li>
+<li>Sets ingress match to <code>HostSNI(\</code>localhost`)`</li>
+<li>Deploys Traefik CRD only (no Traefik runtime for Minikube)</li>
+</ul>
+<p><strong>EKS:</strong></p>
+<ul>
+<li>Deploys Traefik CRDs and runtime (<code>kubectl apply -k traefik/runtime/</code>)</li>
+<li>Waits 5 minutes for the Traefik LoadBalancer to get a hostname</li>
+<li>Reads the LoadBalancer hostname and sets <code>HostSNI(\</code>{hostname}`)` in the ingress route</li>
+</ul>
+<h4 id="wazuh-deployment"><a class="header" href="#wazuh-deployment">Wazuh deployment</a></h4>
+<pre><code class="language-bash"># EKS
+kubectl apply -k envs/eks/
+
+# Local
+kubectl apply -k envs/local-env/
+</code></pre>
+<p>Waits up to <strong>15 minutes</strong> for all pods in the <code>wazuh</code> namespace to reach <code>Running</code> or <code>Completed</code> state, polling every 10 seconds.</p>
+<p>Then waits up to <strong>10 minutes</strong> for:</p>
+<ul>
+<li>OpenSearch to report <code>"status"</code> in cluster health (requires 3 consecutive healthy responses)</li>
+<li>Dashboard to return HTTP 200/302 on <code>/app/status</code></li>
+</ul>
+<h4 id="test-execution"><a class="header" href="#test-execution">Test execution</a></h4>
+<pre><code class="language-bash">test_runner \
+  --test-type "kubernetes-${DEPLOY}" \
+  --deployment-type "kubernetes-${DEPLOY}" \
+  --use-local \
+  --version "${WAZUH_VERSION}" \
+  --log-level INFO \
+  --output github \
+  --output-file "test-results-k8s-${DEPLOY}.github"
+</code></pre>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Argument</th><th>Value</th><th>Notes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>--test-type</code></td><td><code>kubernetes-local</code> or <code>kubernetes-eks</code></td><td>Selects the test module set</td></tr>
+<tr><td><code>--deployment-type</code></td><td><code>kubernetes-local</code> or <code>kubernetes-eks</code></td><td>Selects the deployment profile</td></tr>
+<tr><td><code>--use-local</code></td><td>—</td><td><code>kubectl</code> runs locally, not via SSH</td></tr>
+<tr><td><code>--version</code></td><td>Resolved <code>WAZUH_VERSION</code></td><td>Used for version assertion tests</td></tr>
+<tr><td><code>--output github</code></td><td>—</td><td>Emits GitHub Actions annotations</td></tr>
+<tr><td><code>--output-file</code></td><td><code>test-results-k8s-{deploy}.github</code></td><td>Saved for PR comment and artifact upload</td></tr>
+</tbody>
+</table>
+</div>
+<p>For details on what <code>kubernetes-local</code> and <code>kubernetes-eks</code> test types validate, see the <a href="https://documentation.xdrsiem.wazuh.info/repos/wazuh-automation/main/ref/integration_test_module/description.html">Integration Test Module — Description</a>.</p>
+<h4 id="reporting"><a class="header" href="#reporting">Reporting</a></h4>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Output</th><th>When</th><th>Content</th></tr>
+</thead>
+<tbody>
+<tr><td>Step summary</td><td>Always</td><td>Test results appended to <code>$GITHUB_STEP_SUMMARY</code></td></tr>
+<tr><td>PR comment</td><td><code>issue_comment</code> trigger only</td><td>Posts or updates a comment (identified by HTML marker <code>&lt;!-- k8s-integration-check-{deploy} --&gt;</code>) with ✅/❌ and the results file content</td></tr>
+<tr><td>Artifact: <code>test-results-k8s-{deploy}-{run_id}</code></td><td>Always</td><td>The <code>.github</code> results file, retained 7 days</td></tr>
+<tr><td>Artifact: <code>k8s-logs-{deploy}-{run_id}</code></td><td>On failure only</td><td>Full <code>kubectl</code> pod logs for all pods in <code>wazuh</code> namespace, retained 7 days</td></tr>
+</tbody>
+</table>
+</div>
+<h4 id="eks-cleanup-always-runs-even-on-failure"><a class="header" href="#eks-cleanup-always-runs-even-on-failure">EKS cleanup (always runs, even on failure)</a></h4>
+<pre><code class="language-bash">eksctl delete cluster --name k8s-integration-test-{run_number}-eks --region {AWS_REGION}
+
+# Delete any EBS volumes tagged with the cluster name
+aws ec2 delete-volume --volume-id &lt;id&gt;
+</code></pre>
+<p>Minikube clusters are ephemeral — no explicit cleanup is needed for local deployments.</p>
+<h3 id="job-4--update_check-issue_comment-only"><a class="header" href="#job-4--update_check-issue_comment-only">Job 4 — <code>update_check</code> (issue_comment only)</a></h3>
+<p>Updates the GitHub Check Run created in Job 1 with the final conclusion:</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th><code>kubernetes_test</code> result</th><th>Check conclusion</th></tr>
+</thead>
+<tbody>
+<tr><td><code>success</code></td><td><code>success</code> — ✅ All Kubernetes integration tests passed</td></tr>
+<tr><td><code>failure</code></td><td><code>failure</code> — ❌ One or more tests failed</td></tr>
+<tr><td><code>cancelled</code></td><td><code>cancelled</code></td></tr>
+<tr><td><code>skipped</code></td><td><code>skipped</code></td></tr>
+</tbody>
+</table>
+</div>
+<hr>
+<h2 id="required-secrets-and-variables"><a class="header" href="#required-secrets-and-variables">Required Secrets and Variables</a></h2>
+<h3 id="secrets"><a class="header" href="#secrets">Secrets</a></h3>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Secret</th><th>Used by</th></tr>
+</thead>
+<tbody>
+<tr><td><code>AWS_ACCOUNT_ID</code></td><td>ECR registry URL construction</td></tr>
+<tr><td><code>AWS_REGION</code></td><td>All AWS operations</td></tr>
+<tr><td><code>AWS_IAM_ROLE</code></td><td>OIDC role assumption for AWS credentials</td></tr>
+<tr><td><code>ARTIFACTS_S3_BUCKET</code></td><td>Download <code>artifact_urls.yaml</code></td></tr>
+<tr><td><code>GH_CLONE_TOKEN</code></td><td>Checkout <code>wazuh-automation</code> (private repo)</td></tr>
+<tr><td><code>GITHUB_TOKEN</code></td><td>PR comments and Check Run updates (built-in)</td></tr>
+</tbody>
+</table>
+</div>
+<h3 id="repository-variables"><a class="header" href="#repository-variables">Repository variables</a></h3>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Variable</th><th>Used by</th></tr>
+</thead>
+<tbody>
+<tr><td><code>IMAGE_REGISTRY_PROD</code></td><td>DockerHub registry URL</td></tr>
+<tr><td><code>IMAGE_REGISTRY_DEV</code></td><td>ECR registry URL fallback label</td></tr>
+<tr><td><code>AWS_S3_BUCKET_DEV</code></td><td>Artifact URL template expansion</td></tr>
+</tbody>
+</table>
+</div>
+<hr>
+<h2 id="permissions"><a class="header" href="#permissions">Permissions</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Permission</th><th>Scope</th><th>Purpose</th></tr>
+</thead>
+<tbody>
+<tr><td><code>id-token: write</code></td><td>OIDC token</td><td>Authenticate to AWS via IAM role</td></tr>
+<tr><td><code>contents: read</code></td><td>Repository</td><td>Checkout the PR branch</td></tr>
+<tr><td><code>pull-requests: write</code></td><td>PR</td><td>Post/update PR comments</td></tr>
+<tr><td><code>issues: write</code></td><td>Issues</td><td>Post comments (PR comments use the issues API)</td></tr>
+<tr><td><code>checks: write</code></td><td>Checks</td><td>Create and update GitHub Check Runs</td></tr>
+</tbody>
+</table>
+</div>
+<hr>
+<h2 id="cluster-naming"><a class="header" href="#cluster-naming">Cluster Naming</a></h2>
+<p>EKS clusters are named:</p>
+<pre><code>k8s-integration-test-{github.run_number}-{deployment_type}
+</code></pre>
+<p>Example: <code>k8s-integration-test-4217-eks</code></p>
+<p>This name is used for both cluster creation and deletion, and appears in resource tags for cost attribution.</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+
+            </nav>
+
+        </div>
+
+        <template id=fa-eye><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M288 32c-80.8 0-145.5 36.8-192.6 80.6C48.6 156 17.3 208 2.5 243.7c-3.3 7.9-3.3 16.7 0 24.6C17.3 304 48.6 356 95.4 399.4C142.5 443.2 207.2 480 288 480s145.5-36.8 192.6-80.6c46.8-43.5 78.1-95.4 93-131.1c3.3-7.9 3.3-16.7 0-24.6c-14.9-35.7-46.2-87.7-93-131.1C433.5 68.8 368.8 32 288 32zM432 256c0 79.5-64.5 144-144 144s-144-64.5-144-144s64.5-144 144-144s144 64.5 144 144zM288 192c0 35.3-28.7 64-64 64c-11.5 0-22.3-3-31.6-8.4c-.2 2.8-.4 5.5-.4 8.4c0 53 43 96 96 96s96-43 96-96s-43-96-96-96c-2.8 0-5.6 .1-8.4 .4c5.3 9.3 8.4 20.1 8.4 31.6z"/></svg></span></template>
+        <template id=fa-eye-slash><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M38.8 5.1C28.4-3.1 13.3-1.2 5.1 9.2S-1.2 34.7 9.2 42.9l592 464c10.4 8.2 25.5 6.3 33.7-4.1s6.3-25.5-4.1-33.7L525.6 386.7c39.6-40.6 66.4-86.1 79.9-118.4c3.3-7.9 3.3-16.7 0-24.6c-14.9-35.7-46.2-87.7-93-131.1C465.5 68.8 400.8 32 320 32c-68.2 0-125 26.3-169.3 60.8L38.8 5.1zM223.1 149.5C248.6 126.2 282.7 112 320 112c79.5 0 144 64.5 144 144c0 24.9-6.3 48.3-17.4 68.7L408 294.5c5.2-11.8 8-24.8 8-38.5c0-53-43-96-96-96c-2.8 0-5.6 .1-8.4 .4c5.3 9.3 8.4 20.1 8.4 31.6c0 10.2-2.4 19.8-6.6 28.3l-90.3-70.8zm223.1 298L373 389.9c-16.4 6.5-34.3 10.1-53 10.1c-79.5 0-144-64.5-144-144c0-6.9 .5-13.6 1.4-20.2L83.1 161.5C60.3 191.2 44 220.8 34.5 243.7c-3.3 7.9-3.3 16.7 0 24.6c14.9 35.7 46.2 87.7 93 131.1C174.5 443.2 239.2 480 320 480c47.8 0 89.9-12.9 126.2-32.5z"/></svg></span></template>
+        <template id=fa-copy><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M502.6 70.63l-61.25-61.25C435.4 3.371 427.2 0 418.7 0H255.1c-35.35 0-64 28.66-64 64l.0195 256C192 355.4 220.7 384 256 384h192c35.2 0 64-28.8 64-64V93.25C512 84.77 508.6 76.63 502.6 70.63zM464 320c0 8.836-7.164 16-16 16H255.1c-8.838 0-16-7.164-16-16L239.1 64.13c0-8.836 7.164-16 16-16h128L384 96c0 17.67 14.33 32 32 32h47.1V320zM272 448c0 8.836-7.164 16-16 16H63.1c-8.838 0-16-7.164-16-16L47.98 192.1c0-8.836 7.164-16 16-16H160V128H63.99c-35.35 0-64 28.65-64 64l.0098 256C.002 483.3 28.66 512 64 512h192c35.2 0 64-28.8 64-64v-32h-47.1L272 448z"/></svg></span></template>
+        <template id=fa-play><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M73 39c-14.8-9.1-33.4-9.4-48.5-.9S0 62.6 0 80V432c0 17.4 9.4 33.4 24.5 41.9s33.7 8.1 48.5-.9L361 297c14.3-8.7 23-24.2 23-41s-8.7-32.2-23-41L73 39z"/></svg></span></template>
+        <template id=fa-clock-rotate-left><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M75 75L41 41C25.9 25.9 0 36.6 0 57.9V168c0 13.3 10.7 24 24 24H134.1c21.4 0 32.1-25.9 17-41l-30.8-30.8C155 85.5 203 64 256 64c106 0 192 86 192 192s-86 192-192 192c-40.8 0-78.6-12.7-109.7-34.4c-14.5-10.1-34.4-6.6-44.6 7.9s-6.6 34.4 7.9 44.6C151.2 495 201.7 512 256 512c141.4 0 256-114.6 256-256S397.4 0 256 0C185.3 0 121.3 28.7 75 75zm181 53c-13.3 0-24 10.7-24 24V256c0 6.4 2.5 12.5 7 17l72 72c9.4 9.4 24.6 9.4 33.9 0s9.4-24.6 0-33.9l-65-65V152c0-13.3-10.7-24-24-24z"/></svg></span></template>
+
+        <!-- Livereload script (if served using the cli tool) -->
+        <script>
+            const wsProtocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const wsAddress = wsProtocol + "//" + location.host + "/" + "__livereload";
+            const socket = new WebSocket(wsAddress);
+            socket.onmessage = function (event) {
+                if (event.data === "reload") {
+                    socket.close();
+                    location.reload();
+                }
+            };
+
+            window.onbeforeunload = function() {
+                socket.close();
+            }
+        </script>
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="elasticlunr-ef4e11c1.min.js"></script>
+        <script src="mark-09e88c2c.min.js"></script>
+        <script src="searcher-09f2665d.js"></script>
+
+        <script src="clipboard-1626706a.min.js"></script>
+        <script src="highlight-abc7f01d.js"></script>
+        <script src="book-c22b7243.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script src="mermaid-bf4a4f1d.min.js"></script>
+        <script src="mermaid-init-025d9952.js"></script>
+
+        <script>
+        window.addEventListener('load', function() {
+            window.setTimeout(window.print, 100);
+        });
+        </script>
+
+
+    </div>
+    </body>
+</html>
