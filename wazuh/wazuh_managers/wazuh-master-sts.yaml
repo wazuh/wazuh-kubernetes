@@ -109,6 +109,33 @@ spec:
               name: cluster
             - containerPort: 55000
               name: api
+          startupProbe:
+            exec:
+              command:
+                - /bin/sh
+                - -c
+                - /var/wazuh-manager/bin/wazuh-manager-control status 2>/dev/null | grep -q 'not running' && exit 1 || exit 0
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 12
+          readinessProbe:
+            exec:
+              command:
+                - /bin/sh
+                - -c
+                - /var/wazuh-manager/bin/wazuh-manager-control status 2>/dev/null | grep -q 'not running' && exit 1 || exit 0
+            periodSeconds: 15
+            timeoutSeconds: 5
+            failureThreshold: 5
+          livenessProbe:
+            exec:
+              command:
+                - /bin/sh
+                - -c
+                - /var/wazuh-manager/bin/wazuh-manager-control status 2>/dev/null | grep -q 'not running' && exit 1 || exit 0
+            periodSeconds: 15
+            timeoutSeconds: 5
+            failureThreshold: 5
           env:
             - name: WAZUH_INDEXER_HOSTS
               value: 'wazuh-indexer:9200'
