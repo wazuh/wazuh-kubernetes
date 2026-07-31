@@ -56,4 +56,6 @@
 | [#1449](https://github.com/wazuh/wazuh-kubernetes/issues/1449) | Change API password to default |
 | [#1340](https://github.com/wazuh/wazuh-kubernetes/issues/1340) | Fix test for deployment |
 
-## Prior versions
+## Prior version
+
+- []()
