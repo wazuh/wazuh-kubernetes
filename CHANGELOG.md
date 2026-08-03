@@ -55,6 +55,7 @@
 | [#1467](https://github.com/wazuh/wazuh-kubernetes/issues/1467) | Errors on bumper execution |
 | [#1449](https://github.com/wazuh/wazuh-kubernetes/issues/1449) | Change API password to default |
 | [#1340](https://github.com/wazuh/wazuh-kubernetes/issues/1340) | Fix test for deployment |
+| [#3657](https://github.com/wazuh/wazuh-automation/issues/3657) | Fix changelog check to accept Prior versions entries |
 
 ## Prior version
 
