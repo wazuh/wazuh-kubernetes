@@ -17,6 +17,7 @@
 | [#957](https://github.com/wazuh/wazuh-kubernetes/issues/957) | Development - Kubernetes - Analize Network Policies |
 | [#1262](https://github.com/wazuh/wazuh-kubernetes/issues/1262) | Missing branch/tag checkout step in Kubernetes deployment documentation |
 | [#954](https://github.com/wazuh/wazuh-kubernetes/issues/954) | Development - Kubernetes - Adapt the PR tests |
+| [#9999](https://github.com/wazuh/wazuh-kubernetes/issues/9999) | Test entry for changelog check validation (added section) |
 
 ### Changed
 
