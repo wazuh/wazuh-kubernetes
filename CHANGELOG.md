@@ -4,6 +4,7 @@
 
 | Issue | Comment |
 | - | - |
+| [#9999](https://github.com/wazuh/wazuh-kubernetes/issues/9999) | Test entry for changelog check validation (added section) |
 | [#1578](https://github.com/wazuh/wazuh-kubernetes/issues/1578) | Readiness and liveness probes on Wazuh deployment. |
 | [#1539](https://github.com/wazuh/wazuh-kubernetes/pull/1539) | Added bump-issue-link support for Revert Stage Bump. |
 | [#1534](https://github.com/wazuh/wazuh-kubernetes/pull/1534) | Add integration test module docs |
@@ -17,7 +18,6 @@
 | [#957](https://github.com/wazuh/wazuh-kubernetes/issues/957) | Development - Kubernetes - Analize Network Policies |
 | [#1262](https://github.com/wazuh/wazuh-kubernetes/issues/1262) | Missing branch/tag checkout step in Kubernetes deployment documentation |
 | [#954](https://github.com/wazuh/wazuh-kubernetes/issues/954) | Development - Kubernetes - Adapt the PR tests |
-| [#9999](https://github.com/wazuh/wazuh-kubernetes/issues/9999) | Test entry for changelog check validation (added section) |
 
 ### Changed
 
