@@ -22,6 +22,7 @@
 
 | Issue | Comment |
 | - | - |
+| [#9998](https://github.com/wazuh/wazuh-kubernetes/issues/9998) | Test entry for changelog check validation (changed section) |
 | [#1567](https://github.com/wazuh/wazuh-kubernetes/issues/1567) | Update deployment for Wazuh Indexer 5.0.0 RBAC. |
 | [#1569](https://github.com/wazuh/wazuh-kubernetes/pull/1569) | Add new WF for changelog check |
 | [#1522](https://github.com/wazuh/wazuh-kubernetes/issues/1522) | Migrate the gha runner to codebuild |
@@ -60,4 +61,4 @@
 
 ## Prior version
 
-- []()
+- [v4.98.0](https://github.com/wazuh/wazuh-kubernetes/blob/v4.98.0/CHANGELOG.md)
