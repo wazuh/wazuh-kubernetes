@@ -30,7 +30,6 @@ jobs:
             echo "::error::CHANGELOG.md was not updated with new entries. Add one or add the 'no-changelog' label to skip this check."
           else
             FORMAT="✅"
-
             TABLE_ENTRY_REGEX='^\| \[#[0-9]+\]\(https://github\.com/[^)]+/(issues|pull)/[0-9]+\) \| .+ \|$'
             TABLE_HEADER_REGEX='^\| Issue \| Comment \|$|^\| - \| - \|$'
             PRIOR_VERSION_REGEX='^- \[v?[0-9]+\.[0-9]+\.[0-9]+\]\(https://github\.com/[^)]+/blob/[^)]+/CHANGELOG\.md\)$|^- \[\]\(\)$'
