@@ -1,0 +1,20 @@
+# Copyright (C) 2019, Wazuh Inc.
+#
+# This program is a free software; you can redistribute it
+# and/or modify it under the terms of the GNU General Public
+# License (version 2) as published by the FSF - Free Software
+# Foundation.
+
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# Adds traefik namespace to all resources.
+namespace: traefik
+
+resources:
+  - traefik-ns.yaml
+  - traefik-cluster-role.yaml
+  - traefik-cluster-role-binding.yaml
+  - traefik-sa.yaml
+  - traefik-deployment.yaml
+  - traefik-service.yaml

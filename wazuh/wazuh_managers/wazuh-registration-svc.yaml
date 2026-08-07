@@ -1,0 +1,24 @@
+# Copyright (C) 2019, Wazuh Inc.
+#
+# This program is a free software; you can redistribute it
+# and/or modify it under the terms of the GNU General Public
+# License (version 2) as published by the FSF - Free Software
+# Foundation.
+
+# Wazuh master Service: API and registration (authd)
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: wazuh-registration
+  namespace: wazuh
+  labels:
+    app: wazuh-manager
+spec:
+  selector:
+    app: wazuh-manager
+    node-type: master
+  ports:
+    - name: registration
+      port: 1515
+      targetPort: 1515

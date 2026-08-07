@@ -1,0 +1,9 @@
+apiVersion: traefik.io/v1alpha1
+kind: MiddlewareTCP
+metadata:
+  name: ip-allowlist
+  namespace: wazuh
+spec:
+  ipWhiteList:
+    sourceRange:
+      - 0.0.0.0/0

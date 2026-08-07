@@ -1,0 +1,32 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: traefik
+rules:
+  # Core Kubernetes resources
+  - apiGroups: [""]
+    resources:
+      - services
+      - endpoints
+      - secrets
+      - configmaps
+      - nodes
+    verbs: ["get","list","watch"]
+
+  # EndpointSlice (mandatory)
+  - apiGroups: ["discovery.k8s.io"]
+    resources:
+      - endpointslices
+    verbs: ["get","list","watch"]
+
+  # Traefik CRDs
+  - apiGroups: ["traefik.io"]
+    resources: ["*"]
+    verbs: ["get","list","watch"]
+
+  # Ingress API (optional but commonly enabled)
+  - apiGroups: ["networking.k8s.io"]
+    resources:
+      - ingresses
+      - ingressclasses
+    verbs: ["get","list","watch"]
