@@ -70,7 +70,7 @@ flowchart TD
 | `pr_head_ref` | Yes | — | Branch of `wazuh-kubernetes` to check out and test |
 | `automation_reference` | No | `main` | Branch of `wazuh-automation` to install `test_runner` from |
 | `deployment_type` | Yes | — | `local`, `eks`, or `both` |
-| `version` | No | — | Override image version (e.g. `5.0.1`). If empty, reads from `VERSION.json` |
+| `version` | No | — | Override image version (e.g. `5.1.0`). If empty, reads from `VERSION.json` |
 | `stage` | No | — | Image stage suffix (e.g. `beta1`, `beta2-latest`). Required when `version` is set manually |
 | `registry` | No | `ECR` | `ECR` (dev images) or `DockerHub` (prod images) |
 
