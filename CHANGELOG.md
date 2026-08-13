@@ -10,7 +10,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
-- None
+- Change Codebuild runners to Github runners. ([#1607](https://github.com/wazuh/wazuh-kubernetes/pull/1607))
 
 ### Fixed
 
