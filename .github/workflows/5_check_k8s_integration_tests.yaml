@@ -283,7 +283,6 @@ jobs:
 
       - name: Install test_runner
         run: |
-          pip install -r wazuh-automation/deployability/deps/requirements.txt
           pip install -r wazuh-automation/integration-test-module/requirements.txt
           pip install -e wazuh-automation/integration-test-module/
 
