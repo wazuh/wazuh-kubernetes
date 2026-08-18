@@ -22,6 +22,7 @@
 
 | Issue | Comment |
 | - | - |
+| [#1612](https://github.com/wazuh/wazuh-kubernetes/pull/1612) | Adapt certificate deployment to unified manager certificate layout |
 | [#1608](https://github.com/wazuh/wazuh-kubernetes/issues/1608) | Change Codebuild runners to Github runners. |
 | [#1567](https://github.com/wazuh/wazuh-kubernetes/issues/1567) | Update deployment for Wazuh Indexer 5.0.0 RBAC. |
 | [#1569](https://github.com/wazuh/wazuh-kubernetes/pull/1569) | Add new WF for changelog check |
