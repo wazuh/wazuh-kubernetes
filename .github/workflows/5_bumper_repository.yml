@@ -178,7 +178,7 @@ jobs:
 
           PR_NUMBER=$(gh pr list --head "$BUMP_BRANCH" --base "${{ github.ref_name }}" --state merged --json number --jq '.[0].number')
 
-         if [ -z "$PR_NUMBER" ] || [ "$PR_NUMBER" == "null" ]; then
+          if [ -z "$PR_NUMBER" ] || [ "$PR_NUMBER" == "null" ]; then
             echo "The original PR for the bump was not found"
             echo "Searching merged PR from: $BUMP_BRANCH to ${{ github.ref_name }}"
             echo "pr_found=false" >> $GITHUB_OUTPUT
