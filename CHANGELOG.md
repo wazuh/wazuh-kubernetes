@@ -52,6 +52,7 @@
 
 | Issue | Comment |
 | - | - |
+| [#1613](https://github.com/wazuh/wazuh-kubernetes/pull/1613) | Report skipped bumps in the repository bumper workflow |
 | [#1563](https://github.com/wazuh/wazuh-kubernetes/pull/1563) | Fix bumper workflow failure when bump produces no changes |
 | [#1526](https://github.com/wazuh/wazuh-kubernetes/issues/1526) | Bumper script issue when the tag is set to false |
 | [#1467](https://github.com/wazuh/wazuh-kubernetes/issues/1467) | Errors on bumper execution |
