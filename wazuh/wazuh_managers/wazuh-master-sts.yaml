@@ -48,10 +48,14 @@ spec:
             - |
               if [ -z "$(ls -A /pvc-etc)" ]; then
                 cp -a /var/wazuh-manager/etc/* /pvc-etc/
+                chown root:101 /pvc-etc/certs
+                chmod 1770 /pvc-etc/certs
               fi
-              cp /tmp/certs-raw/* /etc/wazuh-certs-final/
-              chown -R 101:101 /etc/wazuh-certs-final/
-              chmod 500 /etc/wazuh-certs-final/*.pem
+              cp /tmp/certs-raw/root-ca.pem /etc/wazuh-certs-final/root-ca.pem
+              cp /tmp/certs-raw/manager.pem /etc/wazuh-certs-final/indexer-connector.pem
+              cp /tmp/certs-raw/manager-key.pem /etc/wazuh-certs-final/indexer-connector-key.pem
+              chown root:101 /etc/wazuh-certs-final/root-ca.pem /etc/wazuh-certs-final/indexer-connector.pem /etc/wazuh-certs-final/indexer-connector-key.pem
+              chmod 0640 /etc/wazuh-certs-final/root-ca.pem /etc/wazuh-certs-final/indexer-connector.pem /etc/wazuh-certs-final/indexer-connector-key.pem
           volumeMounts:
             - name: wazuh-manager-master
               mountPath: /pvc-etc
@@ -85,11 +89,11 @@ spec:
               mountPath: /var/wazuh-manager/etc/certs/root-ca.pem
               subPath: root-ca.pem
             - name: wazuh-manager-certs
-              mountPath: /var/wazuh-manager/etc/certs/manager.pem
-              subPath: manager.pem
+              mountPath: /var/wazuh-manager/etc/certs/indexer-connector.pem
+              subPath: indexer-connector.pem
             - name: wazuh-manager-certs
-              mountPath: /var/wazuh-manager/etc/certs/manager-key.pem
-              subPath: manager-key.pem
+              mountPath: /var/wazuh-manager/etc/certs/indexer-connector-key.pem
+              subPath: indexer-connector-key.pem
             - name: wazuh-manager-master
               mountPath: /var/wazuh-manager/logs
               subPath: wazuh/var/wazuh-manager/logs
@@ -160,9 +164,9 @@ spec:
             - name: SSL_CERTIFICATE_AUTHORITIES
               value: /var/wazuh-manager/etc/certs/root-ca.pem
             - name: SSL_CERTIFICATE
-              value: /var/wazuh-manager/etc/certs/manager.pem
+              value: /var/wazuh-manager/etc/certs/indexer-connector.pem
             - name: SSL_KEY
-              value: /var/wazuh-manager/etc/certs/manager-key.pem
+              value: /var/wazuh-manager/etc/certs/indexer-connector-key.pem
             - name: API_USERNAME
               valueFrom:
                 secretKeyRef:
