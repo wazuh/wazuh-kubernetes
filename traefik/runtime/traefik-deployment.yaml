@@ -26,11 +26,13 @@ spec:
 
             # EntryPoints (TCP)
             - "--entrypoints.websecure.address=:443"
+            - "--entrypoints.wazuh-1517.address=:1517"
             - "--entrypoints.wazuh-1514.address=:1514"
             - "--entrypoints.wazuh-1515.address=:1515"
 
             # TCP passthrough requires this
             - "--entrypoints.websecure.transport.respondingtimeouts.readtimeout=0"
+            - "--entrypoints.wazuh-1517.transport.respondingtimeouts.readtimeout=0"
             - "--entrypoints.wazuh-1514.transport.respondingtimeouts.readtimeout=0"
             - "--entrypoints.wazuh-1515.transport.respondingtimeouts.readtimeout=0"
 
@@ -44,6 +46,9 @@ spec:
           ports:
             - name: websecure
               containerPort: 443
+              protocol: TCP
+            - name: wazuh-1517
+              containerPort: 1517
               protocol: TCP
             - name: wazuh-1514
               containerPort: 1514

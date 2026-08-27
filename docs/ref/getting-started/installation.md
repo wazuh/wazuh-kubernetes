@@ -33,7 +33,7 @@ Deployments are intended for stateless use and are quite lightweight and seem to
 **Wazuh master**:
 
 This pod contains the master node of the Wazuh cluster. The master node centralizes and coordinates worker nodes, making sure the critical and required data is consistent across all nodes.
-The management is performed only in this node, so the agent registration service (authd) and the API are placed here.
+The management is performed only in this node, so the API is placed here, together with the legacy agent registration service (`authd`) used by Wazuh 4.x agents. Wazuh 5.x agents enroll through `remoted`, which runs on every node, so their enrollment is not confined to the master.
 
 Details:
 
@@ -83,10 +83,13 @@ Details:
 - wazuh-api:
   - Internal service for the Wazuh API on port 55000.
   - Consumed by the Wazuh dashboard and by external clients through the ingress TCP mappings.
+- wazuh-agents:
+  - Internal service for Wazuh 5.x agent traffic and enrollment on port 1517.
+  - Selects every manager pod, master included, since `remoted` serves this HTTPS channel on all nodes.
 - wazuh-events:
-  - Internal service for agent event traffic on port 1514.
+  - Internal service for Wazuh 4.x agent event traffic on port 1514 (legacy `remoted`).
 - wazuh-registration:
-  - Internal service for agent enrollment (authd) on port 1515.
+  - Internal service for Wazuh 4.x agent enrollment (`authd`) on port 1515.
 - wazuh-cluster:
   - Headless service for internal communication between Wazuh manager nodes on port 1516.
 
@@ -97,9 +100,9 @@ Details:
 - allow-ingress-to-dashboard
   - Allows incoming traffic from the ingress controller to port 443 of wazuh-dashboard.
 - allow-ingress-to-manager-master
-  - Allows incoming traffic from the ingress controller to port 1515 of wazuh-manager (master).
+  - Allows incoming traffic from the ingress controller to ports 1517 and 1515 of wazuh-manager (master).
 - allow-ingress-to-manager-worker
-  - Allows incoming traffic from the ingress controller to port 1514 of wazuh-manager (worker).
+  - Allows incoming traffic from the ingress controller to ports 1517 and 1514 of wazuh-manager (worker).
 - dashboard-egress
   - Allows outgoing traffic from wazuh-dashboard pods to port 9200 of wazuh-indexer and port 55000 of wazuh-manager (master).
 - default-deny-all
@@ -131,7 +134,7 @@ This repository focuses on [AWS](https://aws.amazon.com/) but it should be easy 
 
 We recommend creating domains and certificates to access the services. Examples:
 
-- wazuh-master.your-domain.com: Wazuh API and authd registration service.
+- wazuh-master.your-domain.com: Wazuh API and legacy authd registration service.
 - wazuh-manager.your-domain.com: Reporting service.
 - wazuh.your-domain.com: Wazuh dashboard app.
 
@@ -276,7 +279,7 @@ Expected output:
 ```bash
 $ kubectl -n traefik get svc
 NAME      TYPE           CLUSTER-IP     EXTERNAL-IP                                                              PORT(S)                                       AGE
-traefik   LoadBalancer   10.100.34.51   a7ffe29bfcf38420988fd52a698be422-862207742.us-west-1.elb.amazonaws.com   443:30725/TCP,1514:32036/TCP,1515:30354/TCP   6m29s
+traefik   LoadBalancer   10.100.34.51   a7ffe29bfcf38420988fd52a698be422-862207742.us-west-1.elb.amazonaws.com   443:30725/TCP,1517:31485/TCP,1514:32036/TCP,1515:30354/TCP   6m29s
 ```
 
 #### Step 3.3: Apply all manifests using kustomize
@@ -560,6 +563,12 @@ kubectl -n wazuh port-forward service/dashboard 8443:443 --address 192.168.1.34 
 ##### Exposing Wazuh server ports
 
 ```bash
+kubectl -n wazuh port-forward service/wazuh-agents 1517:1517
+```
+
+For Wazuh 4.x agents, the legacy ports are exposed the same way:
+
+```bash
 kubectl -n wazuh port-forward service/wazuh-events 1514:1514
 ```
 
@@ -569,7 +578,7 @@ kubectl -n wazuh port-forward service/wazuh-registration 1515:1515
 
 If you need to register agents pointing directly to the Minikube host IP, bind the port-forward to a specific interface/IP address adding the `--address` flag (as done previously for the dashboard).
 
-> **Note**: You can run the process in background adding `&` to the port-forward command, for example: kubectl -n wazuh port-forward service/wazuh-events 1514:1514 &
+> **Note**: You can run the process in background adding `&` to the port-forward command, for example: kubectl -n wazuh port-forward service/wazuh-agents 1517:1517 &
 
 ### Conclusion
 
@@ -604,6 +613,7 @@ Expected output:
 $ kubectl get services -n wazuh
 NAME                 TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)             AGE
 dashboard            ClusterIP   10.100.196.140   <none>        443/TCP             23m
+wazuh-agents         ClusterIP   10.100.22.19     <none>        1517/TCP            23m
 wazuh-api            ClusterIP   10.100.58.98     <none>        55000/TCP           23m
 wazuh-cluster        ClusterIP   None             <none>        1516/TCP            23m
 wazuh-events         ClusterIP   10.100.63.117    <none>        1514/TCP            23m
@@ -702,5 +712,5 @@ Expected output:
 ```bash
 $ kubectl -n traefik get svc
 NAME      TYPE           CLUSTER-IP     EXTERNAL-IP                                                              PORT(S)                                       AGE
-traefik   LoadBalancer   10.100.34.51   a7ffe29bfcf38420988fd52a698be422-862207742.us-west-1.elb.amazonaws.com   443:30725/TCP,1514:32036/TCP,1515:30354/TCP   6m29s
+traefik   LoadBalancer   10.100.34.51   a7ffe29bfcf38420988fd52a698be422-862207742.us-west-1.elb.amazonaws.com   443:30725/TCP,1517:31485/TCP,1514:32036/TCP,1515:30354/TCP   6m29s
 ```
