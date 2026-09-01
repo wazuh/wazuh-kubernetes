@@ -52,6 +52,7 @@
 
 | Issue | Comment |
 | - | - |
+| [#1524](https://github.com/wazuh/wazuh-kubernetes/issues/1524) | Fixed 5.0.0 branch references pointing to a tag instead of the branch after bump |
 | [#1613](https://github.com/wazuh/wazuh-kubernetes/pull/1613) | Report skipped bumps in the repository bumper workflow |
 | [#1595](https://github.com/wazuh/wazuh-kubernetes/pull/1595) | Fix changelog check to accept Prior versions entries |
 | [#1563](https://github.com/wazuh/wazuh-kubernetes/pull/1563) | Fix bumper workflow failure when bump produces no changes |
