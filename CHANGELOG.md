@@ -22,7 +22,7 @@
 
 | Issue | Comment |
 | - | - |
-| [#2604](https://github.com/wazuh/wazuh-docker/issues/2604) | Adapt the Wazuh manager deployment to the new agent enroll process (port 1517 and `WAZUH_REMOTE_BIND_ADDR`) |
+| [#1636](https://github.com/wazuh/wazuh-kubernetes/issues/1636) | Agent enrollment fails on EKS because Traefik never expose port 1517 |
 | [#1612](https://github.com/wazuh/wazuh-kubernetes/pull/1612) | Adapt certificate deployment to unified manager certificate layout |
 | [#1608](https://github.com/wazuh/wazuh-kubernetes/issues/1608) | Change Codebuild runners to Github runners. |
 | [#1567](https://github.com/wazuh/wazuh-kubernetes/issues/1567) | Update deployment for Wazuh Indexer 5.0.0 RBAC. |
