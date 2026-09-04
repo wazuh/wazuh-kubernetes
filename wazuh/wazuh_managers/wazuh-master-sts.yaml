@@ -107,6 +107,8 @@ spec:
               mountPath: /var/wazuh-manager/active-response/bin
               subPath: wazuh/var/wazuh-manager/active-response/bin
           ports:
+            - containerPort: 1517
+              name: agents-https
             - containerPort: 1515
               name: registration
             - containerPort: 1516
@@ -147,6 +149,8 @@ spec:
               value: 'master'
             - name: WAZUH_NODE_TYPE
               value: 'master'
+            - name: WAZUH_REMOTE_BIND_ADDR
+              value: '0.0.0.0'
             - name: WAZUH_CLUSTER_BIND_ADDR
               value: '0.0.0.0'
             - name: WAZUH_CLUSTER_NODES

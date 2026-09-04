@@ -16,5 +16,9 @@ spec:
         matchLabels:
           kubernetes.io/metadata.name: traefik
     ports:
+    # Wazuh 5.x agents: communication and enrollment over the same HTTPS channel
+    - protocol: TCP
+      port: 1517
+    # Wazuh 4.x agents: enrollment (wazuh-authd)
     - protocol: TCP
       port: 1515
