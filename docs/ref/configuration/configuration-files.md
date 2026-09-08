@@ -62,9 +62,11 @@ Main secrets:
 - `wazuh/secrets/indexer-cred-secret.yaml`
   Wazuh indexer `wazuh-manager` service account, read by the manager master, the manager workers and the dashboard.
 - `wazuh/secrets/wazuh-authd-pass-secret.yaml`
-  Enrollment password for Wazuh 4.x agents, mounted as a file rather than an environment variable.
+  Agent enrollment password, mounted as a file rather than an environment variable. It guards the enrollment `remoted` serves on port `1517` and the legacy `authd` port `1515`.
 - `wazuh/secrets/wazuh-cluster-key-secret.yaml`
-  Shared key for manager cluster membership.
+  Shared key for manager cluster membership, on port `1516`.
+
+The last two are not accounts inside an image and `password-tool.sh` does not cover them: the managers read them from the Secret on every container start. **Change them before the first `kubectl apply -k`** — see [The cluster key and the agent enrollment password](../credentials.md#the-cluster-key-and-the-agent-enrollment-password), which also covers changing either one on a deployment that is already running.
 
 > **Important**: these Secrets hold what the pods *present*. The Wazuh indexer StatefulSet reads no credential Secret at all, so editing `indexer-cred` does not change the password the indexer *accepts*.
 

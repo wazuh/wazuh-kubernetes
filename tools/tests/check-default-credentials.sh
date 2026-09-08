@@ -159,7 +159,7 @@ info "Wazuh API accounts (${MANAGER_POD})"
 for user in ${API_USERS}; do
   code=$(api_auth_code "${user}" "${user}")
   if [ -z "${code}" ] || [ "${code}" = "000" ]; then
-    fail "no answer from the Wazuh API on ${MANAGER_POD} while checking '${user}'"
+    fail "no answer from the Wazuh API on ${MANAGER_POD} while checking '${user}'; the API is served by the manager master only"
   elif [ "${code}" = "200" ]; then
     fail "${user} authenticates with '${user}' as its password"
   else
@@ -168,8 +168,9 @@ for user in ${API_USERS}; do
 done
 
 info ""
-info "The Wazuh API user database is local to each manager node. This checked"
-info "${MANAGER_POD}; run it again with --manager-pod for every other manager pod."
+info "The Wazuh API is served by the manager master only, so ${MANAGER_POD} is the"
+info "node whose user database authenticates requests. Worker pods run no API and"
+info "answer nothing on port 55000; pointing --manager-pod at one reports no answer."
 
 info ""
 if [ "${failures}" -eq 0 ]; then

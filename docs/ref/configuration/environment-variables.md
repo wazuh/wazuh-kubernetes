@@ -44,6 +44,7 @@ Defined in:
 - Update `WAZUH_INDEXER_HOSTS` only if your Indexer service name/port differs from the default.
 - Do not hardcode credentials in manifests; update the corresponding Secrets instead.
 - The passwords above are the values the images ship, and every one of them equals its own username. Change them right after the first deployment: see [Credentials](../credentials.md).
+- `WAZUH_CLUSTER_KEY` is rewritten into `<cluster><key>` of `/var/wazuh-manager/etc/wazuh-manager.conf` on every container start, so the value in the Secret always wins over what is on the persistent volume. It has to be 32 characters and identical on every manager node, which is why it is best set before the first deployment: changing it later means restarting the master and the workers together, and the nodes still on the old key cannot sync in the meantime. See [The cluster key and the agent enrollment password](../credentials.md#the-cluster-key-and-the-agent-enrollment-password).
 
 ## Wazuh indexer variables
 
@@ -120,6 +121,6 @@ kubectl -n wazuh rollout restart statefulset/wazuh-manager-worker
 kubectl -n wazuh rollout restart deployment/wazuh-dashboard
 ```
 
-`wazuh/secrets/wazuh-authd-pass-secret.yaml` is absent from the list above because it is mounted as a file at `/wazuh-config-mount/etc/authd.pass`, not exposed as an environment variable.
+`wazuh/secrets/wazuh-authd-pass-secret.yaml` is absent from the list above because it is mounted as a file at `/wazuh-config-mount/etc/authd.pass`, not exposed as an environment variable. The container copies it to `/var/wazuh-manager/etc/authd.pass` at every start, so it too is applied by restarting the manager StatefulSets.
 
 > **Important**: changing a Secret does not change the account inside the Wazuh indexer or the Wazuh API. Both halves are covered in [Credentials](../credentials.md).

@@ -4,6 +4,7 @@
 
 # Development Guide
 
+- [Documentation setup](INSTALLATION.md)
 - [Set up the development environment](dev/setup.md)
 - [How to run the tests](dev/run-tests.md)
 

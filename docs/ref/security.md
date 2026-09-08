@@ -9,8 +9,9 @@ This section summarizes security recommendations for Wazuh Kubernetes deployment
   - `wazuh/secrets/wazuh-api-cred-secret.yaml` - Wazuh API `wazuh-wui` service account
   - `wazuh/secrets/dashboard-cred-secret.yaml` - indexer `kibanaserver` service account the dashboard uses
   - `wazuh/secrets/indexer-cred-secret.yaml` - indexer `wazuh-manager` service account the managers and the dashboard use
-  - `wazuh/secrets/wazuh-authd-pass-secret.yaml` - Authd password for Wazuh 4.x agent enrollment
+  - `wazuh/secrets/wazuh-authd-pass-secret.yaml` - Agent enrollment password, guarding both port `1517` and the legacy `authd` port `1515`
   - `wazuh/secrets/wazuh-cluster-key-secret.yaml` - Cluster communication key
+- **Set the cluster key and the enrollment password before you deploy.** These last two are not accounts inside an image, so `password-tool.sh` does not cover them: the managers read them from the Secrets on every container start. Both ship with a documented default (`123a45bc67def891gh23i45jk67l8mn9` and `password`), and changing the cluster key on a running deployment degrades the manager cluster until every manager pod has restarted on the new key. See [The cluster key and the agent enrollment password](credentials.md#the-cluster-key-and-the-agent-enrollment-password).
 - A base64 value in a Secret manifest is encoding, not encryption. Keep changed values out of version control and restrict read access to the deployment directory.
 - For production deployments, consider using external secret management solutions integrated with Kubernetes.
 - Rotate credentials regularly and after any suspected exposure. Run `tools/tests/check-default-credentials.sh` to confirm no default is left.
@@ -38,7 +39,7 @@ This section summarizes security recommendations for Wazuh Kubernetes deployment
 - Do not expose internal-only endpoints to untrusted networks. In particular:
   - **Indexer API** (port `9200`): Restrict to manager and dashboard pods only
   - **Wazuh API** (port `55000`): Limit access to dashboard and administrative networks
-  - **Cluster communication** (port `1516`): Keep internal to the cluster
+  - **Cluster communication** (port `1516`): Keep internal to the cluster. The key in `wazuh/secrets/wazuh-cluster-key-secret.yaml` is what a node has to present to join the manager cluster
   - **Agent communication and enrollment** (port `1517`): Reachable by your agents only. It carries the enrollment since 5.0.0, so the password in `wazuh/secrets/wazuh-authd-pass-secret.yaml` is what protects it from unwanted registrations
 - Use Ingress resources with TLS termination for external access to the dashboard.
 - Consider using a service mesh (e.g., Istio, Linkerd) for additional network security controls and mTLS between services.
