@@ -51,16 +51,22 @@ Network policies restrict communication between pods to enforce security boundar
 
 ## Credentials and secrets
 
-Default credentials and keys are provided as Kubernetes Secrets under `wazuh/secrets/`. These values are meant to be customized before any production deployment.
+Default credentials and keys are provided as Kubernetes Secrets under `wazuh/secrets/`. These values are meant to be customized before any production deployment, and the accounts behind them have to be changed inside the components as well. See [Credentials](../credentials.md) for the full procedure.
 
 Main secrets:
 
 - `wazuh/secrets/wazuh-api-cred-secret.yaml`
-  Wazuh API username and password.
+  Wazuh API `wazuh-wui` service account, read by the manager master and the dashboard.
 - `wazuh/secrets/dashboard-cred-secret.yaml`
-  Wazuh dashboard (Kibana) username and password.
+  Wazuh indexer `kibanaserver` service account the dashboard authenticates to the indexer with. This is not the login of the dashboard web interface.
 - `wazuh/secrets/indexer-cred-secret.yaml`
-  Wazuh indexer username and password.
+  Wazuh indexer `wazuh-manager` service account, read by the manager master, the manager workers and the dashboard.
+- `wazuh/secrets/wazuh-authd-pass-secret.yaml`
+  Enrollment password for Wazuh 4.x agents, mounted as a file rather than an environment variable.
+- `wazuh/secrets/wazuh-cluster-key-secret.yaml`
+  Shared key for manager cluster membership.
+
+> **Important**: these Secrets hold what the pods *present*. The Wazuh indexer StatefulSet reads no credential Secret at all, so editing `indexer-cred` does not change the password the indexer *accepts*.
 
 ## Persistence configuration
 

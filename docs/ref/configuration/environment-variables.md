@@ -28,14 +28,14 @@ Defined in:
 | `WAZUH_REMOTE_BIND_ADDR` | Bind address `remoted` listens on for agent traffic. Written to `<remote><https><bind_addr>` and `<remote><legacy><local_ip>`. | Literal | Yes | `0.0.0.0` |
 | `WAZUH_CLUSTER_BIND_ADDR` | Bind address for cluster communications. | Literal | Yes | `0.0.0.0` |
 | `WAZUH_CLUSTER_NODES` | Cluster service name used for peer discovery. | Literal | Yes | `wazuh-cluster` |
-| `INDEXER_USERNAME` | Indexer authentication username. | Secret `indexer-cred` | Yes | `<indexer-username>` |
-| `INDEXER_PASSWORD` | Indexer authentication password. | Secret `indexer-cred` | Yes | `<indexer-password>` |
+| `INDEXER_USERNAME` | Indexer authentication username. | Secret `indexer-cred` | Yes | `wazuh-manager` |
+| `INDEXER_PASSWORD` | Indexer authentication password. | Secret `indexer-cred` | Yes | `wazuh-manager` (shipped default) |
 | `SSL_CERTIFICATE_AUTHORITIES` | CA certificate path used for indexer TLS. | Literal | Yes | `/etc/ssl/root-ca.pem` |
 | `SSL_CERTIFICATE` | Client certificate path used for indexer TLS. | Literal | Yes | `/etc/ssl/filebeat.pem` |
 | `SSL_KEY` | Client key path used for indexer TLS. | Literal | Yes | `/etc/ssl/filebeat-key.pem` |
-| `API_USERNAME` | Wazuh API authentication username. | Secret `wazuh-api-cred` | Yes | `<wazuh-api-username>` |
-| `API_PASSWORD` | Wazuh API authentication password. | Secret `wazuh-api-cred` | Yes | `<wazuh-api-password>` |
-| `WAZUH_CLUSTER_KEY` | Shared key for manager cluster membership. | Secret `wazuh-cluster-key` | Yes | `<wazuh-cluster-key>` |
+| `API_USERNAME` | Wazuh API authentication username. | Secret `wazuh-api-cred` (master only) | Yes | `wazuh-wui` |
+| `API_PASSWORD` | Wazuh API authentication password. | Secret `wazuh-api-cred` (master only) | Yes | `wazuh-wui` (shipped default) |
+| `WAZUH_CLUSTER_KEY` | Shared key for manager cluster membership. | Secret `wazuh-cluster-key` | Yes | `123a45bc67def891gh23i45jk67l8mn9` (shipped default) |
 
 ### Manager customization notes
 
@@ -43,6 +43,7 @@ Defined in:
 - Leave `WAZUH_REMOTE_BIND_ADDR` at `0.0.0.0`. The packaged configuration binds `remoted` to `127.0.0.1`, which inside a pod leaves ports `1517` and `1514` reachable only from the pod itself, so no agent could connect. Binding on all interfaces is scoped to the pod network namespace: what is actually reachable stays governed by the Services and the NetworkPolicies.
 - Update `WAZUH_INDEXER_HOSTS` only if your Indexer service name/port differs from the default.
 - Do not hardcode credentials in manifests; update the corresponding Secrets instead.
+- The passwords above are the values the images ship, and every one of them equals its own username. Change them right after the first deployment: see [Credentials](../credentials.md).
 
 ## Wazuh indexer variables
 
@@ -80,23 +81,23 @@ Defined in:
 | Variable | Purpose | Source | Required | Default/current value |
 | --- | --- | --- | --- | --- |
 | `OPENSEARCH_HOSTS` | HTTPS endpoint for Wazuh Indexer. | Literal | Yes | `https://wazuh-indexer:9200` |
-| `INDEXER_USERNAME` | Indexer authentication username for dashboard. | Secret `indexer-cred` | Yes | `<indexer-username>` |
-| `INDEXER_PASSWORD` | Indexer authentication password for dashboard. | Secret `indexer-cred` | Yes | `<indexer-password>` |
-| `DASHBOARD_USERNAME` | Dashboard internal service username. | Secret `dashboard-cred` | Yes | `<dashboard-username>` |
-| `DASHBOARD_PASSWORD` | Dashboard internal service password. | Secret `dashboard-cred` | Yes | `<dashboard-password>` |
+| `INDEXER_USERNAME` | Indexer authentication username for dashboard. | Secret `indexer-cred` | Yes | `wazuh-manager` |
+| `INDEXER_PASSWORD` | Indexer authentication password for dashboard. | Secret `indexer-cred` | Yes | `wazuh-manager` (shipped default) |
+| `DASHBOARD_USERNAME` | Dashboard internal service username. | Secret `dashboard-cred` | Yes | `kibanaserver` |
+| `DASHBOARD_PASSWORD` | Dashboard internal service password. | Secret `dashboard-cred` | Yes | `kibanaserver` (shipped default) |
 | `SERVER_SSL_ENABLED` | Enables HTTPS on dashboard server. | Literal | Yes | `"true"` |
 | `SERVER_SSL_CERTIFICATE` | Dashboard TLS certificate path. | Literal | Yes | `/usr/share/wazuh-dashboard/certs/wazuh-dashboard.pem` |
 | `SERVER_SSL_KEY` | Dashboard TLS key path. | Literal | Yes | `/usr/share/wazuh-dashboard/certs/wazuh-dashboard-key.pem` |
 | `OPENSEARCH_SSL_CERTIFICATE_AUTHORITIES` | CA path used for indexer TLS verification. | Literal | Yes | `/usr/share/wazuh-dashboard/certs/root-ca.pem` |
 | `WAZUH_API_URL` | Wazuh manager API endpoint used by dashboard. | Literal | Yes | `https://wazuh-api` |
-| `API_USERNAME` | Wazuh API authentication username for dashboard. | Secret `wazuh-api-cred` | Yes | `<wazuh-api-username>` |
-| `API_PASSWORD` | Wazuh API authentication password for dashboard. | Secret `wazuh-api-cred` | Yes | `<wazuh-api-password>` |
+| `API_USERNAME` | Wazuh API authentication username for dashboard. | Secret `wazuh-api-cred` | Yes | `wazuh-wui` |
+| `API_PASSWORD` | Wazuh API authentication password for dashboard. | Secret `wazuh-api-cred` | Yes | `wazuh-wui` (shipped default) |
 
 ### Dashboard customization notes
 
 - If you change service names, update `OPENSEARCH_HOSTS` and `WAZUH_API_URL` accordingly.
 - Keep TLS-related variables consistent with mounted certificate paths.
-- Rotate credentials by updating Secrets and redeploying workloads.
+- Rotate credentials by updating Secrets and restarting the workloads that read them. Updating a Secret is only half of it: the account inside the Wazuh indexer or the Wazuh API has to be changed too. See [Credentials](../credentials.md).
 
 ## Secret-backed variable mapping
 
@@ -111,4 +112,14 @@ The following Secret manifests provide values for environment variables:
 - `wazuh/secrets/wazuh-cluster-key-secret.yaml`
   - `WAZUH_CLUSTER_KEY`
 
-After changing Secret values, re-apply your overlay and restart affected pods if required.
+A Secret consumed with `valueFrom.secretKeyRef` is read into the environment when the container starts, so after changing a value you have to re-apply your overlay **and** restart the workloads that read it:
+
+```bash
+kubectl -n wazuh rollout restart statefulset/wazuh-manager-master
+kubectl -n wazuh rollout restart statefulset/wazuh-manager-worker
+kubectl -n wazuh rollout restart deployment/wazuh-dashboard
+```
+
+`wazuh/secrets/wazuh-authd-pass-secret.yaml` is absent from the list above because it is mounted as a file at `/wazuh-config-mount/etc/authd.pass`, not exposed as an environment variable.
+
+> **Important**: changing a Secret does not change the account inside the Wazuh indexer or the Wazuh API. Both halves are covered in [Credentials](../credentials.md).

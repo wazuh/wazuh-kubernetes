@@ -4,15 +4,16 @@ This section summarizes security recommendations for Wazuh Kubernetes deployment
 
 ## Credentials and secrets
 
-- Do not use default credentials. The default values for the Wazuh API, Dashboard, and Indexer credentials are stored in `wazuh/secrets/`.
-- Update the base64-encoded values in the following secret files before deploying to production:
-  - `wazuh/secrets/wazuh-api-cred-secret.yaml` - Wazuh API username and password
-  - `wazuh/secrets/dashboard-cred-secret.yaml` - Dashboard username and password
-  - `wazuh/secrets/indexer-cred-secret.yaml` - Indexer username and password
-  - `wazuh/secrets/wazuh-authd-pass-secret.yaml` - Authd password for agent enrollment
+- **Do not keep the default credentials.** Every Wazuh indexer and Wazuh API account ships with its own username as its password, and the deployment answers to anyone who knows them. Changing them is the first thing to do after the first deployment: [Credentials](credentials.md) is the procedure, and it covers both the accounts inside the components and the Secrets the workloads read them from.
+- The Secrets under `wazuh/secrets/` hold the values the pods present. Editing them alone does not change the accounts the indexer and the API accept:
+  - `wazuh/secrets/wazuh-api-cred-secret.yaml` - Wazuh API `wazuh-wui` service account
+  - `wazuh/secrets/dashboard-cred-secret.yaml` - indexer `kibanaserver` service account the dashboard uses
+  - `wazuh/secrets/indexer-cred-secret.yaml` - indexer `wazuh-manager` service account the managers and the dashboard use
+  - `wazuh/secrets/wazuh-authd-pass-secret.yaml` - Authd password for Wazuh 4.x agent enrollment
   - `wazuh/secrets/wazuh-cluster-key-secret.yaml` - Cluster communication key
+- A base64 value in a Secret manifest is encoding, not encryption. Keep changed values out of version control and restrict read access to the deployment directory.
 - For production deployments, consider using external secret management solutions integrated with Kubernetes.
-- Rotate credentials regularly and after any suspected exposure.
+- Rotate credentials regularly and after any suspected exposure. Run `tools/tests/check-default-credentials.sh` to confirm no default is left.
 
 ## Certificates and TLS
 
