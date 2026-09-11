@@ -35,6 +35,7 @@ resources:
   - base/storage-class.yaml
   - base/middleware.yaml
   - base/ingressRoute-tcp-dashboard.yaml
+  - base/ingressRoute-tcp-agents.yaml
   - base/ingressRoute-tcp-events.yaml
   - base/ingressRoute-tcp-registration.yaml
   - base/Allow-DNS-np.yaml
@@ -47,6 +48,7 @@ resources:
   - secrets/indexer-cred-secret.yaml
 
   - wazuh_managers/wazuh-cluster-svc.yaml
+  - wazuh_managers/wazuh-agents-svc.yaml
   - wazuh_managers/wazuh-events-svc.yaml
   - wazuh_managers/wazuh-registration-svc.yaml
   - wazuh_managers/wazuh-api-svc.yaml
