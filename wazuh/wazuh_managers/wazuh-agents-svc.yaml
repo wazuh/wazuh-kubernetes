@@ -1,0 +1,28 @@
+# Copyright (C) 2019, Wazuh Inc.
+#
+# This program is a free software; you can redistribute it
+# and/or modify it under the terms of the GNU General Public
+# License (version 2) as published by the FSF - Free Software
+# Foundation.
+
+# Wazuh manager Service: Wazuh 5.x agent communication and enrollment
+#
+# Since 5.0.0 remoted serves a single HTTPS channel that carries both the agent
+# traffic and the enrollment, so this port replaces the 1514/1515 pair for 5.x
+# agents. Every manager node answers it, master included, mirroring the way the
+# Docker multi-node deployment balances 1517 across the whole cluster.
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: wazuh-agents
+  namespace: wazuh
+  labels:
+    app: wazuh-manager
+spec:
+  selector:
+    app: wazuh-manager
+  ports:
+    - name: agents-https
+      port: 1517
+      targetPort: 1517
