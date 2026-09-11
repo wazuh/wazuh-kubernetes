@@ -38,6 +38,7 @@ This section summarizes security recommendations for Wazuh Kubernetes deployment
   - **Indexer API** (port `9200`): Restrict to manager and dashboard pods only
   - **Wazuh API** (port `55000`): Limit access to dashboard and administrative networks
   - **Cluster communication** (port `1516`): Keep internal to the cluster
+  - **Agent communication and enrollment** (port `1517`): Reachable by your agents only. It carries the enrollment since 5.0.0, so the password in `wazuh/secrets/wazuh-authd-pass-secret.yaml` is what protects it from unwanted registrations
 - Use Ingress resources with TLS termination for external access to the dashboard.
 - Consider using a service mesh (e.g., Istio, Linkerd) for additional network security controls and mTLS between services.
 
