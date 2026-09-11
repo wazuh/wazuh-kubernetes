@@ -77,6 +77,7 @@ To deploy a cluster on your local environment (like Minikube, Kind or Microk8s) 
 │   ├── base
 │   │   ├── Allow-DNS-np.yaml
 │   │   ├── default-deny-all.yaml
+│   │   ├── ingressRoute-tcp-agents.yaml
 │   │   ├── ingressRoute-tcp-dashboard.yaml
 │   │   ├── ingressRoute-tcp-events.yaml
 │   │   ├── ingressRoute-tcp-registration.yaml
@@ -94,6 +95,7 @@ To deploy a cluster on your local environment (like Minikube, Kind or Microk8s) 
 │   │   └── wazuh-cluster-key-secret.yaml
 │   ├── wazuh_managers
 │   │   ├── network-policies
+│   │   ├── wazuh-agents-svc.yaml
 │   │   ├── wazuh-api-svc.yaml
 │   │   ├── wazuh-cluster-svc.yaml
 │   │   ├── wazuh-events-svc.yaml

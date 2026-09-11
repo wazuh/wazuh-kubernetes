@@ -25,6 +25,7 @@ Defined in:
 | `WAZUH_INDEXER_HOSTS` | Indexer endpoint used by managers. | Literal | Yes | `wazuh-indexer:9200` |
 | `WAZUH_NODE_NAME` | Manager node identifier in the Wazuh cluster. | Literal (master), downward API (worker pod name) | Yes | Master: `master`; Worker: pod metadata name |
 | `WAZUH_NODE_TYPE` | Declares manager role in cluster mode. | Literal | Yes | Master: `master`; Worker: `worker` |
+| `WAZUH_REMOTE_BIND_ADDR` | Bind address `remoted` listens on for agent traffic. Written to `<remote><https><bind_addr>` and `<remote><legacy><local_ip>`. | Literal | Yes | `0.0.0.0` |
 | `WAZUH_CLUSTER_BIND_ADDR` | Bind address for cluster communications. | Literal | Yes | `0.0.0.0` |
 | `WAZUH_CLUSTER_NODES` | Cluster service name used for peer discovery. | Literal | Yes | `wazuh-cluster` |
 | `INDEXER_USERNAME` | Indexer authentication username. | Secret `indexer-cred` | Yes | `<indexer-username>` |
@@ -39,6 +40,7 @@ Defined in:
 ### Manager customization notes
 
 - Keep `WAZUH_NODE_TYPE` and `WAZUH_NODE_NAME` aligned with each StatefulSet role.
+- Leave `WAZUH_REMOTE_BIND_ADDR` at `0.0.0.0`. The packaged configuration binds `remoted` to `127.0.0.1`, which inside a pod leaves ports `1517` and `1514` reachable only from the pod itself, so no agent could connect. Binding on all interfaces is scoped to the pod network namespace: what is actually reachable stays governed by the Services and the NetworkPolicies.
 - Update `WAZUH_INDEXER_HOSTS` only if your Indexer service name/port differs from the default.
 - Do not hardcode credentials in manifests; update the corresponding Secrets instead.
 

@@ -9,6 +9,9 @@ spec:
   - name: websecure
     port: 443
     targetPort: 443
+  - name: wazuh-1517
+    port: 1517
+    targetPort: 1517
   - name: wazuh-1514
     port: 1514
     targetPort: 1514
