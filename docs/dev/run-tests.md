@@ -21,6 +21,38 @@ The test suite validates the following aspects of the Wazuh Kubernetes deploymen
 - **Manager services**: Ensures at least 10 Wazuh manager services are running correctly
 - **Dashboard accessibility**: Confirms the Wazuh dashboard service returns HTTP 200 status
 
+## Running the tests
+
+From the root of the repository, against a deployment that is already up:
+
+```bash
+pytest tests/k8s_pytest.py -v --deployment-type local    # or: --deployment-type eks
+```
+
+A single test:
+
+```bash
+pytest tests/k8s_pytest.py::TestWazuhKubernetes::test_indexer_cluster_health -v
+```
+
+### Options
+
+| Option | Default | Purpose |
+| --- | --- | --- |
+| `--deployment-type` | `local` | `local` or `eks`. Only changes the expected indexer node count: 3 for `eks`, 1 for `local`. |
+| `--dashboard-url` | `localhost` | Host the dashboard check targets. With `localhost` the check runs inside the dashboard pod; any other value is curled from the host. |
+| `--indexer-user` | `wazuh-admin` | Wazuh indexer account the tests authenticate with. |
+| `--indexer-password` | `wazuh-admin` | Password of that account. |
+
+`--indexer-password` defaults to the password the indexer image ships, so a deployment that has not been through the credential rotation needs no options at all. **After rotating the `wazuh-admin` password, the suite fails until you pass the new one:**
+
+```bash
+pytest tests/k8s_pytest.py -v --deployment-type local \
+  --indexer-password '<the new wazuh-admin password>'
+```
+
+See [Credentials](../ref/credentials.md) for the rotation procedure.
+
 ## Automated testing workflows
 
 The repository includes two GitHub Actions workflows for automated testing:

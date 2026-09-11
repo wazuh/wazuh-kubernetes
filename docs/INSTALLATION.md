@@ -7,6 +7,26 @@ This guide covers how to set up the documentation build environment for the Wazu
 The documentation is built using [mdBook](https://rust-lang.github.io/mdBook/), a command-line tool for creating books
 with Markdown, along with [mdBook Mermaid](https://github.com/badboy/mdbook-mermaid) for diagram support.
 
+Both are distributed through `cargo`, so **Rust and Cargo are a prerequisite**. Check whether you
+already have them:
+
+```bash
+cargo --version
+```
+
+If that reports nothing, install the toolchain and load it into the current shell:
+
+```bash
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+source "$HOME/.cargo/env"
+```
+
+`cargo install` places the binaries in `~/.cargo/bin`; make sure that directory is on your `PATH`.
+
+> **Note**: having `mdbook` from a system package is not enough. `mdbook-mermaid` is a separate
+> binary that such packages do not include, and `book.toml` declares it as a required preprocessor,
+> so the build fails until it is installed.
+
 ## Required versions
 
 - **mdbook**: 0.5.2

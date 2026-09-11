@@ -316,13 +316,71 @@ spec:
     passthrough: true
 ```
 
-#### Step 3.3.2: Deploy Wazuh cluster
+#### Step 3.3.2: Set the cluster key and the agent enrollment password
+
+Two of the Secrets under `wazuh/secrets/` hold shared keys rather than account passwords, and both ship with a documented default value:
+
+| Secret | Key | Default value | What it protects |
+| --- | --- | --- | --- |
+| `wazuh-cluster-key` | `key` | `123a45bc67def891gh23i45jk67l8mn9` | Membership of the Wazuh manager cluster, on port `1516` |
+| `wazuh-authd-pass` | `authd.pass` | `password` | Agent enrollment: the channel `remoted` serves on port `1517`, and the legacy `authd` port `1515` |
+
+**Change both here, before the first `kubectl apply -k`.** Unlike the Wazuh indexer and Wazuh API accounts of the next step, these are not accounts inside an image, so `password-tool.sh` does not cover them: the managers read them from the Secrets on every container start. Setting them now costs nothing, while changing the cluster key on a running deployment stops the workers from syncing until every manager pod has restarted on the new key.
+
+Generate the two values. The cluster key has to be 32 characters:
+
+```bash
+openssl rand -hex 16   # cluster key, 32 characters
+openssl rand -hex 24   # enrollment password
+```
+
+Encode each one, without a trailing newline:
+
+```bash
+echo -n '8f3c1d0b7a5e49628c1f0a3d5b7e9c21' | base64
+```
+
+Then write them into the two manifests, keeping the key names as they are:
+
+```yaml
+# wazuh/secrets/wazuh-cluster-key-secret.yaml
+data:
+  key: OGYzYzFkMGI3YTVlNDk2MjhjMWYwYTNkNWI3ZTljMjE=   # the new cluster key
+```
+
+```yaml
+# wazuh/secrets/wazuh-authd-pass-secret.yaml
+data:
+  authd.pass: <base64 of the new enrollment password>   # the new enrollment password
+```
+
+Drop the `# string "..." base64 encoded` comments the manifests ship with, so they do not describe a value that is no longer there, and keep these edits out of your commits: base64 is encoding, not encryption.
+
+Every agent you enroll afterwards has to present the new enrollment password. See [Credentials](../credentials.md#the-cluster-key-and-the-agent-enrollment-password) for how to change either value on a deployment that is already running.
+
+#### Step 3.3.3: Deploy Wazuh cluster
 
 By using the kustomization file on the `eks` variant we can now deploy the whole cluster with a single command:
 
 ```bash
 kubectl apply -k envs/eks/
 ```
+
+#### Step 3.4: Change the default passwords
+
+**Do this before anything else reaches the deployment.** Every Wazuh indexer and Wazuh API account starts with its own username as its password, `admin` among them, and `admin` holds full control of the indexer and produces a Wazuh API administrator session in the dashboard.
+
+Wait for every pod to be `Ready`, then change them:
+
+```bash
+kubectl -n wazuh wait --for=condition=Ready pod --all --timeout=600s
+kubectl -n wazuh exec wazuh-indexer-0 -- /password-tool.sh --all
+kubectl -n wazuh exec wazuh-manager-master-0 -- /password-tool.sh --all
+```
+
+Each command prints the new passwords once and stores nothing, so copy the output somewhere safe. Three of them have to be written into the Secrets under `wazuh/secrets/` and the workloads restarted, and the Wazuh API passwords have to be set on every worker pod as well.
+
+The full procedure, including those steps and how to verify the result, is in [Credentials](../credentials.md).
 
 #### Conclusion
 
@@ -505,6 +563,48 @@ The `wazuh/base/ingressRoute-tcp-dashboard.yaml` file configures the Wazuh Dashb
 echo "" > wazuh/base/ingressRoute-tcp-dashboard.yaml
 ```
 
+#### Set the cluster key and the agent enrollment password
+
+Two of the Secrets under `wazuh/secrets/` hold shared keys rather than account passwords, and both ship with a documented default value:
+
+| Secret | Key | Default value | What it protects |
+| --- | --- | --- | --- |
+| `wazuh-cluster-key` | `key` | `123a45bc67def891gh23i45jk67l8mn9` | Membership of the Wazuh manager cluster, on port `1516` |
+| `wazuh-authd-pass` | `authd.pass` | `password` | Agent enrollment: the channel `remoted` serves on port `1517`, and the legacy `authd` port `1515` |
+
+**Change both here, before the first `kubectl apply -k`.** Unlike the Wazuh indexer and Wazuh API accounts, these are not accounts inside an image, so `password-tool.sh` does not cover them: the managers read them from the Secrets on every container start. Setting them now costs nothing, while changing the cluster key on a running deployment stops the workers from syncing until every manager pod has restarted on the new key.
+
+Generate the two values. The cluster key has to be 32 characters:
+
+```bash
+openssl rand -hex 16   # cluster key, 32 characters
+openssl rand -hex 24   # enrollment password
+```
+
+Encode each one, without a trailing newline:
+
+```bash
+echo -n '8f3c1d0b7a5e49628c1f0a3d5b7e9c21' | base64
+```
+
+Then write them into the two manifests, keeping the key names as they are:
+
+```yaml
+# wazuh/secrets/wazuh-cluster-key-secret.yaml
+data:
+  key: OGYzYzFkMGI3YTVlNDk2MjhjMWYwYTNkNWI3ZTljMjE=   # the new cluster key
+```
+
+```yaml
+# wazuh/secrets/wazuh-authd-pass-secret.yaml
+data:
+  authd.pass: <base64 of the new enrollment password>   # the new enrollment password
+```
+
+Drop the `# string "..." base64 encoded` comments the manifests ship with, so they do not describe a value that is no longer there, and keep these edits out of your commits: base64 is encoding, not encryption.
+
+Every agent you enroll afterwards has to present the new enrollment password. See [Credentials](../credentials.md#the-cluster-key-and-the-agent-enrollment-password) for how to change either value on a deployment that is already running.
+
 #### Apply all manifests using kustomize
 
 We are using the overlay feature of kustomize to create two variants: `eks` and `local-env`, in this guide we're using `local-env`.
@@ -542,6 +642,22 @@ By using the kustomization file on the `local-env` variant we can now deploy the
 kubectl apply -k envs/local-env/
 ```
 
+#### Change the default passwords
+
+**Do this before anything else reaches the deployment.** Every Wazuh indexer and Wazuh API account starts with its own username as its password, `admin` among them, and `admin` holds full control of the indexer and produces a Wazuh API administrator session in the dashboard.
+
+Wait for every pod to be `Ready`, then change them:
+
+```bash
+kubectl -n wazuh wait --for=condition=Ready pod --all --timeout=600s
+kubectl -n wazuh exec wazuh-indexer-0 -- /password-tool.sh --all
+kubectl -n wazuh exec wazuh-manager-master-0 -- /password-tool.sh --all
+```
+
+Each command prints the new passwords once and stores nothing, so copy the output somewhere safe. Three of them have to be written into the Secrets under `wazuh/secrets/` and the workloads restarted, and the Wazuh API passwords have to be set on every worker pod as well.
+
+The full procedure, including those steps and how to verify the result, is in [Credentials](../credentials.md).
+
 ##### Accessing Dashboard
 
 To access the Dashboard interface you can use port-forward:
@@ -551,6 +667,8 @@ kubectl -n wazuh port-forward service/dashboard 8443:443
 ```
 
 Access to Wazuh dashboard using <https://localhost:8443>
+
+Log in as `admin`, with the password you set in the previous step. On a deployment that has not been through it, the account still answers to the shipped default. See [Credentials](../credentials.md).
 
 <!-- If you need to access the dashboard from another host (or register agents pointing to the Minikube host IP), you can bind the port-forward to a specific interface/IP address: -->
 
@@ -700,6 +818,7 @@ wazuh-worker-egress               app=wazuh-manager,node-type=worker   41s
 ### Accessing Wazuh dashboard (EKS)
 
 In case you created domain names for the services, you should be able to access Wazuh dashboard using the proposed domain name: <https://wazuh.your-domain.com>.
+Log in as `admin`, with the password set in **Step 3.4**. See [Credentials](../credentials.md).
 Also, you can access using the External-IP (from the VPC): <https://xxx-yyy-zzz.us-east-1.elb.amazonaws.com:443>
 To access the Wazuh dashboard of a local deployment, please refer to [local.md](local.md#accessing-dashboard).
 

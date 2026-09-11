@@ -4,6 +4,7 @@
 
 # Development Guide
 
+- [Documentation setup](INSTALLATION.md)
 - [Set up the development environment](dev/setup.md)
 - [How to run the tests](dev/run-tests.md)
 
@@ -18,6 +19,7 @@
 - [Configuration](ref/configuration/README.md)
   - [Environment variables](ref/configuration/environment-variables.md)
   - [Configuration files](ref/configuration/configuration-files.md)
+- [Credentials](ref/credentials.md)
 - [Upgrade](ref/upgrade.md)
 - [Uninstall](ref/uninstall.md)
 - [Backup and Restore](ref/backup-restore.md)
