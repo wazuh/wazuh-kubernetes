@@ -2,9 +2,6 @@ import subprocess
 import pytest
 import re
 
-ADMIN_USER = "wazuh-admin"
-ADMIN_PASSWORD = "wazuh-admin"
-
 class TestWazuhKubernetes:
     """Test suite for Wazuh Kubernetes deployment"""
 
@@ -14,23 +11,38 @@ class TestWazuhKubernetes:
         return "wazuh"
 
     @pytest.fixture(scope="class")
+    def indexer_cred(self, request):
+        """Wazuh indexer credentials the tests authenticate with.
+
+        Defaults to the password the image ships, so a deployment that has not
+        been through the credential rotation needs no options. After rotating,
+        pass --indexer-password (see docs/ref/credentials.md).
+        """
+        return (
+            request.config.getoption("--indexer-user"),
+            request.config.getoption("--indexer-password"),
+        )
+
+    @pytest.fixture(scope="class")
     def dashboard_pod(self, namespace):
         """Get Wazuh dashboard pod name"""
         cmd = f"kubectl -n {namespace} get pods -l app=wazuh-dashboard -o jsonpath='{{.items[0].metadata.name}}'"
         result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
         return result.stdout.strip()
 
-    def test_indexer_cluster_health(self, namespace):
+    def test_indexer_cluster_health(self, namespace, indexer_cred):
         """Check if Wazuh indexer cluster health is green"""
-        cmd = f'kubectl -n {namespace} exec -it wazuh-indexer-0 -- curl -XGET "https://localhost:9200/_cluster/health" -u {ADMIN_USER}:{ADMIN_PASSWORD} -k -s'
+        user, password = indexer_cred
+        cmd = f'kubectl -n {namespace} exec -it wazuh-indexer-0 -- curl -XGET "https://localhost:9200/_cluster/health" -u {user}:{password} -k -s'
         result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
 
         print(f"Cluster health status: {result.stdout}")
         assert "green" in result.stdout, "Cluster health is not green"
 
-    def test_indexer_indices_health(self, namespace):
+    def test_indexer_indices_health(self, namespace, indexer_cred):
         """Check if all Wazuh indexer indices are green"""
-        cmd = f'kubectl -n {namespace} exec -it wazuh-indexer-0 -- curl -XGET "https://localhost:9200/_cat/indices" -u {ADMIN_USER}:{ADMIN_PASSWORD} -k -s'
+        user, password = indexer_cred
+        cmd = f'kubectl -n {namespace} exec -it wazuh-indexer-0 -- curl -XGET "https://localhost:9200/_cat/indices" -u {user}:{password} -k -s'
         result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
 
         print(f"Indices status:\n{result.stdout}")
@@ -41,12 +53,13 @@ class TestWazuhKubernetes:
 
         assert lines_total == lines_green, f"Not all indices are green: {lines_green}/{lines_total}"
 
-    def test_indexer_nodes_count(self, namespace, request):
+    def test_indexer_nodes_count(self, namespace, indexer_cred, request):
         """Check if there are the expected number of Wazuh indexer nodes"""
+        user, password = indexer_cred
         deployment_type = request.config.getoption("--deployment-type", default="local")
         expected_nodes = 3 if deployment_type == "eks" else 1
 
-        cmd = f'kubectl -n {namespace} exec -it wazuh-indexer-0 -- curl -XGET "https://localhost:9200/_cat/nodes" -u {ADMIN_USER}:{ADMIN_PASSWORD} -k -s'
+        cmd = f'kubectl -n {namespace} exec -it wazuh-indexer-0 -- curl -XGET "https://localhost:9200/_cat/nodes" -u {user}:{password} -k -s'
         result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
 
         nodes_count = len(re.findall(r'indexer', result.stdout))
@@ -55,9 +68,10 @@ class TestWazuhKubernetes:
 
         assert nodes_count == expected_nodes, f"Expected {expected_nodes} indexer nodes for {deployment_type} deployment, found {nodes_count}"
 
-    def test_wazuh_templates(self, namespace):
+    def test_wazuh_templates(self, namespace, indexer_cred):
         """Check if Wazuh templates are present (more than 3)"""
-        cmd = f'kubectl -n {namespace} exec -it wazuh-indexer-0 -- curl -XGET "https://localhost:9200/_cat/templates" -u {ADMIN_USER}:{ADMIN_PASSWORD} -k -s'
+        user, password = indexer_cred
+        cmd = f'kubectl -n {namespace} exec -it wazuh-indexer-0 -- curl -XGET "https://localhost:9200/_cat/templates" -u {user}:{password} -k -s'
         result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
 
         templates = re.findall(r'.*(?:wazuh|wazuh-agent|wazuh-statistics).*', result.stdout)
@@ -82,13 +96,14 @@ class TestWazuhKubernetes:
 
         assert running_services >= 7, f"Expected at least 7 running services, found {running_services}"
 
-    def test_dashboard_service_url(self, namespace, dashboard_pod, request):
+    def test_dashboard_service_url(self, namespace, dashboard_pod, indexer_cred, request):
         """Check if Wazuh dashboard service returns HTTP 200"""
+        user, password = indexer_cred
         dashboard_url = request.config.getoption("--dashboard-url", "localhost")
         if dashboard_url == "localhost":
-            cmd = f'kubectl -n {namespace} exec -it {dashboard_pod} -- curl -XGET --silent https://{dashboard_url}/app/status -k -u {ADMIN_USER}:{ADMIN_PASSWORD} -I -s'
+            cmd = f'kubectl -n {namespace} exec -it {dashboard_pod} -- curl -XGET --silent https://{dashboard_url}/app/status -k -u {user}:{password} -I -s'
         else:
-            cmd = f'curl -XGET --silent https://{dashboard_url}/app/status -k -u {ADMIN_USER}:{ADMIN_PASSWORD} -I -s'
+            cmd = f'curl -XGET --silent https://{dashboard_url}/app/status -k -u {user}:{password} -I -s'
         result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
 
         status_match = re.search(r'^HTTP.*?\s+(\d+)', result.stdout, re.MULTILINE)
