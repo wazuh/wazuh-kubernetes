@@ -55,6 +55,7 @@
 
 | Issue | Comment |
 | - | - |
+| [#1661](https://github.com/wazuh/wazuh-kubernetes/pull/1661) | Wait for every replica in the integration tests and cover the agents service and the load balancer in the manager certificate SAN. |
 | [#1613](https://github.com/wazuh/wazuh-kubernetes/pull/1613) | Report skipped bumps in the repository bumper workflow |
 | [#1595](https://github.com/wazuh/wazuh-kubernetes/pull/1595) | Fix changelog check to accept Prior versions entries |
 | [#1563](https://github.com/wazuh/wazuh-kubernetes/pull/1563) | Fix bumper workflow failure when bump produces no changes |
