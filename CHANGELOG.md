@@ -4,6 +4,7 @@
 
 | Issue | Comment |
 | - | - |
+| [#1647](https://github.com/wazuh/wazuh-kubernetes/issues/1647) | Add the agent listener (`remoted`) certificate to the `manager-certs` secret and to both manager statefulsets. |
 | [#1638](https://github.com/wazuh/wazuh-kubernetes/issues/1638) | Document how to change the default Wazuh indexer and Wazuh API passwords, the manager cluster key and the agent enrollment password, and add a check for default credentials. |
 | [#1578](https://github.com/wazuh/wazuh-kubernetes/issues/1578) | Readiness and liveness probes on Wazuh deployment. |
 | [#1539](https://github.com/wazuh/wazuh-kubernetes/pull/1539) | Added bump-issue-link support for Revert Stage Bump. |

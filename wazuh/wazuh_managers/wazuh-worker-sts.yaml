@@ -66,6 +66,13 @@ spec:
               cp /tmp/certs-raw/manager-key.pem /etc/wazuh-certs-final/indexer-connector-key.pem
               chown root:101 /etc/wazuh-certs-final/root-ca.pem /etc/wazuh-certs-final/indexer-connector.pem /etc/wazuh-certs-final/indexer-connector-key.pem
               chmod 0640 /etc/wazuh-certs-final/root-ca.pem /etc/wazuh-certs-final/indexer-connector.pem /etc/wazuh-certs-final/indexer-connector-key.pem
+              # The agent listener pair is read by remoted after the manager drops
+              # privileges, so it is owned by the manager user (101:101) instead of
+              # root:101 like the files above.
+              cp /tmp/certs-raw/manager-remoted.pem /etc/wazuh-certs-final/remoted.pem
+              cp /tmp/certs-raw/manager-remoted-key.pem /etc/wazuh-certs-final/remoted-key.pem
+              chown 101:101 /etc/wazuh-certs-final/remoted.pem /etc/wazuh-certs-final/remoted-key.pem
+              chmod 0640 /etc/wazuh-certs-final/remoted.pem /etc/wazuh-certs-final/remoted-key.pem
           volumeMounts:
             - name: wazuh-manager-worker
               mountPath: /pvc-etc
@@ -104,6 +111,12 @@ spec:
             - name: wazuh-manager-certs
               mountPath: /var/wazuh-manager/etc/certs/indexer-connector-key.pem
               subPath: indexer-connector-key.pem
+            - name: wazuh-manager-certs
+              mountPath: /var/wazuh-manager/etc/certs/remoted.pem
+              subPath: remoted.pem
+            - name: wazuh-manager-certs
+              mountPath: /var/wazuh-manager/etc/certs/remoted-key.pem
+              subPath: remoted-key.pem
             - name: wazuh-manager-worker
               mountPath: /var/wazuh-manager/logs
               subPath: wazuh/var/wazuh-manager/logs

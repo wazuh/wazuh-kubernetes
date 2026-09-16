@@ -180,6 +180,8 @@ nodes:
       dns:
         - "wazuh-api"
         - "wazuh-api.wazuh.svc.cluster.local"
+        - "wazuh-agents"
+        - "wazuh-agents.wazuh.svc.cluster.local"
 
   # Wazuh dashboard nodes
   dashboard:
@@ -188,6 +190,8 @@ nodes:
         - "dashboard"
         - "dashboard.wazuh.svc.cluster.local"
 ```
+
+> **Note**: The `manager` entry also produces the agent listener certificate (`manager-remoted.pem` and `manager-remoted-key.pem`), which `remoted` serves on port `1517`. Its SAN is taken from the `dns` list above, so the list must cover every name an agent dials: the `wazuh-agents` Service inside the cluster and, for agents enrolling from outside, the FQDN of the load balancer created in step 3.2. Add that FQDN to the list before generating the certificates, otherwise agents that verify the manager certificate fail to connect.
 
 **3.1.3 Run the Wazuh certificates tool script**:
 
@@ -215,6 +219,8 @@ secretGenerator:
     files:
       - config/manager/certs/manager-key.pem
       - config/manager/certs/manager.pem
+      - config/manager/certs/manager-remoted-key.pem
+      - config/manager/certs/manager-remoted.pem
       - config/root-ca/certs/root-ca.pem
 ```
 
@@ -464,6 +470,8 @@ nodes:
       dns:
         - "wazuh-api"
         - "wazuh-api.wazuh.svc.cluster.local"
+        - "wazuh-agents"
+        - "wazuh-agents.wazuh.svc.cluster.local"
 
   # Wazuh dashboard nodes
   dashboard:
@@ -472,6 +480,8 @@ nodes:
         - "dashboard"
         - "dashboard.wazuh.svc.cluster.local"
 ```
+
+> **Note**: The `manager` entry also produces the agent listener certificate (`manager-remoted.pem` and `manager-remoted-key.pem`), which `remoted` serves on port `1517`. Its SAN is taken from the `dns` list above, so add any other name agents use to reach the manager, for example `localhost` when they connect through a port-forward.
 
 Run `wazuh-certs-tool.sh` to create the certificates.
 
@@ -507,6 +517,8 @@ secretGenerator:
     files:
       - config/manager/certs/manager-key.pem
       - config/manager/certs/manager.pem
+      - config/manager/certs/manager-remoted-key.pem
+      - config/manager/certs/manager-remoted.pem
       - config/root-ca/certs/root-ca.pem
 ```
 
