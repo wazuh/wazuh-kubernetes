@@ -594,6 +594,31 @@ jobs:
           cd wazuh/
           sudo bash ../tools/utils/deployment/certificates-conf.sh --cert --copy --priv
 
+      - name: Check the names in the agent listener certificate
+        working-directory: wazuh-kubernetes
+        run: |
+          # Agents refuse a certificate that does not name what they dialled, and
+          # no test in the suite reads the SAN, so assert it here on the file that
+          # goes into the manager-certs secret.
+          CERT=wazuh/config/manager/certs/manager-remoted.pem
+          NAMES=$(sudo openssl x509 -in "$CERT" -noout -ext subjectAltName \
+            | tr ',' '\n' | sed -n 's/.*DNS://p' | tr -d ' ')
+          echo "Names in $CERT:"
+          echo "$NAMES" | sed 's/^/  /'
+          expected="wazuh-agents wazuh-agents.wazuh.svc.cluster.local"
+          if [ "${{ matrix.deployment_type }}" = "eks" ]; then
+            expected="$expected ${INGRESS_DNS}"
+          fi
+          missing=0
+          for name in $expected; do
+            if ! grep -Fxq "$name" <<< "$NAMES"; then
+              echo "ERROR: '$name' is not in the certificate"
+              missing=1
+            fi
+          done
+          [ "$missing" -eq 0 ] || exit 1
+          echo "Every name agents use is covered"
+
       # -----------------------------------------------------------------------
       # Common: deploy Wazuh stack
       # -----------------------------------------------------------------------
@@ -676,6 +701,32 @@ jobs:
 
       - name: View stack status
         run: kubectl get all -n wazuh -o wide
+
+      - name: Verify the agent listener certificate over TLS
+        run: |
+          # Run from inside the manager pods over loopback: the namespace denies
+          # traffic to 1517 from everywhere except the Traefik namespace, and
+          # loopback is not subject to NetworkPolicy. The handshake still uses
+          # the name agents dial, so a certificate that does not cover
+          # wazuh-agents fails here. This checks the certificate, not the
+          # routing or the policies an external agent goes through.
+          for pod in $(kubectl get pods -n wazuh -l app=wazuh-manager \
+                        -o jsonpath='{.items[*].metadata.name}'); do
+            echo "=== $pod ==="
+            kubectl exec -n wazuh "$pod" -- sh -c '
+              CA=/var/wazuh-manager/etc/certs/root-ca.pem
+              if command -v openssl >/dev/null 2>&1; then
+                echo | openssl s_client -connect 127.0.0.1:1517 \
+                  -servername wazuh-agents -verify_hostname wazuh-agents \
+                  -CAfile "$CA" -verify_return_error -brief
+              elif command -v curl >/dev/null 2>&1; then
+                curl -sS --cacert "$CA" --resolve wazuh-agents:1517:127.0.0.1 \
+                  -o /dev/null -w "TLS verified (HTTP %{http_code})\n" \
+                  https://wazuh-agents:1517/
+              else
+                echo "neither openssl nor curl is in the image"; exit 1
+              fi'
+          done
 
       # -----------------------------------------------------------------------
       # Run integration tests
