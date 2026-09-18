@@ -28,6 +28,8 @@ secretGenerator:
     files:
       - config/manager/certs/manager-key.pem
       - config/manager/certs/manager.pem
+      - config/manager/certs/manager-remoted-key.pem
+      - config/manager/certs/manager-remoted.pem
       - config/root-ca/certs/root-ca.pem
 
 resources:

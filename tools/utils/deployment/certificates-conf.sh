@@ -121,6 +121,17 @@ if $DO_COPY; then
 
   for node in "${MANAGER_NODES[@]}"; do
     dir_name=$(node_to_dir "$node")
+    # The agent listener (remoted) pair, ${node}-remoted.pem and
+    # ${node}-remoted-key.pem, is copied by the glob below along with
+    # ${node}.pem and ${node}-key.pem. The manager does not start without it.
+    for cert in "${node}-remoted.pem" "${node}-remoted-key.pem"; do
+      if [[ ! -f "$OUTPUT_DIR/$cert" ]]; then
+        echo "Error: '$OUTPUT_DIR/$cert' not found. The agent listener certificate is" >&2
+        echo "required by the Wazuh manager. Regenerate the certificates with a" >&2
+        echo "wazuh-certs-tool.sh version that creates the remoted pair." >&2
+        exit 1
+      fi
+    done
     echo "Copying certificates for manager: $node -> config/$dir_name/certs/"
     mkdir -p "./config/$dir_name/certs"
     cp "$OUTPUT_DIR/${node}"* "./config/$dir_name/certs/"
