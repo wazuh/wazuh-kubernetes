@@ -112,7 +112,44 @@ To deploy a cluster on your local environment (like Minikube, Kind or Microk8s) 
 
 ## Docs requirements
 
-To work with this documentation, you need **mdBook** installed. For installation instructions, refer to the [mdBook documentation](https://rust-lang.github.io/mdBook/).
+Two tools are needed, at these exact versions:
+
+| Tool | Version | Why |
+| --- | --- | --- |
+| [mdBook](https://rust-lang.github.io/mdBook/) | 0.5.2 | Builds the book |
+| [mdBook Mermaid](https://github.com/badboy/mdbook-mermaid) | 0.17.0 | Renders the Mermaid diagrams |
+
+`mdbook-mermaid` is declared as a preprocessor in `book.toml`, so **the build fails outright without
+it** rather than skipping the diagrams:
+
+```text
+ERROR The command `mdbook-mermaid` wasn't found, is the `mermaid` preprocessor installed?
+```
+
+Both are installed with `cargo`, so **Rust and Cargo have to be present first**. If `cargo --version`
+reports nothing, install the toolchain:
+
+```bash
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+source "$HOME/.cargo/env"
+```
+
+Then install the tools and check them:
+
+```bash
+cargo install mdbook --version 0.5.2
+cargo install mdbook-mermaid --version 0.17.0
+
+mdbook --version
+mdbook-mermaid --version
+```
+
+`cargo install` puts the binaries in `~/.cargo/bin`, which has to be on your `PATH`. Note that a
+system-packaged `mdbook` (for instance `/usr/bin/mdbook`) does **not** bring `mdbook-mermaid` with
+it, so the preprocessor still has to be installed separately.
+
+See [INSTALLATION.md](INSTALLATION.md) for the full setup guide, including the workaround for the
+`edition2024` build error on stable Rust and other troubleshooting.
 
 ## Usage
 
