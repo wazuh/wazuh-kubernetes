@@ -28,6 +28,8 @@ It is useful for stateful applications like databases that save the data to a pe
 
 Deployments are intended for stateless use and are quite lightweight and seem to be appropriate for Wazuh dashboard and Traefik, where it is not necessary to maintain the states.
 
+All three StatefulSets set `podManagementPolicy: Parallel`. The Wazuh indexer needs it: its nodes form a quorum, and under the default `OrderedReady` a restart that took the whole StatefulSet down — a node group replacement, for instance — leaves `wazuh-indexer-0` unable to elect a cluster manager on its own, while the controller waits for it to become ready before creating the peers that would give it one. The field is immutable, so changing it on a running deployment means `kubectl delete statefulset wazuh-indexer --cascade=orphan` followed by an apply, which keeps the pods and the claims.
+
 #### Pods
 
 **Wazuh master**:
@@ -173,6 +175,12 @@ nodes:
       dns:
         - "wazuh-indexer"
         - "wazuh-indexer.wazuh.svc.cluster.local"
+        - "wazuh-indexer-0.wazuh-indexer"
+        - "wazuh-indexer-1.wazuh-indexer"
+        - "wazuh-indexer-2.wazuh-indexer"
+        - "wazuh-indexer-0.wazuh-indexer.wazuh.svc.cluster.local"
+        - "wazuh-indexer-1.wazuh-indexer.wazuh.svc.cluster.local"
+        - "wazuh-indexer-2.wazuh-indexer.wazuh.svc.cluster.local"
 
   # Wazuh server nodes
   manager:
@@ -191,7 +199,22 @@ nodes:
         - "dashboard.wazuh.svc.cluster.local"
 ```
 
-> **Note**: The `manager` entry also produces the agent listener certificate (`manager-remoted.pem` and `manager-remoted-key.pem`), which `remoted` serves on port `1517`. Its SAN is taken from the `dns` list above, so the list must cover every name an agent dials: the `wazuh-agents` Service inside the cluster and, for agents enrolling from outside, the FQDN of the load balancer created in step 3.2. Add that FQDN to the list before generating the certificates, otherwise agents that verify the manager certificate fail to connect.
+> **Note**: The Wazuh indexer nodes verify each other's certificate on the transport port against
+> the name each one publishes, `wazuh-indexer-<n>.wazuh-indexer.<namespace>.svc.cluster.local`, set
+> by `network.publish_host` in `indexer-sts.yaml`. The `dns` list therefore needs one pair of
+> entries per indexer replica, or the nodes cannot form a cluster. Adjust it if you change the
+> replica count of the overlay.
+
+> **Note**: The `manager` entry also produces the agent listener certificate (`manager-remoted.pem` and `manager-remoted-key.pem`), which `remoted` serves on port `1517`. Its SAN has to cover every name an agent dials: the `wazuh-agents` Service inside the cluster, which the `dns` list above provides, and the FQDN of the ingress load balancer for agents enrolling from outside. Agents that verify the manager certificate fail to connect to a name the certificate does not carry.
+
+> **Note**: The ingress load balancer does not exist yet — it is created in step 3.2 — so its FQDN cannot be in the `dns` list at this point. Deploy Traefik first (step 3.2), read the FQDN from `kubectl -n traefik get svc`, and come back here. Pass it with `--agent-san`, which adds it to the agent listener certificate without touching the rest:
+>
+> ```bash
+> sudo bash ../tools/utils/deployment/certificates-conf.sh --cert --copy --priv \
+>   --agent-san a7ffe29bfcf38420988fd52a698be422-862207742.us-west-1.elb.amazonaws.com
+> ```
+>
+> Repeat `--agent-san` for every extra address, and add a CNAME of your own here too if agents will use one. If you are not enrolling agents from outside the cluster, the command below is enough.
 
 **3.1.3 Run the Wazuh certificates tool script**:
 
@@ -324,11 +347,11 @@ spec:
 
 #### Step 3.3.2: Set the cluster key and the agent enrollment password
 
-Two of the Secrets under `wazuh/secrets/` hold shared keys rather than account passwords, and both ship with a documented default value:
+Two of the Secrets under `wazuh/secrets/` hold shared keys rather than account passwords. Neither ships with a usable value: the cluster key is a placeholder, and the enrollment password is the string `password`.
 
 | Secret | Key | Default value | What it protects |
 | --- | --- | --- | --- |
-| `wazuh-cluster-key` | `key` | `123a45bc67def891gh23i45jk67l8mn9` | Membership of the Wazuh manager cluster, on port `1516` |
+| `wazuh-cluster-key` | `key` | `REPLACE_THIS_CLUSTER_KEY_32CHARS` (placeholder, not a key) | Membership of the Wazuh manager cluster, on port `1516` |
 | `wazuh-authd-pass` | `authd.pass` | `password` | Agent enrollment: the channel `remoted` serves on port `1517`, and the legacy `authd` port `1515` |
 
 **Change both here, before the first `kubectl apply -k`.** Unlike the Wazuh indexer and Wazuh API accounts of the next step, these are not accounts inside an image, so `password-tool.sh` does not cover them: the managers read them from the Secrets on every container start. Setting them now costs nothing, while changing the cluster key on a running deployment stops the workers from syncing until every manager pod has restarted on the new key.
@@ -463,6 +486,8 @@ nodes:
       dns:
         - "wazuh-indexer"
         - "wazuh-indexer.wazuh.svc.cluster.local"
+        - "wazuh-indexer-0.wazuh-indexer"
+        - "wazuh-indexer-0.wazuh-indexer.wazuh.svc.cluster.local"
 
   # Wazuh server nodes
   manager:
@@ -481,7 +506,19 @@ nodes:
         - "dashboard.wazuh.svc.cluster.local"
 ```
 
-> **Note**: The `manager` entry also produces the agent listener certificate (`manager-remoted.pem` and `manager-remoted-key.pem`), which `remoted` serves on port `1517`. Its SAN is taken from the `dns` list above, so add any other name agents use to reach the manager, for example `localhost` when they connect through a port-forward.
+> **Note**: The Wazuh indexer nodes verify each other's certificate on the transport port against
+> the name each one publishes, `wazuh-indexer-<n>.wazuh-indexer.<namespace>.svc.cluster.local`, set
+> by `network.publish_host` in `indexer-sts.yaml`. The `dns` list therefore needs one pair of
+> entries per indexer replica, or the nodes cannot form a cluster. Adjust it if you change the
+> replica count of the overlay.
+
+> **Note**: The `manager` entry also produces the agent listener certificate (`manager-remoted.pem` and `manager-remoted-key.pem`), which `remoted` serves on port `1517`. Its SAN is taken from the `dns` list above. Any other name agents use to reach the manager has to be there too, or be passed to the next command with `--agent-san`, which adds it to that certificate only:
+>
+> ```bash
+> sudo bash ../tools/utils/deployment/certificates-conf.sh --cert --copy --priv --agent-san localhost
+> ```
+>
+> `localhost` is the usual one here, for agents connecting through a port-forward.
 
 Run `wazuh-certs-tool.sh` to create the certificates.
 
@@ -577,11 +614,11 @@ echo "" > wazuh/base/ingressRoute-tcp-dashboard.yaml
 
 #### Set the cluster key and the agent enrollment password
 
-Two of the Secrets under `wazuh/secrets/` hold shared keys rather than account passwords, and both ship with a documented default value:
+Two of the Secrets under `wazuh/secrets/` hold shared keys rather than account passwords. Neither ships with a usable value: the cluster key is a placeholder, and the enrollment password is the string `password`.
 
 | Secret | Key | Default value | What it protects |
 | --- | --- | --- | --- |
-| `wazuh-cluster-key` | `key` | `123a45bc67def891gh23i45jk67l8mn9` | Membership of the Wazuh manager cluster, on port `1516` |
+| `wazuh-cluster-key` | `key` | `REPLACE_THIS_CLUSTER_KEY_32CHARS` (placeholder, not a key) | Membership of the Wazuh manager cluster, on port `1516` |
 | `wazuh-authd-pass` | `authd.pass` | `password` | Agent enrollment: the channel `remoted` serves on port `1517`, and the legacy `authd` port `1515` |
 
 **Change both here, before the first `kubectl apply -k`.** Unlike the Wazuh indexer and Wazuh API accounts, these are not accounts inside an image, so `password-tool.sh` does not cover them: the managers read them from the Secrets on every container start. Setting them now costs nothing, while changing the cluster key on a running deployment stops the workers from syncing until every manager pod has restarted on the new key.
@@ -802,6 +839,28 @@ wazuh-manager-worker-0             1/1     Running   0          4h17m
 wazuh-manager-worker-1             1/1     Running   0          4h17m
 ```
 
+### Persistent volume claims
+
+```bash
+kubectl -n wazuh get pvc
+```
+
+Expected output:
+
+```bash
+$ kubectl -n wazuh get pvc
+NAME                                              STATUS   VOLUME     CAPACITY   ACCESS MODES   STORAGECLASS    AGE
+wazuh-dashboard-config                            Bound    pvc-6f1…   1Gi        RWO            wazuh-storage   4h17m
+wazuh-indexer-wazuh-indexer-0                     Bound    pvc-a12…   10Gi       RWO            wazuh-storage   4h17m
+wazuh-indexer-wazuh-indexer-1                     Bound    pvc-b34…   10Gi       RWO            wazuh-storage   4h17m
+wazuh-indexer-wazuh-indexer-2                     Bound    pvc-c56…   10Gi       RWO            wazuh-storage   4h17m
+wazuh-manager-master-wazuh-manager-master-0       Bound    pvc-d78…   50Gi       RWO            wazuh-storage   4h17m
+wazuh-manager-worker-wazuh-manager-worker-0       Bound    pvc-e90…   50Gi       RWO            wazuh-storage   4h17m
+wazuh-manager-worker-wazuh-manager-worker-1       Bound    pvc-f12…   50Gi       RWO            wazuh-storage   4h17m
+```
+
+One claim per manager pod carries `etc`, `api/configuration`, `logs`, `queue`, `var/multigroups` and `data` under separate `subPath`s, and the dashboard claim carries its configuration directory and keystore. See [Configuration files](../configuration/configuration-files.md#persistence-configuration).
+
 ### Network Policies
 
 ```bash
@@ -821,7 +880,7 @@ dashboard-egress                  app=wazuh-dashboard                  47s
 default-deny-all                  <none>                               46s
 indexer-egress                    app=wazuh-indexer                    45s
 indexer-ingress                   app=wazuh-indexer                    44s
-manager-egress                    app=wazuh-manager,node-type=master   43s
+manager-egress                    app=wazuh-manager                    43s
 manager-egress-external           app=wazuh-manager                    42s
 wazuh-api-ingress                 app=wazuh-manager,node-type=master   42s
 wazuh-worker-egress               app=wazuh-manager,node-type=worker   41s

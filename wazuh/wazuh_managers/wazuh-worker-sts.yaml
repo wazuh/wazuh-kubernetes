@@ -61,6 +61,10 @@ spec:
                 chown root:101 /pvc-etc/certs
                 chmod 1770 /pvc-etc/certs
               fi
+              # data/ is not in the image's permanent-data snapshot.
+              if [ -z "$(ls -A /pvc-data)" ]; then
+                cp -a /var/wazuh-manager/data/. /pvc-data/
+              fi
               cp /tmp/certs-raw/root-ca.pem /etc/wazuh-certs-final/root-ca.pem
               cp /tmp/certs-raw/manager.pem /etc/wazuh-certs-final/indexer-connector.pem
               cp /tmp/certs-raw/manager-key.pem /etc/wazuh-certs-final/indexer-connector-key.pem
@@ -77,6 +81,9 @@ spec:
             - name: wazuh-manager-worker
               mountPath: /pvc-etc
               subPath: wazuh/var/wazuh-manager/etc
+            - name: wazuh-manager-worker
+              mountPath: /pvc-data
+              subPath: wazuh/var/wazuh-manager/data
             - name: wazuh-manager-certs-raw
               mountPath: /tmp/certs-raw
             - name: wazuh-manager-certs
@@ -127,8 +134,8 @@ spec:
               mountPath: /var/wazuh-manager/var/multigroups
               subPath: wazuh/var/wazuh-manager/var/multigroups
             - name: wazuh-manager-worker
-              mountPath: /var/wazuh-manager/active-response/bin
-              subPath: wazuh/var/wazuh-manager/active-response/bin
+              mountPath: /var/wazuh-manager/data
+              subPath: wazuh/var/wazuh-manager/data
           ports:
             - containerPort: 1517
               name: agents-https
@@ -141,7 +148,7 @@ spec:
               command:
                 - /bin/sh
                 - -c
-                - /var/wazuh-manager/bin/wazuh-manager-control status 2>/dev/null | grep -v apid | grep -q 'not running' && exit 1 || exit 0
+                - /var/wazuh-manager/bin/wazuh-manager-control status 2>/dev/null | grep -v apid | grep -qE 'not running|failed to start|refused its configuration' && exit 1 || exit 0
             periodSeconds: 10
             timeoutSeconds: 5
             failureThreshold: 12
@@ -150,7 +157,7 @@ spec:
               command:
                 - /bin/sh
                 - -c
-                - /var/wazuh-manager/bin/wazuh-manager-control status 2>/dev/null | grep -v apid | grep -q 'not running' && exit 1 || exit 0
+                - /var/wazuh-manager/bin/wazuh-manager-control status 2>/dev/null | grep -v apid | grep -qE 'not running|failed to start|refused its configuration' && exit 1 || exit 0
             periodSeconds: 15
             timeoutSeconds: 5
             failureThreshold: 5
@@ -159,13 +166,13 @@ spec:
               command:
                 - /bin/sh
                 - -c
-                - /var/wazuh-manager/bin/wazuh-manager-control status 2>/dev/null | grep -v apid | grep -q 'not running' && exit 1 || exit 0
+                - /var/wazuh-manager/bin/wazuh-manager-control status 2>/dev/null | grep -v apid | grep -qE 'not running|failed to start|refused its configuration' && exit 1 || exit 0
             periodSeconds: 15
             timeoutSeconds: 5
             failureThreshold: 5
           env:
             - name: WAZUH_INDEXER_HOSTS
-              value: 'wazuh-indexer:9200'
+              value: 'wazuh-indexer-0.wazuh-indexer:9200,wazuh-indexer-1.wazuh-indexer:9200,wazuh-indexer-2.wazuh-indexer:9200'
             - name: WAZUH_NODE_NAME
               valueFrom:
                 fieldRef:
@@ -177,7 +184,7 @@ spec:
             - name: WAZUH_CLUSTER_BIND_ADDR
               value: '0.0.0.0'
             - name: WAZUH_CLUSTER_NODES
-              value: 'wazuh-cluster'
+              value: 'wazuh-manager-master-0.wazuh-cluster'
             - name: INDEXER_USERNAME
               valueFrom:
                 secretKeyRef:
@@ -188,12 +195,6 @@ spec:
                 secretKeyRef:
                   name: indexer-cred
                   key: password
-            - name: SSL_CERTIFICATE_AUTHORITIES
-              value: /var/wazuh-manager/etc/certs/root-ca.pem
-            - name: SSL_CERTIFICATE
-              value: /var/wazuh-manager/etc/certs/indexer-connector.pem
-            - name: SSL_KEY
-              value: /var/wazuh-manager/etc/certs/indexer-connector-key.pem
             - name: WAZUH_CLUSTER_KEY
               valueFrom:
                 secretKeyRef:

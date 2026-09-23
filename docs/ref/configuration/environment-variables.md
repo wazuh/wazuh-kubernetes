@@ -22,26 +22,24 @@ Defined in:
 
 | Variable | Purpose | Source | Required | Default/current value |
 | --- | --- | --- | --- | --- |
-| `WAZUH_INDEXER_HOSTS` | Indexer endpoint used by managers. | Literal | Yes | `wazuh-indexer:9200` |
+| `WAZUH_INDEXER_HOSTS` | Comma-separated list of indexer nodes as `host:port`, written to `<indexer><hosts>`. | Literal (overlays may override) | Yes | Base: the three pods of the indexer StatefulSet; `local-env`: `wazuh-indexer-0.wazuh-indexer:9200` |
 | `WAZUH_NODE_NAME` | Manager node identifier in the Wazuh cluster. | Literal (master), downward API (worker pod name) | Yes | Master: `master`; Worker: pod metadata name |
 | `WAZUH_NODE_TYPE` | Declares manager role in cluster mode. | Literal | Yes | Master: `master`; Worker: `worker` |
 | `WAZUH_REMOTE_BIND_ADDR` | Bind address `remoted` listens on for agent traffic. Written to `<remote><https><bind_addr>` and `<remote><legacy><local_ip>`. | Literal | Yes | `0.0.0.0` |
 | `WAZUH_CLUSTER_BIND_ADDR` | Bind address for cluster communications. | Literal | Yes | `0.0.0.0` |
-| `WAZUH_CLUSTER_NODES` | Cluster service name used for peer discovery. | Literal | Yes | `wazuh-cluster` |
+| `WAZUH_CLUSTER_NODES` | Address of the manager master, written to `<cluster><nodes>`. This is the node a worker dials to join the cluster. | Literal | Yes | `wazuh-manager-master-0.wazuh-cluster` |
 | `INDEXER_USERNAME` | Indexer authentication username. | Secret `indexer-cred` | Yes | `wazuh-manager` |
 | `INDEXER_PASSWORD` | Indexer authentication password. | Secret `indexer-cred` | Yes | `wazuh-manager` (shipped default) |
-| `SSL_CERTIFICATE_AUTHORITIES` | CA certificate path used for indexer TLS. | Literal | Yes | `/etc/ssl/root-ca.pem` |
-| `SSL_CERTIFICATE` | Client certificate path used for indexer TLS. | Literal | Yes | `/etc/ssl/filebeat.pem` |
-| `SSL_KEY` | Client key path used for indexer TLS. | Literal | Yes | `/etc/ssl/filebeat-key.pem` |
-| `API_USERNAME` | Wazuh API authentication username. | Secret `wazuh-api-cred` (master only) | Yes | `wazuh-wui` |
-| `API_PASSWORD` | Wazuh API authentication password. | Secret `wazuh-api-cred` (master only) | Yes | `wazuh-wui` (shipped default) |
-| `WAZUH_CLUSTER_KEY` | Shared key for manager cluster membership. | Secret `wazuh-cluster-key` | Yes | `123a45bc67def891gh23i45jk67l8mn9` (shipped default) |
+| `WAZUH_CLUSTER_KEY` | Shared key for manager cluster membership. | Secret `wazuh-cluster-key` | Yes | `REPLACE_THIS_CLUSTER_KEY_32CHARS` (placeholder, replace before deploying) |
 
 ### Manager customization notes
 
 - Keep `WAZUH_NODE_TYPE` and `WAZUH_NODE_NAME` aligned with each StatefulSet role.
 - Leave `WAZUH_REMOTE_BIND_ADDR` at `0.0.0.0`. The packaged configuration binds `remoted` to `127.0.0.1`, which inside a pod leaves ports `1517` and `1514` reachable only from the pod itself, so no agent could connect. Binding on all interfaces is scoped to the pod network namespace: what is actually reachable stays governed by the Services and the NetworkPolicies.
-- Update `WAZUH_INDEXER_HOSTS` only if your Indexer service name/port differs from the default.
+- Update `WAZUH_INDEXER_HOSTS` only if your Indexer service name/port differs from the default, or if you change the number of indexer replicas: it lists one `host:port` per indexer pod, and the `local-env` overlay narrows it to the single node that environment runs.
+- `WAZUH_CLUSTER_NODES` has to name the master pod, not the `wazuh-cluster` Service. That Service is headless and selects every manager pod, so a worker resolving it would try to join the cluster through another worker.
+- The manager reads the certificate paths it presents to the Wazuh indexer from `<indexer><ssl>` in `/var/wazuh-manager/etc/wazuh-manager.conf`, not from the environment. The files are mounted at the paths that configuration already names: `etc/certs/indexer-connector.pem`, `etc/certs/indexer-connector-key.pem` and `etc/certs/root-ca.pem`. Earlier releases of this repository set `SSL_CERTIFICATE`, `SSL_KEY` and `SSL_CERTIFICATE_AUTHORITIES`; the Wazuh manager image reads none of them.
+- The Wazuh API accounts are not configured through the environment either. `API_USERNAME` and `API_PASSWORD` belong to the Wazuh dashboard, which authenticates to the API with them; the manager seeds its own user database. See [Credentials](../credentials.md).
 - Do not hardcode credentials in manifests; update the corresponding Secrets instead.
 - The passwords above are the values the images ship, and every one of them equals its own username. Change them right after the first deployment: see [Credentials](../credentials.md).
 - `WAZUH_CLUSTER_KEY` is rewritten into `<cluster><key>` of `/var/wazuh-manager/etc/wazuh-manager.conf` on every container start, so the value in the Secret always wins over what is on the persistent volume. It has to be 32 characters and identical on every manager node, which is why it is best set before the first deployment: changing it later means restarting the master and the workers together, and the nodes still on the old key cannot sync in the meantime. See [The cluster key and the agent enrollment password](../credentials.md#the-cluster-key-and-the-agent-enrollment-password).
@@ -54,24 +52,29 @@ Defined in:
 
 | Variable | Purpose | Source | Required | Default/current value |
 | --- | --- | --- | --- | --- |
-| `bootstrap.memory_lock` | Prevents indexer memory from being swapped. | Literal | Yes | `"true"` |
+| `bootstrap.memory_lock` | Prevents indexer memory from being swapped. Disabled here: with it enabled the indexer fails to start in this deployment with "memory locking requested for opensearch process but memory is not locked". | Literal | Yes | `"false"` |
 | `network.host` | Bind address for indexer node network interface. | Literal | Yes | `0.0.0.0` |
+| `POD_NAME`, `POD_NAMESPACE` | Pod name and namespace, used to build `network.publish_host`. | Downward API | Yes | Pod metadata |
+| `network.publish_host` | Address the other indexer nodes dial. Left unset it is the pod IP, which no certificate can carry, so the transport handshake between nodes fails hostname verification. | Literal | Yes | `$(POD_NAME).wazuh-indexer.$(POD_NAMESPACE).svc.cluster.local` |
 | `node.name` | Node name from pod metadata. | Downward API | Yes | Pod metadata name |
-| `cluster.initial_cluster_manager_nodes` | Initial manager node list for cluster bootstrap. | Literal | Yes | `wazuh-indexer-0,wazuh-indexer-1,wazuh-indexer-2` |
-| `discovery.seed_hosts` | Seed hosts for node discovery. | Literal (base and overlays may override) | Yes | Base: `wazuh-indexer-cluster` |
+| `cluster.initial_cluster_manager_nodes` | Initial manager node list for cluster bootstrap. | Literal | Yes | `wazuh-indexer-0` |
+| `discovery.seed_hosts` | Seed hosts for node discovery. | Literal (overlays may override) | Yes | Base: `wazuh-indexer-0.wazuh-indexer,wazuh-indexer-1.wazuh-indexer,wazuh-indexer-2.wazuh-indexer`; `local-env`: `wazuh-indexer-0.wazuh-indexer` |
 | `node.max_local_storage_nodes` | Maximum local storage nodes for shared storage path. | Literal | Optional | `3` |
 | `plugins.security.allow_default_init_securityindex` | Enables initial security index bootstrap behavior. | Literal | Optional | `true` |
 | `NODES_DN` | Distinguished names allowed for indexer nodes. | Literal | Yes | Certificate DNs for indexer nodes |
-| `OPENSEARCH_JAVA_OPTS` | Java heap and JVM options for indexer process. | Literal | Yes | `-Xms1024m -Xmx1024m` |
-| `DISCOVERY_SERVICE` | Headless service used for peer discovery. | Literal | Yes | `wazuh-indexer-cluster` |
+| `OPENSEARCH_JAVA_OPTS` | Java heap and JVM options for indexer process. | Literal | Yes | `-Xms1g -Xmx1g -Dlog4j2.formatMsgNoLookups=true` |
+| `DISCOVERY_SERVICE` | Headless service used for peer discovery. | Literal | Yes | `wazuh-indexer` |
 | `KUBERNETES_NAMESPACE` | Runtime namespace from pod metadata. | Downward API | Yes | Pod metadata namespace |
-| `DISABLE_INSTALL_DEMO_CONFIG` | Skips demo config installation in startup script. | Literal | Yes | `true` |
 
 ### Indexer customization notes
 
 - `OPENSEARCH_JAVA_OPTS` is the primary memory tuning variable for performance sizing.
 - For local/single-node deployments, overlays can change `discovery.seed_hosts` (for example in `envs/local-env/indexer-resources.yaml`).
-- Dotted variable names (such as `discovery.seed_hosts`) are intentional and used by the container startup scripts.
+- Dotted variable names (such as `discovery.seed_hosts`) are intentional: the image's entrypoint turns every `a.b`-shaped variable into an `-Ea.b=value` option.
+- `POD_NAME` and `POD_NAMESPACE` have to stay above `network.publish_host` in the manifest. Kubernetes expands `$(VAR)` only against variables declared before it, and an unexpanded value makes the node fail to start with `BindTransportException: Failed to resolve publish address`.
+- The name each node publishes has to be in its certificate, so `config.yml` needs one pair of `dns` entries per indexer replica. See [Installation](../getting-started/installation.md).
+- The `wazuh-indexer` Service sets `publishNotReadyAddresses: true`: a node resolves its own `network.publish_host` while it starts, which is before it can be ready.
+- There is no variable to disable the OpenSearch demo configuration. The image removes the demo accounts (`anomalyadmin`, `kibanaro`, `logstash`, `readall`, `snapshotrestore`) from `internal_users.yml` when it is built, so they are not in the deployment at all.
 
 ## Wazuh dashboard variables
 
@@ -82,14 +85,12 @@ Defined in:
 | Variable | Purpose | Source | Required | Default/current value |
 | --- | --- | --- | --- | --- |
 | `OPENSEARCH_HOSTS` | HTTPS endpoint for Wazuh Indexer. | Literal | Yes | `https://wazuh-indexer:9200` |
-| `INDEXER_USERNAME` | Indexer authentication username for dashboard. | Secret `indexer-cred` | Yes | `wazuh-manager` |
-| `INDEXER_PASSWORD` | Indexer authentication password for dashboard. | Secret `indexer-cred` | Yes | `wazuh-manager` (shipped default) |
 | `DASHBOARD_USERNAME` | Dashboard internal service username. | Secret `dashboard-cred` | Yes | `kibanaserver` |
 | `DASHBOARD_PASSWORD` | Dashboard internal service password. | Secret `dashboard-cred` | Yes | `kibanaserver` (shipped default) |
 | `SERVER_SSL_ENABLED` | Enables HTTPS on dashboard server. | Literal | Yes | `"true"` |
-| `SERVER_SSL_CERTIFICATE` | Dashboard TLS certificate path. | Literal | Yes | `/usr/share/wazuh-dashboard/certs/wazuh-dashboard.pem` |
-| `SERVER_SSL_KEY` | Dashboard TLS key path. | Literal | Yes | `/usr/share/wazuh-dashboard/certs/wazuh-dashboard-key.pem` |
-| `OPENSEARCH_SSL_CERTIFICATE_AUTHORITIES` | CA path used for indexer TLS verification. | Literal | Yes | `/usr/share/wazuh-dashboard/certs/root-ca.pem` |
+| `SERVER_SSL_CERTIFICATE` | Dashboard TLS certificate path. | Literal | Yes | `/usr/share/wazuh-dashboard/config/certs/dashboard.pem` |
+| `SERVER_SSL_KEY` | Dashboard TLS key path. | Literal | Yes | `/usr/share/wazuh-dashboard/config/certs/dashboard-key.pem` |
+| `OPENSEARCH_SSL_CERTIFICATE_AUTHORITIES` | CA path used for indexer TLS verification. | Literal | Yes | `/usr/share/wazuh-dashboard/config/certs/root-ca.pem` |
 | `WAZUH_API_URL` | Wazuh manager API endpoint used by dashboard. | Literal | Yes | `https://wazuh-api` |
 | `API_USERNAME` | Wazuh API authentication username for dashboard. | Secret `wazuh-api-cred` | Yes | `wazuh-wui` |
 | `API_PASSWORD` | Wazuh API authentication password for dashboard. | Secret `wazuh-api-cred` | Yes | `wazuh-wui` (shipped default) |
@@ -98,6 +99,7 @@ Defined in:
 
 - If you change service names, update `OPENSEARCH_HOSTS` and `WAZUH_API_URL` accordingly.
 - Keep TLS-related variables consistent with mounted certificate paths.
+- The dashboard authenticates to the Wazuh indexer with `DASHBOARD_USERNAME` and `DASHBOARD_PASSWORD`, which the entrypoint writes into the dashboard keystore. It does not read `INDEXER_USERNAME` or `INDEXER_PASSWORD`; those belong to the manager.
 - Rotate credentials by updating Secrets and restarting the workloads that read them. Updating a Secret is only half of it: the account inside the Wazuh indexer or the Wazuh API has to be changed too. See [Credentials](../credentials.md).
 
 ## Secret-backed variable mapping
@@ -105,9 +107,9 @@ Defined in:
 The following Secret manifests provide values for environment variables:
 
 - `wazuh/secrets/indexer-cred-secret.yaml`
-  - `INDEXER_USERNAME`, `INDEXER_PASSWORD`
+  - `INDEXER_USERNAME`, `INDEXER_PASSWORD` (manager master and worker)
 - `wazuh/secrets/wazuh-api-cred-secret.yaml`
-  - `API_USERNAME`, `API_PASSWORD`
+  - `API_USERNAME`, `API_PASSWORD` (dashboard)
 - `wazuh/secrets/dashboard-cred-secret.yaml`
   - `DASHBOARD_USERNAME`, `DASHBOARD_PASSWORD`
 - `wazuh/secrets/wazuh-cluster-key-secret.yaml`

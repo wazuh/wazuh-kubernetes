@@ -14,6 +14,8 @@ metadata:
   namespace: wazuh
 spec:
   replicas: 1
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       app: wazuh-dashboard
@@ -24,9 +26,9 @@ spec:
       name: wazuh-dashboard
     spec:
       volumes:
-        - name: config
-          configMap:
-            name: dashboard-conf
+        - name: dashboard-config
+          persistentVolumeClaim:
+            claimName: wazuh-dashboard-config
         - name: dashboard-certs
           secret:
             secretName: dashboard-certs
@@ -34,6 +36,20 @@ spec:
         fsGroup: 101
         runAsUser: 101
         runAsGroup: 101
+      initContainers:
+        - name: init-dashboard-config
+          image: 'wazuh/wazuh-dashboard:5.0.0'
+          command:
+            - /bin/sh
+            - -c
+            - |
+              if [ ! -f /pvc-config/opensearch_dashboards.yml ]; then
+                cp -a /usr/share/wazuh-dashboard/config/. /pvc-config/
+              fi
+          volumeMounts:
+            - name: dashboard-config
+              mountPath: /pvc-config
+              subPath: config
       containers:
         - name: wazuh-dashboard
           image: 'wazuh/wazuh-dashboard:5.0.0'
@@ -42,6 +58,9 @@ spec:
               cpu: 500m
               memory: 1Gi
           volumeMounts:
+            - name: dashboard-config
+              mountPath: /usr/share/wazuh-dashboard/config
+              subPath: config
             - name: dashboard-certs
               mountPath: /usr/share/wazuh-dashboard/config/certs/dashboard.pem
               readOnly: true
@@ -87,16 +106,6 @@ spec:
           env:
             - name: OPENSEARCH_HOSTS
               value: 'https://wazuh-indexer:9200'
-            - name: INDEXER_USERNAME
-              valueFrom:
-                secretKeyRef:
-                  name: indexer-cred
-                  key: username
-            - name: INDEXER_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: indexer-cred
-                  key: password
             - name: DASHBOARD_USERNAME
               valueFrom:
                 secretKeyRef:

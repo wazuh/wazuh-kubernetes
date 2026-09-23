@@ -25,3 +25,5 @@ spec:
       port: 9200
       targetPort: 9200
   clusterIP: None
+  # The indexer nodes resolve each other before any of them is ready.
+  publishNotReadyAddresses: true

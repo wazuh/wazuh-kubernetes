@@ -525,7 +525,8 @@ jobs:
         run: |
           yq e -i '.nodes.indexer[0].name = "indexer"'                                                          wazuh/config.yml
           yq e -i 'del(.nodes.indexer[0].ip)'                                                                    wazuh/config.yml
-          yq e -i '.nodes.indexer[0].dns = ["wazuh-indexer", "wazuh-indexer.wazuh.svc.cluster.local"]'          wazuh/config.yml
+          # One pair of entries per indexer replica.
+          yq e -i '.nodes.indexer[0].dns = ["wazuh-indexer", "wazuh-indexer.wazuh.svc.cluster.local", "wazuh-indexer-0.wazuh-indexer", "wazuh-indexer-1.wazuh-indexer", "wazuh-indexer-2.wazuh-indexer", "wazuh-indexer-0.wazuh-indexer.wazuh.svc.cluster.local", "wazuh-indexer-1.wazuh-indexer.wazuh.svc.cluster.local", "wazuh-indexer-2.wazuh-indexer.wazuh.svc.cluster.local"]' wazuh/config.yml
           yq e -i '.nodes.manager[0].name = "manager"'                                                          wazuh/config.yml
           yq e -i 'del(.nodes.manager[0].ip)'                                                                    wazuh/config.yml
           yq e -i '.nodes.manager[0].dns = ["wazuh-api", "wazuh-api.wazuh.svc.cluster.local", "wazuh-agents", "wazuh-agents.wazuh.svc.cluster.local"]' wazuh/config.yml
@@ -568,9 +569,6 @@ jobs:
         run: |
           INGRESS_DNS=$(kubectl -n traefik get service traefik -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
           yq e -i ".spec.routes[0].match = \"HostSNI(\`${INGRESS_DNS}\`)\"" wazuh/base/ingressRoute-tcp-dashboard.yaml
-          # Agents enrolling from outside the cluster dial the load balancer, so
-          # its hostname has to be in the SAN of the manager certificates.
-          yq e -i ".nodes.manager[0].dns += [\"${INGRESS_DNS}\"]" wazuh/config.yml
           echo "INGRESS_DNS=${INGRESS_DNS}" >> $GITHUB_ENV
 
       # -----------------------------------------------------------------------
@@ -592,7 +590,12 @@ jobs:
         working-directory: wazuh-kubernetes
         run: |
           cd wazuh/
-          sudo bash ../tools/utils/deployment/certificates-conf.sh --cert --copy --priv
+          # The load balancer hostname belongs to no node of config.yml.
+          AGENT_SAN=""
+          if [ -n "${INGRESS_DNS}" ]; then
+            AGENT_SAN="--agent-san ${INGRESS_DNS}"
+          fi
+          sudo bash ../tools/utils/deployment/certificates-conf.sh --cert --copy --priv ${AGENT_SAN}
 
       - name: Check the names in the agent listener certificate
         working-directory: wazuh-kubernetes
@@ -662,7 +665,7 @@ jobs:
           STABLE=0
           for i in $(seq 1 72); do
             RESPONSE=$(kubectl exec -n wazuh wazuh-indexer-0 -- \
-              curl -s -k -u wazuh-admin:wazuh-admin https://127.0.0.1:9200/_cluster/health 2>/dev/null || true)
+              curl -s -k -u admin:admin https://127.0.0.1:9200/_cluster/health 2>/dev/null || true)
             if echo "$RESPONSE" | grep -q '"status"'; then
               STABLE=$((STABLE + 1))
               echo "  attempt $i/72: OpenSearch healthy (stable=$STABLE/3)"

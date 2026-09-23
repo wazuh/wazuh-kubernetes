@@ -5,17 +5,17 @@
 # License (version 2) as published by the FSF - Free Software
 # Foundation.
 
-apiVersion: apps/v1
-kind: StatefulSet
+# Wazuh dashboard configuration claim
+
+apiVersion: v1
+kind: PersistentVolumeClaim
 metadata:
-  name: wazuh-manager-worker
+  name: wazuh-dashboard-config
   namespace: wazuh
 spec:
-  replicas: 1
-  template:
-    spec:
-      containers:
-        - name: wazuh-manager
-          env:
-            - name: WAZUH_INDEXER_HOSTS
-              value: 'wazuh-indexer-0.wazuh-indexer:9200'
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: wazuh-storage
+  resources:
+    requests:
+      storage: 1Gi

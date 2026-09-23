@@ -81,7 +81,37 @@ Kubernetes uses PersistentVolumeClaims (PVCs) and ConfigMaps to persist data out
 - **PersistentVolumeClaims**: Used for stateful data like logs, queues, and Indexer data. When a pod is deleted and recreated, data in PVCs remains intact.
 - **ConfigMaps**: Used for configuration files. ConfigMaps can be mounted as files in pods and updated independently of the pod lifecycle.
 
-The Wazuh deployment already uses PVCs for critical directories like `/var/wazuh-manager/etc`, `/var/wazuh-manager/logs`, and `/var/lib/wazuh-indexer`. For additional configuration files, use ConfigMaps as described above.
+The Wazuh deployment already uses PVCs for every directory that has to outlive a pod:
+
+| Workload | Path | What it holds |
+| --- | --- | --- |
+| Manager master and worker | `/var/wazuh-manager/etc` | Configuration, `client.keys`, `authd.pass`, certificates |
+| Manager master and worker | `/var/wazuh-manager/api/configuration` | Wazuh API configuration and its user database |
+| Manager master and worker | `/var/wazuh-manager/logs` | Manager logs |
+| Manager master and worker | `/var/wazuh-manager/queue` | Agent state, queues and the manager databases |
+| Manager master and worker | `/var/wazuh-manager/var/multigroups` | Generated multigroup shared configuration |
+| Manager master and worker | `/var/wazuh-manager/data` | Detection content: ruleset, IoC databases, GeoIP and time zone data |
+| Indexer | `/var/lib/wazuh-indexer` | Indices |
+| Dashboard | `/usr/share/wazuh-dashboard/config` | `opensearch_dashboards.yml` and the keystore |
+
+Two of these need seeding, because a PVC starts empty where the equivalent Docker named volume
+would have been filled from the image. An init container copies the content out of the image the
+first time the claim is used:
+
+- `/var/wazuh-manager/data` is not part of the manager image's permanent-data snapshot, so nothing
+  would restore it at runtime. The image does refresh the subtrees it owns (`data/tzdb`,
+  `data/store/schema`, `data/store/enrichment`) on every start, so upgrades still pick up new
+  content.
+- `/usr/share/wazuh-dashboard/config` holds `opensearch_dashboards.keystore`, which the dashboard
+  entrypoint creates only when it is absent and which carries
+  `wazuh_ai_assistant.encryptionKey`. Without the claim every dashboard pod would generate a new
+  key and anything encrypted with the previous one would become unreadable. The claim also keeps
+  `opensearch_dashboards.yml`, which the entrypoint rewrites from the environment on every start:
+  the settings this deployment sets are therefore always current, but a setting a newer image
+  ships and no environment variable covers stays at the value the claim was seeded with. Delete
+  the claim to pick those up, and set the passwords again afterwards.
+
+For additional configuration files, use ConfigMaps as described above.
 
 > **Important**: When creating ConfigMaps for configuration files, ensure the file content is properly formatted and validated before applying. Malformed configuration files can prevent pods from starting.
 

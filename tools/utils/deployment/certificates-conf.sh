@@ -9,15 +9,35 @@ OUTPUT_DIR="./wazuh-certificates" # Folder created by the script by default
 DO_CERT=false
 DO_COPY=false
 DO_PRIV=false
+AGENT_SAN=()
 
-for arg in "$@"; do
-  case $arg in
-    --cert) DO_CERT=true ;;
-    --copy) DO_COPY=true ;;
-    --priv) DO_PRIV=true ;;
+usage() {
+  echo "Usage: $0 [--cert] [--copy] [--priv] [--agent-san <ip|dns>]..."
+  echo "  --cert       Generate certificates using wazuh-certs-tool.sh"
+  echo "  --copy       Copy certificates to the corresponding config directories"
+  echo "  --priv       Set ownership and permissions on the certificate files"
+  echo "  --agent-san  Additional address for the manager agent listener"
+  echo "               certificates, such as the ingress load balancer FQDN."
+  echo "               Repeat it for more than one."
+}
+
+while [ $# -gt 0 ]; do
+  case $1 in
+    --cert) DO_CERT=true; shift ;;
+    --copy) DO_COPY=true; shift ;;
+    --priv) DO_PRIV=true; shift ;;
+    --agent-san)
+      if [ -z "$2" ]; then
+        echo "Missing <ip|dns> after --agent-san"
+        usage
+        exit 1
+      fi
+      AGENT_SAN+=(--agent-san "$2")
+      shift 2
+      ;;
     *)
-      echo "Unknown option: $arg"
-      echo "Usage: $0 [--cert] [--copy] [--priv]"
+      echo "Unknown option: $1"
+      usage
       exit 1
       ;;
   esac
@@ -25,10 +45,7 @@ done
 
 # If no flags provided, show usage
 if ! $DO_CERT && ! $DO_COPY && ! $DO_PRIV; then
-  echo "Usage: $0 [--cert] [--copy] [--priv]"
-  echo "  --cert  Generate certificates using wazuh-certs-tool.sh"
-  echo "  --copy  Copy certificates to the corresponding config directories"
-  echo "  --priv  Set ownership and permissions on the certificate files"
+  usage
   exit 1
 fi
 
@@ -102,7 +119,7 @@ if $DO_CERT; then
     exit 1
   fi
   echo "Generating certificates"
-  bash $CERT_TOOL -A
+  bash $CERT_TOOL -A "${AGENT_SAN[@]}"
 fi
 
 # 2. Copy certificates to config directories
