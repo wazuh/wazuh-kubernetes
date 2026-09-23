@@ -151,113 +151,11 @@ git clone https://github.com/wazuh/wazuh-kubernetes.git -b v5.0.0 --depth=1
 cd wazuh-kubernetes
 ```
 
-#### Step 3.1: Setup SSL certificates
+#### Step 3.1: Apply Traefik ingress controller
 
-Wazuh uses certificates to establish confidentiality and encrypt communications between its central components. Follow these steps to create certificates for the Wazuh central components.
+To expose services outside the `EKS` cluster, we are using the Traefik ingress controller. It goes first because the certificates of the next step have to carry the FQDN of the load balancer it creates.
 
-Download the `wazuh-certs-tool.sh` script. This creates the certificates that encrypt communications between the Wazuh central components.
-
-**3.1.1 Download the Wazuh certificates tool script and config.yml file**:
-
-```bash
-cd wazuh
-curl -so wazuh-certs-tool.sh https://packages.wazuh.com/5.0/wazuh-certs-tool-5.0.0-1.sh
-curl -so config.yml https://packages.wazuh.com/5.0/config-5.0.0-1.yml
-```
-
-**3.1.2 Edit the config.yml file with the configuration of the Wazuh components to be deployed**:
-
-```yaml
-nodes:
-  # Wazuh indexer nodes
-  indexer:
-    - name: indexer
-      dns:
-        - "wazuh-indexer"
-        - "wazuh-indexer.wazuh.svc.cluster.local"
-        - "wazuh-indexer-0.wazuh-indexer"
-        - "wazuh-indexer-1.wazuh-indexer"
-        - "wazuh-indexer-2.wazuh-indexer"
-        - "wazuh-indexer-0.wazuh-indexer.wazuh.svc.cluster.local"
-        - "wazuh-indexer-1.wazuh-indexer.wazuh.svc.cluster.local"
-        - "wazuh-indexer-2.wazuh-indexer.wazuh.svc.cluster.local"
-
-  # Wazuh server nodes
-  manager:
-    - name: manager
-      dns:
-        - "wazuh-api"
-        - "wazuh-api.wazuh.svc.cluster.local"
-        - "wazuh-agents"
-        - "wazuh-agents.wazuh.svc.cluster.local"
-
-  # Wazuh dashboard nodes
-  dashboard:
-    - name: dashboard
-      dns:
-        - "dashboard"
-        - "dashboard.wazuh.svc.cluster.local"
-```
-
-> **Note**: The Wazuh indexer nodes verify each other's certificate on the transport port against
-> the name each one publishes, `wazuh-indexer-<n>.wazuh-indexer.<namespace>.svc.cluster.local`, set
-> by `network.publish_host` in `indexer-sts.yaml`. The `dns` list therefore needs one pair of
-> entries per indexer replica, or the nodes cannot form a cluster. Adjust it if you change the
-> replica count of the overlay.
-
-> **Note**: The `manager` entry also produces the agent listener certificate (`manager-remoted.pem` and `manager-remoted-key.pem`), which `remoted` serves on port `1517`. Its SAN has to cover every name an agent dials: the `wazuh-agents` Service inside the cluster, which the `dns` list above provides, and the FQDN of the ingress load balancer for agents enrolling from outside. Agents that verify the manager certificate fail to connect to a name the certificate does not carry.
-
-> **Note**: The ingress load balancer does not exist yet — it is created in step 3.2 — so its FQDN cannot be in the `dns` list at this point. Deploy Traefik first (step 3.2), read the FQDN from `kubectl -n traefik get svc`, and come back here. Pass it with `--agent-san`, which adds it to the agent listener certificate without touching the rest:
->
-> ```bash
-> sudo bash ../tools/utils/deployment/certificates-conf.sh --cert --copy --priv \
->   --agent-san a7ffe29bfcf38420988fd52a698be422-862207742.us-west-1.elb.amazonaws.com
-> ```
->
-> Repeat `--agent-san` for every extra address, and add a CNAME of your own here too if agents will use one. If you are not enrolling agents from outside the cluster, the command below is enough.
-
-**3.1.3 Run the Wazuh certificates tool script**:
-
-```bash
-sudo bash ../tools/utils/deployment/certificates-conf.sh --cert --copy --priv
-```
-
-The required certificates are imported via secretGenerator on the `kustomization.yml` file:
-
-```yaml
-secretGenerator:
-  - name: indexer-certs
-    files:
-      - config/indexer/certs/admin-key.pem
-      - config/indexer/certs/admin.pem
-      - config/indexer/certs/indexer-key.pem
-      - config/indexer/certs/indexer.pem
-      - config/root-ca/certs/root-ca.pem
-  - name: dashboard-certs
-    files:
-      - config/dashboard/certs/dashboard-key.pem
-      - config/dashboard/certs/dashboard.pem
-      - config/root-ca/certs/root-ca.pem
-  - name: manager-certs
-    files:
-      - config/manager/certs/manager-key.pem
-      - config/manager/certs/manager.pem
-      - config/manager/certs/manager-remoted-key.pem
-      - config/manager/certs/manager-remoted.pem
-      - config/root-ca/certs/root-ca.pem
-```
-
-#### Step 3.2: Apply Traefik ingress controller
-
-To expose services outside the `EKS` cluster, we are using the Traefik ingress controller. We need to deploy the Traefik CRD first:
-
-First, return to the root of the repository.
-
-```bash
-cd ..
-```
-
-Then, apply the Traefik CRD definitions:
+From the root of the repository, apply the Traefik CRD definitions:
 
 ```bash
 kubectl apply -f traefik/crd/kubernetes-crd-definition-v1.yml
@@ -309,6 +207,114 @@ Expected output:
 $ kubectl -n traefik get svc
 NAME      TYPE           CLUSTER-IP     EXTERNAL-IP                                                              PORT(S)                                       AGE
 traefik   LoadBalancer   10.100.34.51   a7ffe29bfcf38420988fd52a698be422-862207742.us-west-1.elb.amazonaws.com   443:30725/TCP,1517:31485/TCP,1514:32036/TCP,1515:30354/TCP   6m29s
+```
+
+Keep that `EXTERNAL-IP` value: it is the FQDN agents dial, and the next step puts it in the agent listener certificate.
+
+#### Step 3.2: Setup SSL certificates
+
+Wazuh uses certificates to establish confidentiality and encrypt communications between its central components. Follow these steps to create certificates for the Wazuh central components.
+
+Download the `wazuh-certs-tool.sh` script. This creates the certificates that encrypt communications between the Wazuh central components.
+
+**3.2.1 Download the Wazuh certificates tool script and config.yml file**:
+
+```bash
+cd wazuh
+curl -so wazuh-certs-tool.sh https://packages.wazuh.com/5.0/wazuh-certs-tool-5.0.0-1.sh
+curl -so config.yml https://packages.wazuh.com/5.0/config-5.0.0-1.yml
+```
+
+**3.2.2 Edit the config.yml file with the configuration of the Wazuh components to be deployed**:
+
+```yaml
+nodes:
+  # Wazuh indexer nodes
+  indexer:
+    - name: indexer
+      dns:
+        - "wazuh-indexer"
+        - "wazuh-indexer.wazuh.svc.cluster.local"
+        - "wazuh-indexer-0.wazuh-indexer"
+        - "wazuh-indexer-1.wazuh-indexer"
+        - "wazuh-indexer-2.wazuh-indexer"
+        - "wazuh-indexer-0.wazuh-indexer.wazuh.svc.cluster.local"
+        - "wazuh-indexer-1.wazuh-indexer.wazuh.svc.cluster.local"
+        - "wazuh-indexer-2.wazuh-indexer.wazuh.svc.cluster.local"
+
+  # Wazuh server nodes
+  manager:
+    - name: manager
+      dns:
+        - "wazuh-api"
+        - "wazuh-api.wazuh.svc.cluster.local"
+        - "wazuh-agents"
+        - "wazuh-agents.wazuh.svc.cluster.local"
+
+  # Wazuh dashboard nodes
+  dashboard:
+    - name: dashboard
+      dns:
+        - "dashboard"
+        - "dashboard.wazuh.svc.cluster.local"
+```
+
+> **Note**: The Wazuh indexer nodes verify each other's certificate on the transport port against
+> the name each one publishes, `wazuh-indexer-<n>.wazuh-indexer.<namespace>.svc.cluster.local`, set
+> by `network.publish_host` in `indexer-sts.yaml`. The `dns` list therefore needs one pair of
+> entries per indexer replica, or the nodes cannot form a cluster. Adjust it if you change the
+> replica count of the overlay.
+
+> **Note**: The `manager` entry also produces the agent listener certificate (`manager-remoted.pem` and `manager-remoted-key.pem`), which `remoted` serves on port `1517`. Its SAN has to cover every name an agent dials: the `wazuh-agents` Service inside the cluster, which the `dns` list above provides, and the FQDN of the load balancer from step 3.1 for agents enrolling from outside, which `--agent-san` adds in the command below. Agents that verify the manager certificate fail to connect to a name the certificate does not carry.
+
+**3.2.3 Run the Wazuh certificates tool script**:
+
+Pass the load balancer FQDN from step 3.1 with `--agent-san`. It goes only into the agent listener certificate, leaving `manager.pem`, `indexer.pem` and `dashboard.pem` untouched. Repeat the flag for every extra address, such as a CNAME of your own that agents will use:
+
+```bash
+sudo bash ../tools/utils/deployment/certificates-conf.sh --cert --copy --priv \
+  --agent-san a7ffe29bfcf38420988fd52a698be422-862207742.us-west-1.elb.amazonaws.com
+```
+
+Drop `--agent-san` if no agent enrolls from outside the cluster. The certificates are issued once here; there is nothing to re-run later.
+
+> **Note**: `sudo` is required because the certificates tool refuses to run as anything else, and
+> `--priv` is what makes the result usable afterwards: it hands the files to the user running the
+> command. The certificates enter the cluster through the `secretGenerator` of
+> `wazuh/kustomization.yml`, which reads them as whoever runs `kubectl apply -k`, so a private key
+> left owned by `root` — they are created with mode `0600` — fails the next step with
+> `permission denied`. Their ownership on this machine never reaches the cluster: the pods get the
+> file modes from the Secret and, for the manager, from its init container.
+
+The required certificates are imported via secretGenerator on the `kustomization.yml` file:
+
+```yaml
+secretGenerator:
+  - name: indexer-certs
+    files:
+      - config/indexer/certs/admin-key.pem
+      - config/indexer/certs/admin.pem
+      - config/indexer/certs/indexer-key.pem
+      - config/indexer/certs/indexer.pem
+      - config/root-ca/certs/root-ca.pem
+  - name: dashboard-certs
+    files:
+      - config/dashboard/certs/dashboard-key.pem
+      - config/dashboard/certs/dashboard.pem
+      - config/root-ca/certs/root-ca.pem
+  - name: manager-certs
+    files:
+      - config/manager/certs/manager-key.pem
+      - config/manager/certs/manager.pem
+      - config/manager/certs/manager-remoted-key.pem
+      - config/manager/certs/manager-remoted.pem
+      - config/root-ca/certs/root-ca.pem
+```
+
+Return to the root of the repository for the steps that follow:
+
+```bash
+cd ..
 ```
 
 #### Step 3.3: Apply all manifests using kustomize

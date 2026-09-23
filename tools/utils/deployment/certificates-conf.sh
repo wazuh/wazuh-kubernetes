@@ -15,7 +15,8 @@ usage() {
   echo "Usage: $0 [--cert] [--copy] [--priv] [--agent-san <ip|dns>]..."
   echo "  --cert       Generate certificates using wazuh-certs-tool.sh"
   echo "  --copy       Copy certificates to the corresponding config directories"
-  echo "  --priv       Set ownership and permissions on the certificate files"
+  echo "  --priv       Give the certificate files to the user running the script,"
+  echo "               so kustomize can read them"
   echo "  --agent-san  Additional address for the manager agent listener"
   echo "               certificates, such as the ingress load balancer FQDN."
   echo "               Repeat it for more than one."
@@ -94,8 +95,10 @@ node_to_dir() {
 # ---------------------------------------------------------------------------
 
 # Parse config.yml
-export WAZUH_UID=101
-export WAZUH_GID=101
+# The certificates reach the cluster through kustomize, which reads them as the
+# user running kubectl. That user, not the container UID, has to own them.
+export CERT_UID="${SUDO_UID:-$(id -u)}"
+export CERT_GID="${SUDO_GID:-$(id -g)}"
 if $DO_COPY || $DO_PRIV; then
   if [ ! -f "$CONFIG_FILE" ]; then
     echo "Error: Configuration file $CONFIG_FILE not found."
@@ -169,23 +172,23 @@ fi
 if $DO_PRIV; then
   for node in "${INDEXER_NODES[@]}"; do
     dir_name=$(node_to_dir "$node")
-    echo "Setting permissions for indexer $node (${WAZUH_UID}:${WAZUH_GID})"
-    chown -R ${WAZUH_UID}:${WAZUH_GID} "./config/$dir_name/certs"
+    echo "Setting ownership for indexer $node (${CERT_UID}:${CERT_GID})"
+    chown -R ${CERT_UID}:${CERT_GID} "./config/$dir_name/certs"
   done
 
   for node in "${MANAGER_NODES[@]}"; do
     dir_name=$(node_to_dir "$node")
-    echo "Setting permissions for manager $node (${WAZUH_UID}:${WAZUH_GID})"
-    chown -R ${WAZUH_UID}:${WAZUH_GID} "./config/$dir_name/certs"
+    echo "Setting ownership for manager $node (${CERT_UID}:${CERT_GID})"
+    chown -R ${CERT_UID}:${CERT_GID} "./config/$dir_name/certs"
   done
 
   for node in "${DASHBOARD_NODES[@]}"; do
     dir_name=$(node_to_dir "$node")
-    echo "Setting permissions for dashboard $node (${WAZUH_UID}:${WAZUH_GID})"
-    chown -R ${WAZUH_UID}:${WAZUH_GID} "./config/$dir_name/certs"
+    echo "Setting ownership for dashboard $node (${CERT_UID}:${CERT_GID})"
+    chown -R ${CERT_UID}:${CERT_GID} "./config/$dir_name/certs"
   done
-  echo "Setting permissions for root-ca certificates (${WAZUH_UID}:${WAZUH_GID})"
-  chown -R ${WAZUH_UID}:${WAZUH_GID} "./config/root-ca/certs"
+  echo "Setting ownership for root-ca certificates (${CERT_UID}:${CERT_GID})"
+  chown -R ${CERT_UID}:${CERT_GID} "./config/root-ca/certs"
 fi
 
 echo "Process completed."
