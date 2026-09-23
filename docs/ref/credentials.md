@@ -78,7 +78,7 @@ is the procedure, for a fresh deployment and for one already running.
 | Secret | Key | Default value | What it is for |
 | --- | --- | --- | --- |
 | `wazuh-authd-pass` | `authd.pass` | `password` | Enrollment password, mounted as a file into every manager pod. It guards the enrollment `remoted` serves on port `1517` and the legacy `authd` port `1515`. |
-| `wazuh-cluster-key` | `key` | `REPLACE_THIS_CLUSTER_KEY_32CHARS` (placeholder) | Shared key for manager cluster membership, on port `1516`. |
+| `wazuh-cluster-key` | `key` | `REPLACETHISCLUSTERKEYBEFOREDEPLO` (placeholder) | Shared key for manager cluster membership, on port `1516`. |
 
 ## Changing the passwords on the first deployment
 
@@ -310,7 +310,7 @@ do with them, and changing one is a matter of editing the manifest and restartin
 
 | Secret | Key | Default value | Read by | What it protects |
 | --- | --- | --- | --- | --- |
-| `wazuh-cluster-key` | `key` | `REPLACE_THIS_CLUSTER_KEY_32CHARS` (placeholder) | `wazuh-manager-master`, `wazuh-manager-worker` | Membership of the Wazuh manager cluster on port `1516`. A node whose key does not match the master's cannot join it. |
+| `wazuh-cluster-key` | `key` | `REPLACETHISCLUSTERKEYBEFOREDEPLO` (placeholder) | `wazuh-manager-master`, `wazuh-manager-worker` | Membership of the Wazuh manager cluster on port `1516`. A node whose key does not match the master's cannot join it. |
 | `wazuh-authd-pass` | `authd.pass` | `password` | `wazuh-manager-master`, `wazuh-manager-worker` | Agent enrollment: the channel `remoted` serves on port `1517` on every node, and the legacy `authd` port `1515` on the master. |
 
 ### Set them before the first deployment
@@ -373,7 +373,7 @@ variable.
 
 #### The cluster key
 
-The key has to be 32 characters, as the shipped default is:
+The key has to be exactly 32 alphanumeric characters, as the shipped placeholder is. `openssl rand -hex 16` produces exactly that; any other length or character makes the managers refuse to start:
 
 ```bash
 openssl rand -hex 16

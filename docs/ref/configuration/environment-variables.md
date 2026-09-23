@@ -30,7 +30,7 @@ Defined in:
 | `WAZUH_CLUSTER_NODES` | Address of the manager master, written to `<cluster><nodes>`. This is the node a worker dials to join the cluster. | Literal | Yes | `wazuh-manager-master-0.wazuh-cluster` |
 | `INDEXER_USERNAME` | Indexer authentication username. | Secret `indexer-cred` | Yes | `wazuh-manager` |
 | `INDEXER_PASSWORD` | Indexer authentication password. | Secret `indexer-cred` | Yes | `wazuh-manager` (shipped default) |
-| `WAZUH_CLUSTER_KEY` | Shared key for manager cluster membership. | Secret `wazuh-cluster-key` | Yes | `REPLACE_THIS_CLUSTER_KEY_32CHARS` (placeholder, replace before deploying) |
+| `WAZUH_CLUSTER_KEY` | Shared key for manager cluster membership. | Secret `wazuh-cluster-key` | Yes | `REPLACETHISCLUSTERKEYBEFOREDEPLO` (placeholder, replace before deploying) |
 
 ### Manager customization notes
 
@@ -42,7 +42,7 @@ Defined in:
 - The Wazuh API accounts are not configured through the environment either. `API_USERNAME` and `API_PASSWORD` belong to the Wazuh dashboard, which authenticates to the API with them; the manager seeds its own user database. See [Credentials](../credentials.md).
 - Do not hardcode credentials in manifests; update the corresponding Secrets instead.
 - The passwords above are the values the images ship, and every one of them equals its own username. Change them right after the first deployment: see [Credentials](../credentials.md).
-- `WAZUH_CLUSTER_KEY` is rewritten into `<cluster><key>` of `/var/wazuh-manager/etc/wazuh-manager.conf` on every container start, so the value in the Secret always wins over what is on the persistent volume. It has to be 32 characters and identical on every manager node, which is why it is best set before the first deployment: changing it later means restarting the master and the workers together, and the nodes still on the old key cannot sync in the meantime. See [The cluster key and the agent enrollment password](../credentials.md#the-cluster-key-and-the-agent-enrollment-password).
+- `WAZUH_CLUSTER_KEY` is rewritten into `<cluster><key>` of `/var/wazuh-manager/etc/wazuh-manager.conf` on every container start, so the value in the Secret always wins over what is on the persistent volume. It has to be exactly 32 alphanumeric characters and identical on every manager node, which is why it is best set before the first deployment: changing it later means restarting the master and the workers together, and the nodes still on the old key cannot sync in the meantime. See [The cluster key and the agent enrollment password](../credentials.md#the-cluster-key-and-the-agent-enrollment-password).
 
 ## Wazuh indexer variables
 

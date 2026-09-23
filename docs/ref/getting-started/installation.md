@@ -357,22 +357,22 @@ Two of the Secrets under `wazuh/secrets/` hold shared keys rather than account p
 
 | Secret | Key | Default value | What it protects |
 | --- | --- | --- | --- |
-| `wazuh-cluster-key` | `key` | `REPLACE_THIS_CLUSTER_KEY_32CHARS` (placeholder, not a key) | Membership of the Wazuh manager cluster, on port `1516` |
+| `wazuh-cluster-key` | `key` | `REPLACETHISCLUSTERKEYBEFOREDEPLO` (placeholder, not a key) | Membership of the Wazuh manager cluster, on port `1516` |
 | `wazuh-authd-pass` | `authd.pass` | `password` | Agent enrollment: the channel `remoted` serves on port `1517`, and the legacy `authd` port `1515` |
 
 **Change both here, before the first `kubectl apply -k`.** Unlike the Wazuh indexer and Wazuh API accounts of the next step, these are not accounts inside an image, so `password-tool.sh` does not cover them: the managers read them from the Secrets on every container start. Setting them now costs nothing, while changing the cluster key on a running deployment stops the workers from syncing until every manager pod has restarted on the new key.
 
-Generate the two values. The cluster key has to be 32 characters:
+Generate the two values. The cluster key has to be **exactly 32 alphanumeric characters** (`^[a-zA-Z0-9]{32}$`); `openssl rand -hex 16` produces exactly that. A key of any other length, or one carrying `-`, `_` or any other punctuation, makes every manager refuse to start with `(1244): Invalid configuration at '/cluster/key': does not satisfy 'pattern'`:
 
 ```bash
-openssl rand -hex 16   # cluster key, 32 characters
+openssl rand -hex 16   # cluster key, 32 hexadecimal characters
 openssl rand -hex 24   # enrollment password
 ```
 
 Encode each one, without a trailing newline:
 
 ```bash
-echo -n '8f3c1d0b7a5e49628c1f0a3d5b7e9c21' | base64
+echo -n 'OWUwZjM0NWY0NjJjNjEwZjJkMGJmN2VjMGVmOWU2MzE5NGU4ODc0NTc2MTBkNTBjOGJhYWJiN2U0NWMwMWYxMg==' | base64
 ```
 
 Then write them into the two manifests, keeping the key names as they are:
@@ -624,15 +624,15 @@ Two of the Secrets under `wazuh/secrets/` hold shared keys rather than account p
 
 | Secret | Key | Default value | What it protects |
 | --- | --- | --- | --- |
-| `wazuh-cluster-key` | `key` | `REPLACE_THIS_CLUSTER_KEY_32CHARS` (placeholder, not a key) | Membership of the Wazuh manager cluster, on port `1516` |
+| `wazuh-cluster-key` | `key` | `REPLACETHISCLUSTERKEYBEFOREDEPLO` (placeholder, not a key) | Membership of the Wazuh manager cluster, on port `1516` |
 | `wazuh-authd-pass` | `authd.pass` | `password` | Agent enrollment: the channel `remoted` serves on port `1517`, and the legacy `authd` port `1515` |
 
 **Change both here, before the first `kubectl apply -k`.** Unlike the Wazuh indexer and Wazuh API accounts, these are not accounts inside an image, so `password-tool.sh` does not cover them: the managers read them from the Secrets on every container start. Setting them now costs nothing, while changing the cluster key on a running deployment stops the workers from syncing until every manager pod has restarted on the new key.
 
-Generate the two values. The cluster key has to be 32 characters:
+Generate the two values. The cluster key has to be **exactly 32 alphanumeric characters** (`^[a-zA-Z0-9]{32}$`); `openssl rand -hex 16` produces exactly that. A key of any other length, or one carrying `-`, `_` or any other punctuation, makes every manager refuse to start with `(1244): Invalid configuration at '/cluster/key': does not satisfy 'pattern'`:
 
 ```bash
-openssl rand -hex 16   # cluster key, 32 characters
+openssl rand -hex 16   # cluster key, 32 hexadecimal characters
 openssl rand -hex 24   # enrollment password
 ```
 
