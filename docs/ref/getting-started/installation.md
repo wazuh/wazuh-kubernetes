@@ -372,7 +372,7 @@ openssl rand -hex 24   # enrollment password
 Encode each one, without a trailing newline:
 
 ```bash
-echo -n 'OWUwZjM0NWY0NjJjNjEwZjJkMGJmN2VjMGVmOWU2MzE5NGU4ODc0NTc2MTBkNTBjOGJhYWJiN2U0NWMwMWYxMg==' | base64
+echo -n '8f3c1d0b7a5e49628c1f0a3d5b7e9c21' | base64
 ```
 
 Then write them into the two manifests, keeping the key names as they are:

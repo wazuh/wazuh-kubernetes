@@ -462,6 +462,8 @@ jobs:
         run: |
           REG="${{ env.IMAGE_REGISTRY }}"
           TAG="${{ env.IMAGE_TAG }}"
+          yq e -i ".spec.template.spec.initContainers[] |= select(.name == \"init-dashboard-config\").image = \"${REG}/wazuh/wazuh-dashboard:${TAG}\"" \
+            wazuh/indexer_stack/wazuh-dashboard/dashboard-deploy.yaml
           yq e -i ".spec.template.spec.containers[] |= select(.name == \"wazuh-dashboard\").image = \"${REG}/wazuh/wazuh-dashboard:${TAG}\"" \
             wazuh/indexer_stack/wazuh-dashboard/dashboard-deploy.yaml
           yq e -i ".spec.template.spec.containers[] |= select(.name == \"wazuh-indexer\").image = \"${REG}/wazuh/wazuh-indexer:${TAG}\"" \

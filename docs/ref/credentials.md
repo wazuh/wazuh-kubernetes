@@ -28,7 +28,7 @@ cluster-wide: a change made on one indexer pod reaches all of them.
 | --- | --- | --- | --- | --- |
 | `admin` | `admin` | — | — | Administrator of the indexer: every index, the cluster settings and the security configuration. Logging into the dashboard as `admin` also produces a Wazuh API administrator session. Also the account the integration test suite authenticates with. |
 | `kibanaserver` | `kibanaserver` | `dashboard-cred` | `wazuh-dashboard` | Service account the dashboard authenticates to the indexer as. |
-| `wazuh-manager` | `wazuh-manager` | `indexer-cred` | `wazuh-manager-master`, `wazuh-manager-worker`, `wazuh-dashboard` | Service account the managers write events and read state as. |
+| `wazuh-manager` | `wazuh-manager` | `indexer-cred` | `wazuh-manager-master`, `wazuh-manager-worker` | Service account the managers write events and read state as. |
 | `wazuh-admin` | `wazuh-admin` | — | — | Wazuh administrator: reads the Wazuh indices, writes Wazuh settings and content, and administers the Security Analytics plugin. |
 | `wazuh-readonly` | `wazuh-readonly` | — | — | Read-only access to settings, content and detectors. |
 | `wazuh-demo` | `wazuh-demo` | — | — | Content management, without administration of the deployment. |
@@ -45,8 +45,8 @@ cluster-wide: a change made on one indexer pod reaches all of them.
 > ```
 
 > **Important**: the indexer StatefulSet consumes no credential Secret at all. Its accounts come from
-> `internal_users.yml` inside the image. Editing `indexer-cred` changes only what the managers and the
-> dashboard *present*; it does not change what the indexer *accepts*. Both halves are needed, which is
+> `internal_users.yml` inside the image. Editing `indexer-cred` changes only what the managers
+> *present*; it does not change what the indexer *accepts*. Both halves are needed, which is
 > why the procedure below runs `password-tool.sh` **and** updates the Secret.
 
 The OpenSearch demo accounts (`anomalyadmin`, `kibanaro`, `logstash`, `readall`, `snapshotrestore`)
@@ -237,8 +237,9 @@ kubectl -n wazuh rollout status statefulset/wazuh-manager-worker
 kubectl -n wazuh rollout status deployment/wazuh-dashboard
 ```
 
-All three are restarted because `indexer-cred` is presented by all three. The indexer pods need no
-restart: their accounts changed in the security index, not in their environment.
+The managers are restarted because they present `indexer-cred`, and the dashboard because it presents
+`dashboard-cred` and `wazuh-api-cred`. The indexer pods need no restart: their accounts changed in the
+security index, not in their environment.
 
 > **Note**: between step 2 and the end of step 6 the managers and the dashboard authenticate to the
 > indexer with a password that no longer works. That gap is unavoidable. Keep it short, and see the

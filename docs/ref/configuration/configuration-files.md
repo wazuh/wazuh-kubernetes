@@ -60,7 +60,7 @@ Main secrets:
 - `wazuh/secrets/dashboard-cred-secret.yaml`
   Wazuh indexer `kibanaserver` service account the dashboard authenticates to the indexer with. This is not the login of the dashboard web interface.
 - `wazuh/secrets/indexer-cred-secret.yaml`
-  Wazuh indexer `wazuh-manager` service account, read by the manager master, the manager workers and the dashboard.
+  Wazuh indexer `wazuh-manager` service account, read by the manager master and the manager workers.
 - `wazuh/secrets/wazuh-authd-pass-secret.yaml`
   Agent enrollment password, mounted as a file rather than an environment variable. It guards the enrollment `remoted` serves on port `1517` and the legacy `authd` port `1515`.
 - `wazuh/secrets/wazuh-cluster-key-secret.yaml`
