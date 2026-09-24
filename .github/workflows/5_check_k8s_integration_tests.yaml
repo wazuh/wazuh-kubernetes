@@ -462,6 +462,8 @@ jobs:
         run: |
           REG="${{ env.IMAGE_REGISTRY }}"
           TAG="${{ env.IMAGE_TAG }}"
+          yq e -i ".spec.template.spec.initContainers[] |= select(.name == \"init-dashboard-config\").image = \"${REG}/wazuh/wazuh-dashboard:${TAG}\"" \
+            wazuh/indexer_stack/wazuh-dashboard/dashboard-deploy.yaml
           yq e -i ".spec.template.spec.containers[] |= select(.name == \"wazuh-dashboard\").image = \"${REG}/wazuh/wazuh-dashboard:${TAG}\"" \
             wazuh/indexer_stack/wazuh-dashboard/dashboard-deploy.yaml
           yq e -i ".spec.template.spec.containers[] |= select(.name == \"wazuh-indexer\").image = \"${REG}/wazuh/wazuh-indexer:${TAG}\"" \
@@ -525,18 +527,13 @@ jobs:
         run: |
           yq e -i '.nodes.indexer[0].name = "indexer"'                                                          wazuh/config.yml
           yq e -i 'del(.nodes.indexer[0].ip)'                                                                    wazuh/config.yml
-          yq e -i '.nodes.indexer[0].dns = ["wazuh-indexer", "wazuh-indexer.wazuh.svc.cluster.local"]'          wazuh/config.yml
+          # One pair of entries per indexer replica.
+          yq e -i '.nodes.indexer[0].dns = ["wazuh-indexer", "wazuh-indexer.wazuh.svc.cluster.local", "wazuh-indexer-0.wazuh-indexer", "wazuh-indexer-1.wazuh-indexer", "wazuh-indexer-2.wazuh-indexer", "wazuh-indexer-0.wazuh-indexer.wazuh.svc.cluster.local", "wazuh-indexer-1.wazuh-indexer.wazuh.svc.cluster.local", "wazuh-indexer-2.wazuh-indexer.wazuh.svc.cluster.local"]' wazuh/config.yml
           yq e -i '.nodes.manager[0].name = "manager"'                                                          wazuh/config.yml
           yq e -i 'del(.nodes.manager[0].ip)'                                                                    wazuh/config.yml
-          yq e -i '.nodes.manager[0].dns = ["wazuh-api", "wazuh-api.wazuh.svc.cluster.local"]'                  wazuh/config.yml
+          yq e -i '.nodes.manager[0].dns = ["wazuh-api", "wazuh-api.wazuh.svc.cluster.local", "wazuh-agents", "wazuh-agents.wazuh.svc.cluster.local"]' wazuh/config.yml
           yq e -i 'del(.nodes.dashboard[0].ip)'                                                                  wazuh/config.yml
           yq e -i '.nodes.dashboard[0].dns = ["dashboard", "dashboard.wazuh.svc.cluster.local"]'                wazuh/config.yml
-
-      - name: Create Wazuh certificates
-        working-directory: wazuh-kubernetes
-        run: |
-          cd wazuh/
-          sudo bash ../tools/utils/deployment/certificates-conf.sh --cert --copy --priv
 
       # -----------------------------------------------------------------------
       # Local-only: storage provisioner + ingress for minikube
@@ -585,6 +582,49 @@ jobs:
         run: kubectl apply -f traefik/crd/kubernetes-crd-definition-v1.yml
 
       # -----------------------------------------------------------------------
+      # Common: certificates
+      #
+      # Created here rather than alongside the config.yml edits: on EKS the
+      # load balancer hostname is only known once Traefik is up, and it has to
+      # be in the certificates the agents verify.
+      # -----------------------------------------------------------------------
+      - name: Create Wazuh certificates
+        working-directory: wazuh-kubernetes
+        run: |
+          cd wazuh/
+          # The load balancer hostname belongs to no node of config.yml.
+          AGENT_SAN=""
+          if [ -n "${INGRESS_DNS}" ]; then
+            AGENT_SAN="--agent-san ${INGRESS_DNS}"
+          fi
+          sudo bash ../tools/utils/deployment/certificates-conf.sh --cert --copy --priv ${AGENT_SAN}
+
+      - name: Check the names in the agent listener certificate
+        working-directory: wazuh-kubernetes
+        run: |
+          # Agents refuse a certificate that does not name what they dialled, and
+          # no test in the suite reads the SAN, so assert it here on the file that
+          # goes into the manager-certs secret.
+          CERT=wazuh/config/manager/certs/manager-remoted.pem
+          NAMES=$(sudo openssl x509 -in "$CERT" -noout -ext subjectAltName \
+            | tr ',' '\n' | sed -n 's/.*DNS://p' | tr -d ' ')
+          echo "Names in $CERT:"
+          echo "$NAMES" | sed 's/^/  /'
+          expected="wazuh-agents wazuh-agents.wazuh.svc.cluster.local"
+          if [ "${{ matrix.deployment_type }}" = "eks" ]; then
+            expected="$expected ${INGRESS_DNS}"
+          fi
+          missing=0
+          for name in $expected; do
+            if ! grep -Fxq "$name" <<< "$NAMES"; then
+              echo "ERROR: '$name' is not in the certificate"
+              missing=1
+            fi
+          done
+          [ "$missing" -eq 0 ] || exit 1
+          echo "Every name agents use is covered"
+
+      # -----------------------------------------------------------------------
       # Common: deploy Wazuh stack
       # -----------------------------------------------------------------------
       - name: Deploy Wazuh stack
@@ -597,28 +637,28 @@ jobs:
           fi
 
       - name: Wait for Wazuh stack to be ready
-        timeout-minutes: 15
+        timeout-minutes: 20
         run: |
-          echo "Waiting for all pods in namespace wazuh to be Running..."
-          for i in $(seq 1 90); do
-            NOT_RUNNING=$(kubectl get pods -n wazuh --no-headers 2>/dev/null \
-              | grep -vcE '(Running|Completed)' || true)
-            TOTAL=$(kubectl get pods -n wazuh --no-headers 2>/dev/null | wc -l | tr -d ' ')
-            if [ "$TOTAL" -gt 0 ] && [ "$NOT_RUNNING" -eq 0 ]; then
-              echo "All ${TOTAL} pod(s) are Running after $((i * 10))s"
-              kubectl get pods -n wazuh -o wide
-              exit 0
+          # Waiting on the pods that exist at a given moment is not enough: the
+          # indexer statefulset uses the default OrderedReady policy, so it
+          # creates one pod at a time and the replicas still missing cannot be
+          # seen. kubectl rollout status knows how many replicas each workload
+          # declares and waits for all of them to be Ready, not just Running.
+          wait_for() {          # $1 = workload, $2 = timeout
+            echo "Waiting for $1..."
+            if ! kubectl rollout status "$1" -n wazuh --timeout="$2"; then
+              echo "ERROR: $1 was not ready after $2"
+              kubectl get pods -n wazuh -o wide || true
+              kubectl describe pods -n wazuh || true
+              exit 1
             fi
-            echo "  attempt $i/90: ${NOT_RUNNING} pod(s) not yet Running (total: ${TOTAL})"
-            if [ "$(( i % 6 ))" -eq 0 ]; then
-              kubectl get pods -n wazuh --no-headers || true
-            fi
-            sleep 10
-          done
-          echo "ERROR: pods not all Running after 15 minutes"
-          kubectl get pods -n wazuh -o wide || true
-          kubectl describe pods -n wazuh || true
-          exit 1
+          }
+          wait_for statefulset/wazuh-indexer        10m
+          wait_for statefulset/wazuh-manager-master 3m
+          wait_for statefulset/wazuh-manager-worker 3m
+          wait_for deployment/wazuh-dashboard       3m
+          echo "Every workload reports its full replica count ready"
+          kubectl get pods -n wazuh -o wide
 
       - name: Wait for OpenSearch and Dashboard to be ready
         timeout-minutes: 10
@@ -666,6 +706,32 @@ jobs:
 
       - name: View stack status
         run: kubectl get all -n wazuh -o wide
+
+      - name: Verify the agent listener certificate over TLS
+        run: |
+          # Run from inside the manager pods over loopback: the namespace denies
+          # traffic to 1517 from everywhere except the Traefik namespace, and
+          # loopback is not subject to NetworkPolicy. The handshake still uses
+          # the name agents dial, so a certificate that does not cover
+          # wazuh-agents fails here. This checks the certificate, not the
+          # routing or the policies an external agent goes through.
+          for pod in $(kubectl get pods -n wazuh -l app=wazuh-manager \
+                        -o jsonpath='{.items[*].metadata.name}'); do
+            echo "=== $pod ==="
+            kubectl exec -n wazuh "$pod" -- sh -c '
+              CA=/var/wazuh-manager/etc/certs/root-ca.pem
+              if command -v openssl >/dev/null 2>&1; then
+                echo | openssl s_client -connect 127.0.0.1:1517 \
+                  -servername wazuh-agents -verify_hostname wazuh-agents \
+                  -CAfile "$CA" -verify_return_error -brief
+              elif command -v curl >/dev/null 2>&1; then
+                curl -sS --cacert "$CA" --resolve wazuh-agents:1517:127.0.0.1 \
+                  -o /dev/null -w "TLS verified (HTTP %{http_code})\n" \
+                  https://wazuh-agents:1517/
+              else
+                echo "neither openssl nor curl is in the image"; exit 1
+              fi'
+          done
 
       # -----------------------------------------------------------------------
       # Run integration tests

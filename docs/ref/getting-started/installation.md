@@ -28,6 +28,8 @@ It is useful for stateful applications like databases that save the data to a pe
 
 Deployments are intended for stateless use and are quite lightweight and seem to be appropriate for Wazuh dashboard and Traefik, where it is not necessary to maintain the states.
 
+All three StatefulSets set `podManagementPolicy: Parallel`. The Wazuh indexer needs it: its nodes form a quorum, and under the default `OrderedReady` a restart that took the whole StatefulSet down — a node group replacement, for instance — leaves `wazuh-indexer-0` unable to elect a cluster manager on its own, while the controller waits for it to become ready before creating the peers that would give it one. The field is immutable, so changing it on a running deployment means `kubectl delete statefulset wazuh-indexer --cascade=orphan` followed by an apply, which keeps the pods and the claims.
+
 #### Pods
 
 **Wazuh master**:
@@ -149,86 +151,11 @@ git clone https://github.com/wazuh/wazuh-kubernetes.git -b v5.1.0 --depth=1
 cd wazuh-kubernetes
 ```
 
-#### Step 3.1: Setup SSL certificates
+#### Step 3.1: Apply Traefik ingress controller
 
-Wazuh uses certificates to establish confidentiality and encrypt communications between its central components. Follow these steps to create certificates for the Wazuh central components.
+To expose services outside the `EKS` cluster, we are using the Traefik ingress controller. It goes first because the certificates of the next step have to carry the FQDN of the load balancer it creates.
 
-Download the `wazuh-certs-tool.sh` script. This creates the certificates that encrypt communications between the Wazuh central components.
-
-**3.1.1 Download the Wazuh certificates tool script and config.yml file**:
-
-```bash
-cd wazuh
-curl -so wazuh-certs-tool.sh https://packages.wazuh.com/5.1/wazuh-certs-tool-5.1.0-1.sh
-curl -so config.yml https://packages.wazuh.com/5.1/config-5.1.0-1.yml
-```
-
-**3.1.2 Edit the config.yml file with the configuration of the Wazuh components to be deployed**:
-
-```yaml
-nodes:
-  # Wazuh indexer nodes
-  indexer:
-    - name: indexer
-      dns:
-        - "wazuh-indexer"
-        - "wazuh-indexer.wazuh.svc.cluster.local"
-
-  # Wazuh server nodes
-  manager:
-    - name: manager
-      dns:
-        - "wazuh-api"
-        - "wazuh-api.wazuh.svc.cluster.local"
-
-  # Wazuh dashboard nodes
-  dashboard:
-    - name: dashboard
-      dns:
-        - "dashboard"
-        - "dashboard.wazuh.svc.cluster.local"
-```
-
-**3.1.3 Run the Wazuh certificates tool script**:
-
-```bash
-sudo bash ../tools/utils/deployment/certificates-conf.sh --cert --copy --priv
-```
-
-The required certificates are imported via secretGenerator on the `kustomization.yml` file:
-
-```yaml
-secretGenerator:
-  - name: indexer-certs
-    files:
-      - config/indexer/certs/admin-key.pem
-      - config/indexer/certs/admin.pem
-      - config/indexer/certs/indexer-key.pem
-      - config/indexer/certs/indexer.pem
-      - config/root-ca/certs/root-ca.pem
-  - name: dashboard-certs
-    files:
-      - config/dashboard/certs/dashboard-key.pem
-      - config/dashboard/certs/dashboard.pem
-      - config/root-ca/certs/root-ca.pem
-  - name: manager-certs
-    files:
-      - config/manager/certs/manager-key.pem
-      - config/manager/certs/manager.pem
-      - config/root-ca/certs/root-ca.pem
-```
-
-#### Step 3.2: Apply Traefik ingress controller
-
-To expose services outside the `EKS` cluster, we are using the Traefik ingress controller. We need to deploy the Traefik CRD first:
-
-First, return to the root of the repository.
-
-```bash
-cd ..
-```
-
-Then, apply the Traefik CRD definitions:
+From the root of the repository, apply the Traefik CRD definitions:
 
 ```bash
 kubectl apply -f traefik/crd/kubernetes-crd-definition-v1.yml
@@ -282,6 +209,114 @@ NAME      TYPE           CLUSTER-IP     EXTERNAL-IP                             
 traefik   LoadBalancer   10.100.34.51   a7ffe29bfcf38420988fd52a698be422-862207742.us-west-1.elb.amazonaws.com   443:30725/TCP,1517:31485/TCP,1514:32036/TCP,1515:30354/TCP   6m29s
 ```
 
+Keep that `EXTERNAL-IP` value: it is the FQDN agents dial, and the next step puts it in the agent listener certificate.
+
+#### Step 3.2: Setup SSL certificates
+
+Wazuh uses certificates to establish confidentiality and encrypt communications between its central components. Follow these steps to create certificates for the Wazuh central components.
+
+Download the `wazuh-certs-tool.sh` script. This creates the certificates that encrypt communications between the Wazuh central components.
+
+**3.2.1 Download the Wazuh certificates tool script and config.yml file**:
+
+```bash
+cd wazuh
+curl -so wazuh-certs-tool.sh https://packages.wazuh.com/5.1/wazuh-certs-tool-5.1.0-1.sh
+curl -so config.yml https://packages.wazuh.com/5.1/config-5.1.0-1.yml
+```
+
+**3.2.2 Edit the config.yml file with the configuration of the Wazuh components to be deployed**:
+
+```yaml
+nodes:
+  # Wazuh indexer nodes
+  indexer:
+    - name: indexer
+      dns:
+        - "wazuh-indexer"
+        - "wazuh-indexer.wazuh.svc.cluster.local"
+        - "wazuh-indexer-0.wazuh-indexer"
+        - "wazuh-indexer-1.wazuh-indexer"
+        - "wazuh-indexer-2.wazuh-indexer"
+        - "wazuh-indexer-0.wazuh-indexer.wazuh.svc.cluster.local"
+        - "wazuh-indexer-1.wazuh-indexer.wazuh.svc.cluster.local"
+        - "wazuh-indexer-2.wazuh-indexer.wazuh.svc.cluster.local"
+
+  # Wazuh server nodes
+  manager:
+    - name: manager
+      dns:
+        - "wazuh-api"
+        - "wazuh-api.wazuh.svc.cluster.local"
+        - "wazuh-agents"
+        - "wazuh-agents.wazuh.svc.cluster.local"
+
+  # Wazuh dashboard nodes
+  dashboard:
+    - name: dashboard
+      dns:
+        - "dashboard"
+        - "dashboard.wazuh.svc.cluster.local"
+```
+
+> **Note**: The Wazuh indexer nodes verify each other's certificate on the transport port against
+> the name each one publishes, `wazuh-indexer-<n>.wazuh-indexer.<namespace>.svc.cluster.local`, set
+> by `network.publish_host` in `indexer-sts.yaml`. The `dns` list therefore needs one pair of
+> entries per indexer replica, or the nodes cannot form a cluster. Adjust it if you change the
+> replica count of the overlay.
+
+> **Note**: The `manager` entry also produces the agent listener certificate (`manager-remoted.pem` and `manager-remoted-key.pem`), which `remoted` serves on port `1517`. Its SAN has to cover every name an agent dials: the `wazuh-agents` Service inside the cluster, which the `dns` list above provides, and the FQDN of the load balancer from step 3.1 for agents enrolling from outside, which `--agent-san` adds in the command below. Agents that verify the manager certificate fail to connect to a name the certificate does not carry.
+
+**3.2.3 Run the Wazuh certificates tool script**:
+
+Pass the load balancer FQDN from step 3.1 with `--agent-san`. It goes only into the agent listener certificate, leaving `manager.pem`, `indexer.pem` and `dashboard.pem` untouched. Repeat the flag for every extra address, such as a CNAME of your own that agents will use:
+
+```bash
+sudo bash ../tools/utils/deployment/certificates-conf.sh --cert --copy --priv \
+  --agent-san a7ffe29bfcf38420988fd52a698be422-862207742.us-west-1.elb.amazonaws.com
+```
+
+Drop `--agent-san` if no agent enrolls from outside the cluster. The certificates are issued once here; there is nothing to re-run later.
+
+> **Note**: `sudo` is required because the certificates tool refuses to run as anything else, and
+> `--priv` is what makes the result usable afterwards: it hands the files to the user running the
+> command. The certificates enter the cluster through the `secretGenerator` of
+> `wazuh/kustomization.yml`, which reads them as whoever runs `kubectl apply -k`, so a private key
+> left owned by `root` — they are created with mode `0600` — fails the next step with
+> `permission denied`. Their ownership on this machine never reaches the cluster: the pods get the
+> file modes from the Secret and, for the manager, from its init container.
+
+The required certificates are imported via secretGenerator on the `kustomization.yml` file:
+
+```yaml
+secretGenerator:
+  - name: indexer-certs
+    files:
+      - config/indexer/certs/admin-key.pem
+      - config/indexer/certs/admin.pem
+      - config/indexer/certs/indexer-key.pem
+      - config/indexer/certs/indexer.pem
+      - config/root-ca/certs/root-ca.pem
+  - name: dashboard-certs
+    files:
+      - config/dashboard/certs/dashboard-key.pem
+      - config/dashboard/certs/dashboard.pem
+      - config/root-ca/certs/root-ca.pem
+  - name: manager-certs
+    files:
+      - config/manager/certs/manager-key.pem
+      - config/manager/certs/manager.pem
+      - config/manager/certs/manager-remoted-key.pem
+      - config/manager/certs/manager-remoted.pem
+      - config/root-ca/certs/root-ca.pem
+```
+
+Return to the root of the repository for the steps that follow:
+
+```bash
+cd ..
+```
+
 #### Step 3.3: Apply all manifests using kustomize
 
 We are using the overlay feature of kustomize to create two variants: `eks` and `local-env`, in this guide we're using `eks`.
@@ -318,19 +353,19 @@ spec:
 
 #### Step 3.3.2: Set the cluster key and the agent enrollment password
 
-Two of the Secrets under `wazuh/secrets/` hold shared keys rather than account passwords, and both ship with a documented default value:
+Two of the Secrets under `wazuh/secrets/` hold shared keys rather than account passwords. Neither ships with a usable value: the cluster key is a placeholder, and the enrollment password is the string `password`.
 
 | Secret | Key | Default value | What it protects |
 | --- | --- | --- | --- |
-| `wazuh-cluster-key` | `key` | `123a45bc67def891gh23i45jk67l8mn9` | Membership of the Wazuh manager cluster, on port `1516` |
+| `wazuh-cluster-key` | `key` | `REPLACETHISCLUSTERKEYBEFOREDEPLO` (placeholder, not a key) | Membership of the Wazuh manager cluster, on port `1516` |
 | `wazuh-authd-pass` | `authd.pass` | `password` | Agent enrollment: the channel `remoted` serves on port `1517`, and the legacy `authd` port `1515` |
 
 **Change both here, before the first `kubectl apply -k`.** Unlike the Wazuh indexer and Wazuh API accounts of the next step, these are not accounts inside an image, so `password-tool.sh` does not cover them: the managers read them from the Secrets on every container start. Setting them now costs nothing, while changing the cluster key on a running deployment stops the workers from syncing until every manager pod has restarted on the new key.
 
-Generate the two values. The cluster key has to be 32 characters:
+Generate the two values. The cluster key has to be **exactly 32 alphanumeric characters** (`^[a-zA-Z0-9]{32}$`); `openssl rand -hex 16` produces exactly that. A key of any other length, or one carrying `-`, `_` or any other punctuation, makes every manager refuse to start with `(1244): Invalid configuration at '/cluster/key': does not satisfy 'pattern'`:
 
 ```bash
-openssl rand -hex 16   # cluster key, 32 characters
+openssl rand -hex 16   # cluster key, 32 hexadecimal characters
 openssl rand -hex 24   # enrollment password
 ```
 
@@ -457,6 +492,8 @@ nodes:
       dns:
         - "wazuh-indexer"
         - "wazuh-indexer.wazuh.svc.cluster.local"
+        - "wazuh-indexer-0.wazuh-indexer"
+        - "wazuh-indexer-0.wazuh-indexer.wazuh.svc.cluster.local"
 
   # Wazuh server nodes
   manager:
@@ -464,6 +501,8 @@ nodes:
       dns:
         - "wazuh-api"
         - "wazuh-api.wazuh.svc.cluster.local"
+        - "wazuh-agents"
+        - "wazuh-agents.wazuh.svc.cluster.local"
 
   # Wazuh dashboard nodes
   dashboard:
@@ -472,6 +511,20 @@ nodes:
         - "dashboard"
         - "dashboard.wazuh.svc.cluster.local"
 ```
+
+> **Note**: The Wazuh indexer nodes verify each other's certificate on the transport port against
+> the name each one publishes, `wazuh-indexer-<n>.wazuh-indexer.<namespace>.svc.cluster.local`, set
+> by `network.publish_host` in `indexer-sts.yaml`. The `dns` list therefore needs one pair of
+> entries per indexer replica, or the nodes cannot form a cluster. Adjust it if you change the
+> replica count of the overlay.
+
+> **Note**: The `manager` entry also produces the agent listener certificate (`manager-remoted.pem` and `manager-remoted-key.pem`), which `remoted` serves on port `1517`. Its SAN is taken from the `dns` list above. Any other name agents use to reach the manager has to be there too, or be passed to the next command with `--agent-san`, which adds it to that certificate only:
+>
+> ```bash
+> sudo bash ../tools/utils/deployment/certificates-conf.sh --cert --copy --priv --agent-san localhost
+> ```
+>
+> `localhost` is the usual one here, for agents connecting through a port-forward.
 
 Run `wazuh-certs-tool.sh` to create the certificates.
 
@@ -507,6 +560,8 @@ secretGenerator:
     files:
       - config/manager/certs/manager-key.pem
       - config/manager/certs/manager.pem
+      - config/manager/certs/manager-remoted-key.pem
+      - config/manager/certs/manager-remoted.pem
       - config/root-ca/certs/root-ca.pem
 ```
 
@@ -565,19 +620,19 @@ echo "" > wazuh/base/ingressRoute-tcp-dashboard.yaml
 
 #### Set the cluster key and the agent enrollment password
 
-Two of the Secrets under `wazuh/secrets/` hold shared keys rather than account passwords, and both ship with a documented default value:
+Two of the Secrets under `wazuh/secrets/` hold shared keys rather than account passwords. Neither ships with a usable value: the cluster key is a placeholder, and the enrollment password is the string `password`.
 
 | Secret | Key | Default value | What it protects |
 | --- | --- | --- | --- |
-| `wazuh-cluster-key` | `key` | `123a45bc67def891gh23i45jk67l8mn9` | Membership of the Wazuh manager cluster, on port `1516` |
+| `wazuh-cluster-key` | `key` | `REPLACETHISCLUSTERKEYBEFOREDEPLO` (placeholder, not a key) | Membership of the Wazuh manager cluster, on port `1516` |
 | `wazuh-authd-pass` | `authd.pass` | `password` | Agent enrollment: the channel `remoted` serves on port `1517`, and the legacy `authd` port `1515` |
 
 **Change both here, before the first `kubectl apply -k`.** Unlike the Wazuh indexer and Wazuh API accounts, these are not accounts inside an image, so `password-tool.sh` does not cover them: the managers read them from the Secrets on every container start. Setting them now costs nothing, while changing the cluster key on a running deployment stops the workers from syncing until every manager pod has restarted on the new key.
 
-Generate the two values. The cluster key has to be 32 characters:
+Generate the two values. The cluster key has to be **exactly 32 alphanumeric characters** (`^[a-zA-Z0-9]{32}$`); `openssl rand -hex 16` produces exactly that. A key of any other length, or one carrying `-`, `_` or any other punctuation, makes every manager refuse to start with `(1244): Invalid configuration at '/cluster/key': does not satisfy 'pattern'`:
 
 ```bash
-openssl rand -hex 16   # cluster key, 32 characters
+openssl rand -hex 16   # cluster key, 32 hexadecimal characters
 openssl rand -hex 24   # enrollment password
 ```
 
@@ -790,6 +845,28 @@ wazuh-manager-worker-0             1/1     Running   0          4h17m
 wazuh-manager-worker-1             1/1     Running   0          4h17m
 ```
 
+### Persistent volume claims
+
+```bash
+kubectl -n wazuh get pvc
+```
+
+Expected output:
+
+```bash
+$ kubectl -n wazuh get pvc
+NAME                                              STATUS   VOLUME     CAPACITY   ACCESS MODES   STORAGECLASS    AGE
+wazuh-dashboard-config                            Bound    pvc-6f1…   1Gi        RWO            wazuh-storage   4h17m
+wazuh-indexer-wazuh-indexer-0                     Bound    pvc-a12…   10Gi       RWO            wazuh-storage   4h17m
+wazuh-indexer-wazuh-indexer-1                     Bound    pvc-b34…   10Gi       RWO            wazuh-storage   4h17m
+wazuh-indexer-wazuh-indexer-2                     Bound    pvc-c56…   10Gi       RWO            wazuh-storage   4h17m
+wazuh-manager-master-wazuh-manager-master-0       Bound    pvc-d78…   50Gi       RWO            wazuh-storage   4h17m
+wazuh-manager-worker-wazuh-manager-worker-0       Bound    pvc-e90…   50Gi       RWO            wazuh-storage   4h17m
+wazuh-manager-worker-wazuh-manager-worker-1       Bound    pvc-f12…   50Gi       RWO            wazuh-storage   4h17m
+```
+
+One claim per manager pod carries `etc`, `api/configuration`, `logs`, `queue`, `var/multigroups` and `data` under separate `subPath`s, and the dashboard claim carries its configuration directory and keystore. See [Configuration files](../configuration/configuration-files.md#persistence-configuration).
+
 ### Network Policies
 
 ```bash
@@ -809,7 +886,7 @@ dashboard-egress                  app=wazuh-dashboard                  47s
 default-deny-all                  <none>                               46s
 indexer-egress                    app=wazuh-indexer                    45s
 indexer-ingress                   app=wazuh-indexer                    44s
-manager-egress                    app=wazuh-manager,node-type=master   43s
+manager-egress                    app=wazuh-manager                    43s
 manager-egress-external           app=wazuh-manager                    42s
 wazuh-api-ingress                 app=wazuh-manager,node-type=master   42s
 wazuh-worker-egress               app=wazuh-manager,node-type=worker   41s

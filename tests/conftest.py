@@ -17,13 +17,13 @@ def pytest_addoption(parser):
     parser.addoption(
         "--indexer-user",
         action="store",
-        default="wazuh-admin",
+        default="admin",
         help="Wazuh indexer account the tests authenticate with"
     )
     parser.addoption(
         "--indexer-password",
         action="store",
-        default="wazuh-admin",
+        default="admin",
         help="Password of the Wazuh indexer account. Pass the new value after "
              "rotating credentials (see docs/ref/credentials.md)"
     )
