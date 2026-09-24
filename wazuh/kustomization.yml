@@ -28,6 +28,8 @@ secretGenerator:
     files:
       - config/manager/certs/manager-key.pem
       - config/manager/certs/manager.pem
+      - config/manager/certs/manager-remoted-key.pem
+      - config/manager/certs/manager-remoted.pem
       - config/root-ca/certs/root-ca.pem
 
 resources:
@@ -64,6 +66,7 @@ resources:
   - indexer_stack/wazuh-indexer/indexer-ingress.yaml
   - indexer_stack/wazuh-indexer/cluster/indexer-sts.yaml
 
+  - indexer_stack/wazuh-dashboard/dashboard-pvc.yaml
   - indexer_stack/wazuh-dashboard/dashboard-deploy.yaml
   - indexer_stack/wazuh-dashboard/dashboard-svc.yaml
   - indexer_stack/wazuh-dashboard/dashboard-egress.yaml

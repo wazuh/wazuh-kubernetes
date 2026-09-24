@@ -51,15 +51,29 @@ spec:
                 chown root:101 /pvc-etc/certs
                 chmod 1770 /pvc-etc/certs
               fi
+              # data/ is not in the image's permanent-data snapshot.
+              if [ -z "$(ls -A /pvc-data)" ]; then
+                cp -a /var/wazuh-manager/data/. /pvc-data/
+              fi
               cp /tmp/certs-raw/root-ca.pem /etc/wazuh-certs-final/root-ca.pem
               cp /tmp/certs-raw/manager.pem /etc/wazuh-certs-final/indexer-connector.pem
               cp /tmp/certs-raw/manager-key.pem /etc/wazuh-certs-final/indexer-connector-key.pem
               chown root:101 /etc/wazuh-certs-final/root-ca.pem /etc/wazuh-certs-final/indexer-connector.pem /etc/wazuh-certs-final/indexer-connector-key.pem
               chmod 0640 /etc/wazuh-certs-final/root-ca.pem /etc/wazuh-certs-final/indexer-connector.pem /etc/wazuh-certs-final/indexer-connector-key.pem
+              # The agent listener pair is read by remoted after the manager drops
+              # privileges, so it is owned by the manager user (101:101) instead of
+              # root:101 like the files above.
+              cp /tmp/certs-raw/manager-remoted.pem /etc/wazuh-certs-final/remoted.pem
+              cp /tmp/certs-raw/manager-remoted-key.pem /etc/wazuh-certs-final/remoted-key.pem
+              chown 101:101 /etc/wazuh-certs-final/remoted.pem /etc/wazuh-certs-final/remoted-key.pem
+              chmod 0640 /etc/wazuh-certs-final/remoted.pem /etc/wazuh-certs-final/remoted-key.pem
           volumeMounts:
             - name: wazuh-manager-master
               mountPath: /pvc-etc
               subPath: wazuh/var/wazuh-manager/etc
+            - name: wazuh-manager-master
+              mountPath: /pvc-data
+              subPath: wazuh/var/wazuh-manager/data
             - name: wazuh-manager-certs-raw
               mountPath: /tmp/certs-raw
             - name: wazuh-manager-certs
@@ -94,6 +108,12 @@ spec:
             - name: wazuh-manager-certs
               mountPath: /var/wazuh-manager/etc/certs/indexer-connector-key.pem
               subPath: indexer-connector-key.pem
+            - name: wazuh-manager-certs
+              mountPath: /var/wazuh-manager/etc/certs/remoted.pem
+              subPath: remoted.pem
+            - name: wazuh-manager-certs
+              mountPath: /var/wazuh-manager/etc/certs/remoted-key.pem
+              subPath: remoted-key.pem
             - name: wazuh-manager-master
               mountPath: /var/wazuh-manager/logs
               subPath: wazuh/var/wazuh-manager/logs
@@ -104,8 +124,8 @@ spec:
               mountPath: /var/wazuh-manager/var/multigroups
               subPath: wazuh/var/wazuh-manager/var/multigroups
             - name: wazuh-manager-master
-              mountPath: /var/wazuh-manager/active-response/bin
-              subPath: wazuh/var/wazuh-manager/active-response/bin
+              mountPath: /var/wazuh-manager/data
+              subPath: wazuh/var/wazuh-manager/data
           ports:
             - containerPort: 1517
               name: agents-https
@@ -120,7 +140,7 @@ spec:
               command:
                 - /bin/sh
                 - -c
-                - /var/wazuh-manager/bin/wazuh-manager-control status 2>/dev/null | grep -q 'not running' && exit 1 || exit 0
+                - /var/wazuh-manager/bin/wazuh-manager-control status 2>/dev/null | grep -qE 'not running|failed to start|refused its configuration' && exit 1 || exit 0
             periodSeconds: 10
             timeoutSeconds: 5
             failureThreshold: 12
@@ -129,7 +149,7 @@ spec:
               command:
                 - /bin/sh
                 - -c
-                - /var/wazuh-manager/bin/wazuh-manager-control status 2>/dev/null | grep -q 'not running' && exit 1 || exit 0
+                - /var/wazuh-manager/bin/wazuh-manager-control status 2>/dev/null | grep -qE 'not running|failed to start|refused its configuration' && exit 1 || exit 0
             periodSeconds: 15
             timeoutSeconds: 5
             failureThreshold: 5
@@ -138,13 +158,13 @@ spec:
               command:
                 - /bin/sh
                 - -c
-                - /var/wazuh-manager/bin/wazuh-manager-control status 2>/dev/null | grep -q 'not running' && exit 1 || exit 0
+                - /var/wazuh-manager/bin/wazuh-manager-control status 2>/dev/null | grep -qE 'not running|failed to start|refused its configuration' && exit 1 || exit 0
             periodSeconds: 15
             timeoutSeconds: 5
             failureThreshold: 5
           env:
             - name: WAZUH_INDEXER_HOSTS
-              value: 'wazuh-indexer:9200'
+              value: 'wazuh-indexer-0.wazuh-indexer:9200,wazuh-indexer-1.wazuh-indexer:9200,wazuh-indexer-2.wazuh-indexer:9200'
             - name: WAZUH_NODE_NAME
               value: 'master'
             - name: WAZUH_NODE_TYPE
@@ -154,7 +174,7 @@ spec:
             - name: WAZUH_CLUSTER_BIND_ADDR
               value: '0.0.0.0'
             - name: WAZUH_CLUSTER_NODES
-              value: 'wazuh-cluster'
+              value: 'wazuh-manager-master-0.wazuh-cluster'
             - name: INDEXER_USERNAME
               valueFrom:
                 secretKeyRef:
@@ -164,22 +184,6 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: indexer-cred
-                  key: password
-            - name: SSL_CERTIFICATE_AUTHORITIES
-              value: /var/wazuh-manager/etc/certs/root-ca.pem
-            - name: SSL_CERTIFICATE
-              value: /var/wazuh-manager/etc/certs/indexer-connector.pem
-            - name: SSL_KEY
-              value: /var/wazuh-manager/etc/certs/indexer-connector-key.pem
-            - name: API_USERNAME
-              valueFrom:
-                secretKeyRef:
-                  name: wazuh-api-cred
-                  key: username
-            - name: API_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: wazuh-api-cred
                   key: password
             - name: WAZUH_CLUSTER_KEY
               valueFrom:
