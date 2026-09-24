@@ -175,7 +175,8 @@ Runs once per entry in `deployment_matrix`. Each instance provisions its own clu
 2. **Setup artifact URLs** (`setup_artifacts` composite action): downloads `artifact_urls.yaml` from S3, replaces template variables, exports `wazuh_certs_tool` and `wazuh_config_yml` as environment variables
 3. **Download certs tool and config**: fetches `wazuh-certs-tool.sh` and `config.yml` from the S3 URLs
 4. **Update `config.yml` for Kubernetes**: replaces IP-based node addressing with DNS names (cluster-internal service FQDNs)
-5. **Generate certificates**: runs `tools/utils/deployment/certificates-conf.sh --cert --copy --priv`
+5. **Generate certificates**: runs `tools/utils/deployment/certificates-conf.sh --cert --copy --priv`, after the ingress step below, because on EKS the load balancer hostname is only known once Traefik is up. On EKS that hostname is passed as `--agent-san`, which adds it to `manager-remoted.pem` and to nothing else
+6. **Check the names in the agent listener certificate**: reads the SAN of `wazuh/config/manager/certs/manager-remoted.pem` and fails if it does not name `wazuh-agents`, `wazuh-agents.wazuh.svc.cluster.local` and, on EKS, the load balancer hostname
 
 #### Ingress configuration
 
@@ -187,7 +188,7 @@ Runs once per entry in `deployment_matrix`. Each instance provisions its own clu
 **EKS:**
 - Deploys Traefik CRDs and runtime (`kubectl apply -k traefik/runtime/`)
 - Waits 5 minutes for the Traefik LoadBalancer to get a hostname
-- Reads the LoadBalancer hostname and sets `HostSNI(\`{hostname}\`)` in the ingress route
+- Reads the LoadBalancer hostname, sets `HostSNI(\`{hostname}\`)` in the ingress route and keeps it for `--agent-san` in the certificate step
 
 #### Wazuh deployment
 

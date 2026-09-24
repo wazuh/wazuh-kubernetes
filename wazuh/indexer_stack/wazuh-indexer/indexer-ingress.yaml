@@ -21,7 +21,6 @@ spec:
     - podSelector:
         matchLabels:
           app: wazuh-manager
-          node-type: master
     ports:
     - protocol: TCP
       port: 9200
