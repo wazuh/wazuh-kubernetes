@@ -12,8 +12,13 @@ PERMANENT_DATA[((i++))]="/var/wazuh-manager/etc"
 PERMANENT_DATA[((i++))]="/var/wazuh-manager/logs"
 PERMANENT_DATA[((i++))]="/var/wazuh-manager/queue"
 PERMANENT_DATA[((i++))]="/var/wazuh-manager/var/multigroups"
-PERMANENT_DATA[((i++))]="/var/wazuh-manager/active-response/bin"
 ```
+
+`/var/wazuh-manager/data` is on a volume here too, but it is not on that list: the image does not
+restore it, so the init container of each manager StatefulSet seeds it from the image the first
+time the claim is used. The subtrees the image owns (`data/tzdb`, `data/store/schema`,
+`data/store/enrichment`) are refreshed from the new image on every start, which is what makes an
+upgrade over an existing claim pick up the new content.
 
 Any file that we modify referring to the files previously mentioned, will be changed also the corresponding volume. When the corresponding Wazuh pod is created again, it will get the cited files from the volume, thus keeping the changes made previously.
 
@@ -71,14 +76,12 @@ This action has modified the `local_rules.xml` file in the `/var/wazuh-manager/d
 
 ```
 volumeMounts:
-- name: config
-  mountPath: /wazuh-config-mount/etc/wazuh-manager.conf
-  subPath: wazuh-manager.conf
-  readOnly: true
+- name: wazuh-manager-master
+  mountPath: /var/wazuh-manager/etc
+  subPath: wazuh/var/wazuh-manager/etc
 - name: wazuh-manager-master
   mountPath: /var/wazuh-manager/data
-- name: wazuh-manager-master
-  mountPath: /etc/postfix
+  subPath: wazuh/var/wazuh-manager/data
 ```
 
 We can see their content.

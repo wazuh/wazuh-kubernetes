@@ -110,6 +110,58 @@ api_auth_code() {
     -u "$1:$2" 'https://localhost:55000/security/user/authenticate' 2>/dev/null
 }
 
+# Retries a 429: rate limiting says nothing about the password.
+auth_code() {
+  local code=""
+  local attempt
+  for attempt in 1 2 3; do
+    code=$("$@")
+    [ "${code}" = "429" ] || break
+    sleep 5
+  done
+  printf '%s' "${code}"
+}
+
+# Prints "<account> default|changed|missing|absent" from the RBAC database of a
+# manager pod. Opened read-only: a check must not create what it is checking.
+api_db_state() {
+  kubectl -n "${NAMESPACE}" exec -i "$1" -- \
+    /var/wazuh-manager/framework/python/bin/python3 - ${API_USERS} 2>/dev/null <<'PROBE'
+import os
+import sqlite3
+import sys
+
+try:
+    from api.constants import SECURITY_PATH
+    from werkzeug.security import check_password_hash
+
+    database = os.path.join(SECURITY_PATH, "rbac.db")
+    users = {}
+
+    if os.path.exists(database):
+        connection = sqlite3.connect(f"file:{database}?mode=ro", uri=True)
+        try:
+            if connection.execute(
+                "SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'users'"
+            ).fetchone():
+                users = dict(connection.execute("SELECT username, password FROM users"))
+        finally:
+            connection.close()
+
+    for username in sys.argv[1:]:
+        if not users:
+            print(username, "absent")
+        elif username not in users:
+            print(username, "missing")
+        elif check_password_hash(users[username], username):
+            print(username, "default")
+        else:
+            print(username, "changed")
+except Exception:
+    sys.exit(1)
+PROBE
+}
+
 ################################################################################
 info ""
 info "The Wazuh indexer image"
@@ -139,7 +191,7 @@ info "Wazuh indexer accounts (${INDEXER_POD})"
 ################################################################################
 
 for user in ${INDEXER_USERS} ${DEMO_USERS}; do
-  code=$(indexer_auth_code "${user}" "${user}")
+  code=$(auth_code indexer_auth_code "${user}" "${user}")
   if [ -z "${code}" ] || [ "${code}" = "000" ]; then
     # Everything here is a check that a password is refused, and a cluster that
     # answers nothing would pass all of them.
@@ -157,7 +209,7 @@ info "Wazuh API accounts (${MANAGER_POD})"
 ################################################################################
 
 for user in ${API_USERS}; do
-  code=$(api_auth_code "${user}" "${user}")
+  code=$(auth_code api_auth_code "${user}" "${user}")
   if [ -z "${code}" ] || [ "${code}" = "000" ]; then
     fail "no answer from the Wazuh API on ${MANAGER_POD} while checking '${user}'; the API is served by the manager master only"
   elif [ "${code}" = "200" ]; then
@@ -167,10 +219,42 @@ for user in ${API_USERS}; do
   fi
 done
 
+################################################################################
+info ""
+info "Wazuh API accounts of each manager pod"
+################################################################################
+
+# See docs/ref/credentials.md, "Clear the defaults left in the worker databases".
+MANAGER_PODS=$(kubectl -n "${NAMESPACE}" get pods -l 'app=wazuh-manager' \
+  -o jsonpath='{.items[*].metadata.name}' 2>/dev/null)
+
+if [ -z "${MANAGER_PODS}" ]; then
+  fail "no pod labelled app=wazuh-manager in '${NAMESPACE}'"
+fi
+
+for pod in ${MANAGER_PODS}; do
+  db_state=$(api_db_state "${pod}")
+  if [ -z "${db_state}" ]; then
+    fail "could not read the Wazuh API user database of ${pod}"
+    continue
+  fi
+
+  for user in ${API_USERS}; do
+    case "$(printf '%s\n' "${db_state}" | awk -v u="${user}" '$1 == u {print $2}')" in
+      changed) pass "${pod}: ${user} does not have '${user}' as its password" ;;
+      default) fail "${pod}: ${user} has '${user}' as its password" ;;
+      missing) fail "${pod}: ${user} is not in the Wazuh API user database" ;;
+      absent)  fail "${pod}: no Wazuh API user database, so ${user} would be seeded with '${user}' as its password" ;;
+      *)       fail "${pod}: could not read the state of '${user}'" ;;
+    esac
+  done
+done
+
 info ""
 info "The Wazuh API is served by the manager master only, so ${MANAGER_POD} is the"
-info "node whose user database authenticates requests. Worker pods run no API and"
-info "answer nothing on port 55000; pointing --manager-pod at one reports no answer."
+info "node whose user database authenticates requests over HTTP. Worker pods run no"
+info "API and answer nothing on port 55000; pointing --manager-pod at one reports no"
+info "answer, which is why their accounts are read from the database above instead."
 
 info ""
 if [ "${failures}" -eq 0 ]; then

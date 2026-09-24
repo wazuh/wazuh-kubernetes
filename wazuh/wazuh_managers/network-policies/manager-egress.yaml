@@ -7,7 +7,6 @@ spec:
   podSelector:
     matchLabels:
       app: wazuh-manager
-      node-type: master
   policyTypes:
   - Egress
   egress:
