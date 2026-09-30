@@ -38,6 +38,16 @@ spec:
                     app: wazuh-manager
                     node-type: worker
       volumes:
+        # The Secret gets the pod's fsGroup and group read, so the service user
+        # could read it: an init container copies it to a root-only file.
+        - name: wazuh-credentials
+          emptyDir:
+            medium: Memory
+            sizeLimit: 1Mi
+        - name: wazuh-credentials-secret
+          secret:
+            secretName: manager-credentials
+            defaultMode: 0400
         - name: wazuh-authd-pass
           secret:
             secretName: wazuh-authd-pass
@@ -50,6 +60,25 @@ spec:
       securityContext:
         fsGroup: 101
       initContainers:
+        - name: install-credentials
+          image: 'wazuh/wazuh-manager:5.0.0'
+          command:
+            - /bin/sh
+            - -c
+            - 'umask 077 && cp /credentials-secret/wazuh-credentials /run/secrets/wazuh-credentials && chmod 0400 /run/secrets/wazuh-credentials'
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 100m
+              memory: 128Mi
+          volumeMounts:
+            - name: wazuh-credentials-secret
+              mountPath: /credentials-secret
+              readOnly: true
+            - name: wazuh-credentials
+              mountPath: /run/secrets
         - name: init-wazuh-etc
           image: 'wazuh/wazuh-manager:5.0.0'
           command:
@@ -99,6 +128,9 @@ spec:
             capabilities:
               add: ["SYS_CHROOT"]
           volumeMounts:
+            - name: wazuh-credentials
+              mountPath: /run/secrets
+              readOnly: true
             - name: wazuh-authd-pass
               mountPath: /wazuh-config-mount/etc/authd.pass
               subPath: authd.pass
@@ -185,13 +217,6 @@ spec:
               value: '0.0.0.0'
             - name: WAZUH_CLUSTER_NODES
               value: 'wazuh-manager-master-0.wazuh-cluster'
-            - name: INDEXER_USERNAME
-              value: 'wazuh-manager'
-            - name: INDEXER_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: manager-credentials
-                  key: WAZUH_INDEXER_MANAGER_PASSWORD
             - name: WAZUH_CLUSTER_KEY
               valueFrom:
                 secretKeyRef:

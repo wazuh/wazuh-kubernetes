@@ -51,24 +51,18 @@ Network policies restrict communication between pods to enforce security boundar
 
 ## Credentials and secrets
 
-Default credentials and keys are provided as Kubernetes Secrets under `wazuh/secrets/`. These values are meant to be customized before any production deployment, and the accounts behind them have to be changed inside the components as well. See [Credentials](../credentials.md) for the full procedure.
+The passwords of the Wazuh indexer and Wazuh API accounts are generated for each deployment by `tools/utils/deployment/credentials-conf.sh`, and reach the pods through the `indexer-credentials`, `manager-credentials` and `dashboard-credentials` Secrets that `wazuh/kustomization.yml` generates from `wazuh/config/credentials/*.env`. See [Credentials](../credentials.md).
 
-Main secrets:
+Two more Secrets live under `wazuh/secrets/`:
 
-- `wazuh/secrets/wazuh-api-cred-secret.yaml`
-  Wazuh API `wazuh-wui` service account, read by the manager master and the dashboard.
-- `wazuh/secrets/dashboard-cred-secret.yaml`
-  Wazuh indexer `kibanaserver` service account the dashboard authenticates to the indexer with. This is not the login of the dashboard web interface.
-- `wazuh/secrets/indexer-cred-secret.yaml`
-  Wazuh indexer `wazuh-manager` service account, read by the manager master and the manager workers.
 - `wazuh/secrets/wazuh-authd-pass-secret.yaml`
-  Agent enrollment password, mounted as a file rather than an environment variable. It guards the enrollment `remoted` serves on port `1517` and the legacy `authd` port `1515`.
+  Password of the legacy `authd` enrollment service on port `1515`, for Wazuh 4.x agents, mounted as a file. Wazuh 5.x agents enroll on port `1517` with a token minted by the manager, and do not use it.
 - `wazuh/secrets/wazuh-cluster-key-secret.yaml`
   Shared key for manager cluster membership, on port `1516`.
 
 The last two are not accounts inside an image and `password-tool.sh` does not cover them: the managers read them from the Secret on every container start. **Change them before the first `kubectl apply -k`** — see [The cluster key and the agent enrollment password](../credentials.md#the-cluster-key-and-the-agent-enrollment-password), which also covers changing either one on a deployment that is already running.
 
-> **Important**: these Secrets hold what the pods *present*. The Wazuh indexer StatefulSet reads no credential Secret at all, so editing `indexer-cred` does not change the password the indexer *accepts*.
+> **Important**: each component stores its passwords on its first start. Editing `config/credentials/*.env`, or the generated Secrets, afterwards does not change the accounts: [Credentials](../credentials.md#rotating-a-password-on-a-running-deployment) has the procedure.
 
 ## Persistence configuration
 

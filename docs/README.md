@@ -88,9 +88,6 @@ To deploy a cluster on your local environment (like Minikube, Kind or Microk8s) 
 │   │   ├── wazuh-dashboard
 │   │   └── wazuh-indexer
 │   ├── secrets
-│   │   ├── dashboard-cred-secret.yaml
-│   │   ├── indexer-cred-secret.yaml
-│   │   ├── wazuh-api-cred-secret.yaml
 │   │   ├── wazuh-authd-pass-secret.yaml
 │   │   └── wazuh-cluster-key-secret.yaml
 │   ├── wazuh_managers

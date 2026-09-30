@@ -6,13 +6,13 @@
 # secretGenerator reads them from (see wazuh/kustomization.yml). Mirrors
 # tools/utils/deployment/certificates-conf.sh for the credentials half of
 # install-time credential generation (wazuh/wazuh-indexer#1928).
- 
+
 set -o pipefail
- 
+
 CREDENTIALS_LIB="${WAZUH_CREDENTIALS_LIB:-./wazuh-credentials.sh}"
 OUTPUT_DIR="./config/credentials"
 FORCE=false
- 
+
 ALL_KEYS=(
   WAZUH_INDEXER_ADMIN_PASSWORD
   WAZUH_INDEXER_KIBANASERVER_PASSWORD
@@ -20,41 +20,41 @@ ALL_KEYS=(
   WAZUH_MANAGER_API_PASSWORD
   WAZUH_MANAGER_WUI_PASSWORD
 )
- 
+
 COMPONENTS=(indexer manager dashboard)
 declare -A COMPONENT_KEYS=(
   [indexer]="WAZUH_INDEXER_ADMIN_PASSWORD WAZUH_INDEXER_KIBANASERVER_PASSWORD WAZUH_INDEXER_MANAGER_PASSWORD"
   [manager]="WAZUH_INDEXER_MANAGER_PASSWORD WAZUH_MANAGER_API_PASSWORD WAZUH_MANAGER_WUI_PASSWORD"
   [dashboard]="WAZUH_INDEXER_KIBANASERVER_PASSWORD WAZUH_MANAGER_WUI_PASSWORD"
 )
- 
+
 error() {
   echo "credentials-conf.sh: $*" >&2
 }
- 
+
 usage() {
   cat <<USAGE
 Usage: $0 [--output <directory>] [--force]
- 
+
   --output <directory>  Where to write indexer.env, manager.env and
                         dashboard.env. Default: ${OUTPUT_DIR}
   --force               Replace existing files. Only for a deployment that
                         has never been started: a started one keeps the
                         passwords it was first given.
   -h, --help            Show this help.
- 
+
 A key already set in the environment is validated and used instead of a
 generated value, e.g.:
- 
+
   WAZUH_INDEXER_ADMIN_PASSWORD='<password>' $0
- 
+
 Keys: ${ALL_KEYS[*]}
- 
+
 Needs the Wazuh credentials library as ${CREDENTIALS_LIB}
 (WAZUH_CREDENTIALS_LIB overrides the path). Download it next to
 wazuh-certs-tool.sh, in the same version as the images (see
 tools/utils/deployment/certificates-conf.sh).
- 
+
 The files this writes are read by kustomize's secretGenerator (envs:), so
 kustomize must be able to read them: run this script as the same user who
 runs kubectl/kustomize, or with sudo if certificates-conf.sh's output
@@ -62,7 +62,7 @@ directory was also created with sudo (the files are then given to the user
 who ran sudo, same as certificates-conf.sh does for certificates).
 USAGE
 }
- 
+
 while [ $# -gt 0 ]; do
   case $1 in
     --output)
@@ -82,7 +82,7 @@ while [ $# -gt 0 ]; do
       ;;
   esac
 done
- 
+
 if [ ! -r "${CREDENTIALS_LIB}" ]; then
   error "cannot read the Wazuh credentials library at ${CREDENTIALS_LIB}"
   error "download it next to wazuh-certs-tool.sh, or set WAZUH_CREDENTIALS_LIB to its path"
@@ -96,7 +96,7 @@ for function in wazuh_password_generate wazuh_password_validate; do
     exit 1
   fi
 done
- 
+
 # Every component validates what it receives; a value one of them would
 # reject is refused here, so the deployment does not find out at pod start.
 check_password() {
@@ -119,7 +119,7 @@ check_password() {
     return 1
   fi
 }
- 
+
 existing=()
 for component in "${COMPONENTS[@]}"; do
   if [ -e "${OUTPUT_DIR}/${component}.env" ] || [ -L "${OUTPUT_DIR}/${component}.env" ]; then
@@ -132,7 +132,7 @@ if [ "${#existing[@]}" -gt 0 ] && ! ${FORCE}; then
   error "use --force only if this deployment has never been started"
   exit 1
 fi
- 
+
 declare -A VALUES SOURCES
 failed=false
 for key in "${ALL_KEYS[@]}"; do
@@ -162,13 +162,13 @@ if ${failed}; then
   error "nothing was written"
   exit 1
 fi
- 
+
 # Same ownership convention as certificates-conf.sh: kustomize's
 # secretGenerator reads these files as the user running kubectl, not as the
 # container UID and not as root if this script was run with sudo.
 export CRED_UID="${SUDO_UID:-$(id -u)}"
 export CRED_GID="${SUDO_GID:-$(id -g)}"
- 
+
 umask 077
 if ! mkdir -p "${OUTPUT_DIR}" 2>/dev/null || ! chmod 700 "${OUTPUT_DIR}" 2>/dev/null; then
   error "cannot create ${OUTPUT_DIR}"
@@ -176,7 +176,7 @@ if ! mkdir -p "${OUTPUT_DIR}" 2>/dev/null || ! chmod 700 "${OUTPUT_DIR}" 2>/dev/
   error "the files are then given to the user who ran sudo"
   exit 1
 fi
- 
+
 for component in "${COMPONENTS[@]}"; do
   target="${OUTPUT_DIR}/${component}.env"
   tmp=$(mktemp "${OUTPUT_DIR}/.${component}.env.XXXXXX") || {
@@ -197,7 +197,7 @@ for component in "${COMPONENTS[@]}"; do
   mv -f "${tmp}" "${target}"
 done
 chown "${CRED_UID}:${CRED_GID}" "${OUTPUT_DIR}"
- 
+
 for key in "${ALL_KEYS[@]}"; do
   echo "${key}: ${SOURCES[${key}]}"
 done

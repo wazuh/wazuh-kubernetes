@@ -32,14 +32,14 @@ secretGenerator:
       - config/manager/certs/manager-remoted.pem
       - config/root-ca/certs/root-ca.pem
   - name: indexer-credentials
-    envs:
-      - config/credentials/indexer.env
+    files:
+      - wazuh-credentials=config/credentials/indexer.env
   - name: manager-credentials
-    envs:
-      - config/credentials/manager.env
+    files:
+      - wazuh-credentials=config/credentials/manager.env
   - name: dashboard-credentials
-    envs:
-      - config/credentials/dashboard.env
+    files:
+      - wazuh-credentials=config/credentials/dashboard.env
 
 resources:
   - base/wazuh-ns.yaml
