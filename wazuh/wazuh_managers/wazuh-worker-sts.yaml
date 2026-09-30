@@ -186,15 +186,12 @@ spec:
             - name: WAZUH_CLUSTER_NODES
               value: 'wazuh-manager-master-0.wazuh-cluster'
             - name: INDEXER_USERNAME
-              valueFrom:
-                secretKeyRef:
-                  name: indexer-cred
-                  key: username
+              value: 'wazuh-manager'
             - name: INDEXER_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: indexer-cred
-                  key: password
+                  name: manager-credentials
+                  key: WAZUH_INDEXER_MANAGER_PASSWORD
             - name: WAZUH_CLUSTER_KEY
               valueFrom:
                 secretKeyRef:

@@ -1,313 +1,174 @@
 # Credentials
 
-The Wazuh images ship with documented default passwords, and a deployment that keeps them answers to
-anyone who has read this page. **Changing them is the first thing to do after the first deployment**,
-and this page is the procedure.
+The Wazuh images no longer ship a default password: each component generates or validates its own
+credentials at install time and refuses to start without them
+([wazuh/wazuh-indexer#1928](https://github.com/wazuh/wazuh-indexer/issues/1928)). This deployment's
+part of that model is a pre-deployment step, `tools/utils/deployment/credentials-conf.sh`, run
+**before** the first `kubectl apply -k` — the same shape as `certificates-conf.sh` for certificates.
 
-Each image carries `password-tool.sh`, which changes the passwords of the running deployment and
-prints the new ones once. It stores nothing: what it prints is the only copy, and the passwords the
-workloads need are written by hand into the Secrets under `wazuh/secrets/`.
+Run it once, before deploying:
 
-Two values are not accounts and are not covered by that tool: the manager cluster key and the agent
-enrollment password. They come from Secret manifests in this repository, so they are set **before the
-first deployment** rather than after it. See
+```bash
+sudo bash tools/utils/deployment/certificates-conf.sh --cert --copy --priv
+sudo bash tools/utils/deployment/credentials-conf.sh
+kubectl apply -k envs/local-env/   # or envs/eks/
+```
+
+It writes `wazuh/config/credentials/{indexer,manager,dashboard}.env`, one file per component holding
+only the keys that component needs. Kustomize's `secretGenerator` turns them into the
+`indexer-credentials`, `manager-credentials` and `dashboard-credentials` Secrets that the pods read.
+**It never overwrites an existing file**: once a deployment has started, the passwords it was given
+are the ones that count, editing the file afterwards changes nothing running.
+
+Needs `wazuh-credentials.sh` next to `wazuh-certs-tool.sh`, in the same version as the images. See
+`credentials-conf.sh --help`.
+
+## First access
+
+```bash
+grep '^WAZUH_INDEXER_ADMIN_PASSWORD=' wazuh/config/credentials/indexer.env | cut -d= -f2-
+```
+
+Log into the dashboard as `admin` with that value. It also produces a Wazuh API administrator session,
+and it is the account the integration test suite authenticates with.
+
+Two values are not accounts and are not covered by this: the manager cluster key and the agent
+enrollment password. They stay exactly as before — set from Secret manifests in this repository,
+**before** the first deployment. See
 [The cluster key and the agent enrollment password](#the-cluster-key-and-the-agent-enrollment-password).
 
 ## The accounts
 
-Two components hold accounts, in separate databases reached over separate ports. The "Secret" column
-is where the new password has to be written for the deployment to keep working; the accounts with no
-Secret are for people and are not presented by any pod.
+Two components hold accounts, in separate databases reached over separate ports.
 
 ### Wazuh indexer
 
 These live in the security plugin's internal user database, inside the security index. They are
 cluster-wide: a change made on one indexer pod reaches all of them.
 
-| Account | Default password | Secret | Workloads that present it | What it is for |
-| --- | --- | --- | --- | --- |
-| `admin` | `admin` | — | — | Administrator of the indexer: every index, the cluster settings and the security configuration. Logging into the dashboard as `admin` also produces a Wazuh API administrator session. Also the account the integration test suite authenticates with. |
-| `kibanaserver` | `kibanaserver` | `dashboard-cred` | `wazuh-dashboard` | Service account the dashboard authenticates to the indexer as. |
-| `wazuh-manager` | `wazuh-manager` | `indexer-cred` | `wazuh-manager-master`, `wazuh-manager-worker` | Service account the managers write events and read state as. |
-| `wazuh-admin` | `wazuh-admin` | — | — | Wazuh administrator: reads the Wazuh indices, writes Wazuh settings and content, and administers the Security Analytics plugin. |
-| `wazuh-readonly` | `wazuh-readonly` | — | — | Read-only access to settings, content and detectors. |
-| `wazuh-demo` | `wazuh-demo` | — | — | Content management, without administration of the deployment. |
+| Account | Owned by | Secret | Key | Consumed by | What it is for |
+| --- | --- | --- | --- | --- | --- |
+| `admin` | Indexer | `indexer-credentials` | `WAZUH_INDEXER_ADMIN_PASSWORD` | Indexer | Administrator of the indexer: every index, the cluster settings and the security configuration. Logging into the dashboard as `admin` also produces a Wazuh API administrator session. |
+| `kibanaserver` | Indexer | `indexer-credentials`, `dashboard-credentials` | `WAZUH_INDEXER_KIBANASERVER_PASSWORD` | Indexer, `wazuh-dashboard` | Service account the dashboard authenticates to the indexer as. |
+| `wazuh-manager` | Indexer | `indexer-credentials`, `manager-credentials` | `WAZUH_INDEXER_MANAGER_PASSWORD` | Indexer, `wazuh-manager-master`, `wazuh-manager-worker` | Service account the managers write events and read state as. |
 
-> **Note**: `password-tool.sh` manages all six accounts, but the indexer image only ships `admin`,
-> `kibanaserver`, `wazuh-manager` and `wazuh-readonly` in `internal_users.yml`. `wazuh-admin` and
-> `wazuh-demo` are not in a deployment and cannot be authenticated with, which is why nothing here
-> uses them:
+> **wazuh-admin, wazuh-readonly and wazuh-demo do not ship in 5.0.0.** They were discretionary
+> accounts of the previous internal-users layout; 5.0.0 ships only the three accounts above, none of
+> them with a password baked into the image:
 >
 > ```console
 > $ kubectl -n wazuh exec wazuh-indexer-0 -- \
->     curl -sk -u admin:admin 'https://localhost:9200/_plugins/_security/api/internalusers'
-> admin  kibanaserver  wazuh-manager  wazuh-readonly
+>     curl -sk -u "admin:$(grep '^WAZUH_INDEXER_ADMIN_PASSWORD=' wazuh/config/credentials/indexer.env | cut -d= -f2-)" \
+>     'https://localhost:9200/_plugins/_security/api/internalusers'
+> admin  kibanaserver  wazuh-manager
 > ```
 
-> **Important**: the indexer StatefulSet consumes no credential Secret at all. Its accounts come from
-> `internal_users.yml` inside the image. Editing `indexer-cred` changes only what the managers
-> *present*; it does not change what the indexer *accepts*. Both halves are needed, which is
-> why the procedure below runs `password-tool.sh` **and** updates the Secret.
-
 The OpenSearch demo accounts (`anomalyadmin`, `kibanaro`, `logstash`, `readall`, `snapshotrestore`)
-are **not** part of a Wazuh deployment. They are removed from the indexer image when it is built, so
-they do not exist and cannot be logged into.
+are **not** part of a Wazuh deployment either. They are removed from the indexer image when it is
+built, so they do not exist and cannot be logged into.
 
 ### Wazuh manager
 
 These live in the API's RBAC database, `rbac.db`, under
-`/var/wazuh-manager/api/configuration/security/` on each manager node's persistent volume.
+`/var/wazuh-manager/api/configuration/security/` on each manager node's persistent volume. **Seeded
+only on the manager master** — the workers never serve the API (see
+[Multi-node deployments and scaling](#multi-node-deployments-and-scaling)).
 
-| Account | Default password | Secret | Workloads that present it | What it is for |
-| --- | --- | --- | --- | --- |
-| `wazuh` | `wazuh` | — | — | Superuser of the Wazuh API. |
-| `wazuh-wui` | `wazuh-wui` | `wazuh-api-cred` | `wazuh-manager-master`, `wazuh-dashboard` | Service account the dashboard proxies manager requests as. It asks the API to act as the logged-in dashboard user, so what a dashboard session can do is decided by that user's role, not by this account. |
+| Account | Owned by | Secret | Key | Consumed by | What it is for |
+| --- | --- | --- | --- | --- | --- |
+| `wazuh` | Manager | `manager-credentials` | `WAZUH_MANAGER_API_PASSWORD` | `wazuh-manager-master` | Superuser of the Wazuh API. |
+| `wazuh-wui` | Manager | `manager-credentials`, `dashboard-credentials` | `WAZUH_MANAGER_WUI_PASSWORD` | `wazuh-manager-master`, `wazuh-dashboard` | Service account the dashboard proxies manager requests as. It asks the API to act as the logged-in dashboard user, so what a dashboard session can do is decided by that user's role, not by this account. |
 
-> **Important**: this database is local to each manager node and the Wazuh cluster does not
-> synchronize it. On this deployment only the manager master serves the Wazuh API — the worker pods
-> run no `wazuh-manager-apid`, declare no port `55000`, and the `wazuh-api` Service selects
-> `node-type: master` — so the master's database is the only one consulted for authentication.
+> **A worker seeds no database at all while it stays a worker.** The manager's own credentials
+> resolver checks `cluster.node_type` before deciding whether to seed `rbac.db`; only a promoted
+> worker would seed it, from `config/credentials/manager.env` at that point. `rbac.db` being absent
+> on a worker is therefore the expected, healthy state — `check-default-credentials.sh` treats it
+> that way, not as a missed credential.
 
 ### Other secrets
 
-Two more Secrets hold shared material rather than account passwords. They are not covered by
-`password-tool.sh`, and they are set by editing the manifest **before deploying**:
-[The cluster key and the agent enrollment password](#the-cluster-key-and-the-agent-enrollment-password)
-is the procedure, for a fresh deployment and for one already running.
+Two more Secrets hold shared material rather than account passwords, out of scope for
+`credentials-conf.sh` and for the install-time credential generation epic. Unchanged from before —
+set by editing the manifest **before deploying**:
+[The cluster key and the agent enrollment password](#the-cluster-key-and-the-agent-enrollment-password).
 
 | Secret | Key | Default value | What it is for |
 | --- | --- | --- | --- |
 | `wazuh-authd-pass` | `authd.pass` | `password` | Enrollment password, mounted as a file into every manager pod. It guards the enrollment `remoted` serves on port `1517` and the legacy `authd` port `1515`. |
 | `wazuh-cluster-key` | `key` | `REPLACETHISCLUSTERKEYBEFOREDEPLO` (placeholder) | Shared key for manager cluster membership, on port `1516`. |
 
-## Changing the passwords on the first deployment
+## Rotating a password on a running deployment
 
-Run this once, immediately after the deployment comes up for the first time. The examples use the
-`wazuh` namespace and the pod names of the default topology: one indexer pod per replica
-(`wazuh-indexer-0`…), one manager master (`wazuh-manager-master-0`) and the worker replicas of your
-overlay (`wazuh-manager-worker-0`, and `wazuh-manager-worker-1` on the `eks` overlay).
+Generation at first start is not rotation. To change a password on a deployment that has already
+started, `password-tool.sh` (inside the indexer and manager images) is still the tool — it is the
+only actor allowed to reconfigure a sibling component's credential. Recreating a pod is **not**
+enough on its own: a component keeps the value it resolved on its first start, so a Secret update
+without also going through the tool leaves the deployment split between the old and the new value.
 
-### Step 1: Wait for the deployment to be ready
-
-The tools work against the running cluster, so every pod has to be `Ready` before going on. The first
-start takes a couple of minutes.
-
-```bash
-kubectl -n wazuh get pods
-kubectl -n wazuh wait --for=condition=Ready pod --all --timeout=600s
-```
-
-### Step 2: Change the Wazuh indexer passwords
-
-```bash
-kubectl -n wazuh exec wazuh-indexer-0 -- /password-tool.sh --all
-```
-
-It prints every account with its new password, and repeats the two that a workload presents:
-
-```console
-$ kubectl -n wazuh exec wazuh-indexer-0 -- /password-tool.sh --all
-
-Changed on the running deployment:
-
-  admin            r?FT4dqvBn0LxlXQ.uYm-3jHsWk8zAeC
-  kibanaserver     G2wrq1B20.eXC85*-8inI+F27y8UwoL.
-  wazuh-manager    Bqf7j57J3BNEb5RgP9kprDX0GY*6QjmM
-  wazuh-admin      j*YwhC.RUiJYCq4Qs10v3U3qm3keJqec
-  wazuh-readonly   2d1a5KtVeVCHkrRytEmRYS4c8VGouku.
-  wazuh-demo       o0V1D.k*qdJaydzha3eYQlvdDOjRLg4v
-
-This is the only time these passwords are shown. Nothing is stored.
-```
-
-**Copy the whole output somewhere safe before going on.** It is not written to any file and it is not
-shown again. The `admin` password is the one that logs into the dashboard.
-
-The tool mentions `docker-compose.yml`, because it is shared with the Docker deployment method. On
-Kubernetes the equivalent is the Secrets, which step 5 covers: `kibanaserver` goes into
-`dashboard-cred` and `wazuh-manager` into `indexer-cred`.
-
-> **Note**: any indexer pod works. The change is written to the security index, which is shared by
-> the whole indexer cluster.
-
-### Step 3: Change the Wazuh API passwords on the manager master
-
-```bash
-kubectl -n wazuh exec wazuh-manager-master-0 -- /password-tool.sh --all
-```
-
-```console
-$ kubectl -n wazuh exec wazuh-manager-master-0 -- /password-tool.sh --all
-
-Changed on this manager node:
-
-  wazuh            ZD04YaYFH*JC?gOvWWaF54O-MrgJEm6K
-  wazuh-wui        VdzPHTfpFCw8MbPkX?nek2902VkwYDsQ
-
-This is the only time these passwords are shown. Nothing is stored.
-```
-
-### Step 4: Clear the defaults left in the worker databases
-
-The Wazuh API runs on the manager master only, so the workers' `rbac.db` is never consulted for
-authentication while the deployment stays as it is. The copies on the workers still hold the shipped
-defaults, and a worker promoted to master would serve them, so clear them here.
-
-Pass each password on standard input. Note `exec -i`, without which the pod receives no input:
-
-```bash
-for pod in $(kubectl -n wazuh get pods -l app=wazuh-manager,node-type=worker \
-    -o jsonpath='{.items[*].metadata.name}'); do
-  printf '%s\n' 'ZD04YaYFH*JC?gOvWWaF54O-MrgJEm6K' | \
-    kubectl -n wazuh exec -i "${pod}" -- /password-tool.sh --user wazuh --stdin
-  printf '%s\n' 'VdzPHTfpFCw8MbPkX?nek2902VkwYDsQ' | \
-    kubectl -n wazuh exec -i "${pod}" -- /password-tool.sh --user wazuh-wui --stdin
-done
-```
-
-> **Note**: `tools/tests/check-default-credentials.sh` reads this straight from `rbac.db` inside
-> each manager pod, master and workers, rather than over the API: nothing answers on
-> `localhost:55000` in a worker. Skipping this step makes that check fail.
-
-### Step 5: Write the three service passwords into the Secrets
-
-Three of the passwords are presented by a workload and have to go into a Secret. The usernames do not
-change.
-
-| New password of | Secret file | Key |
-| --- | --- | --- |
-| `wazuh-manager` (indexer) | `wazuh/secrets/indexer-cred-secret.yaml` | `password` |
-| `kibanaserver` (indexer) | `wazuh/secrets/dashboard-cred-secret.yaml` | `password` |
-| `wazuh-wui` (API) | `wazuh/secrets/wazuh-api-cred-secret.yaml` | `password` |
-
-The other five passwords go nowhere: no pod presents them.
-
-Encode each new password, without a trailing newline:
-
-```bash
-echo -n 'Bqf7j57J3BNEb5RgP9kprDX0GY*6QjmM' | base64
-```
-
-Then replace the `password` value in the corresponding file, keeping `username` as it is:
-
-```yaml
-# wazuh/secrets/indexer-cred-secret.yaml
-data:
-  username: d2F6dWgtbWFuYWdlcg==                              # string "wazuh-manager" base64 encoded
-  password: QnFmN2o1N0ozQk5FYjVSZ1A5a3ByRFgwR1kqNlFqbU0=      # the new password
-```
-
-Apply the overlay you deployed with:
-
-```bash
-kubectl apply -k envs/local-env/   # or envs/eks/
-```
-
-> **Important**: a base64 value is encoding, not encryption — anyone who can read the file can read
-> the password. Keep these edits out of your commits and restrict read access to the deployment
-> directory as you do for the generated certificates under `wazuh/config/`.
-
-An alternative that leaves the repository untouched is to patch the live Secret instead:
-
-```bash
-kubectl -n wazuh patch secret indexer-cred \
-  -p '{"stringData":{"password":"Bqf7j57J3BNEb5RgP9kprDX0GY*6QjmM"}}'
-```
-
-> **Warning**: a patched Secret is reverted the next time anyone runs `kubectl apply -k envs/<env>/`,
-> which puts the deployment back on the default password while the indexer keeps the new one. Prefer
-> editing the manifest, or make sure whoever re-applies the overlay knows.
-
-Prefer applying the overlay over `kubectl apply -f wazuh/secrets/<file>`. The Secret manifests do
-declare `namespace: wazuh`, so a direct apply lands in the right namespace, but going through
-Kustomize keeps the live Secret and the overlay you deploy with in agreement.
-
-### Step 6: Restart the workloads that read the Secrets
-
-A Secret consumed with `valueFrom.secretKeyRef` is read into the environment when the container
-starts. Until the pods are restarted they keep presenting the old password:
-
-```bash
-kubectl -n wazuh rollout restart statefulset/wazuh-manager-master
-kubectl -n wazuh rollout restart statefulset/wazuh-manager-worker
-kubectl -n wazuh rollout restart deployment/wazuh-dashboard
-
-kubectl -n wazuh rollout status statefulset/wazuh-manager-master
-kubectl -n wazuh rollout status statefulset/wazuh-manager-worker
-kubectl -n wazuh rollout status deployment/wazuh-dashboard
-```
-
-The managers are restarted because they present `indexer-cred`, and the dashboard because it presents
-`dashboard-cred` and `wazuh-api-cred`. The indexer pods need no restart: their accounts changed in the
-security index, not in their environment.
-
-> **Note**: between step 2 and the end of step 6 the managers and the dashboard authenticate to the
-> indexer with a password that no longer works. That gap is unavoidable. Keep it short, and see the
-> warning about the manager probes under [Notes](#notes).
-
-### Step 7: Confirm
-
-```bash
-tools/tests/check-default-credentials.sh
-```
-
-Every account has to be refused with its own username as its password, on the Wazuh indexer, on the
-Wazuh API and in the user database of every manager pod. Then log into the dashboard as
-`admin` with the new password, and confirm the deployment still works end to end:
-
-```bash
-kubectl -n wazuh logs statefulset/wazuh-manager-master --tail=50
-pytest tests/k8s_pytest.py -v --deployment-type local \
-  --indexer-password 'j*YwhC.RUiJYCq4Qs10v3U3qm3keJqec'
-```
-
-## What the tool touches
-
-`password-tool.sh` changes the password of the accounts you name, on the running deployment, and
-nothing else:
-
-| | |
-| --- | --- |
-| Passwords of the accounts named | changed |
-| Passwords of every other account, including ones you created | untouched |
-| Accounts you created yourself | kept, with their roles, attributes and description |
-| Roles and role mappings | not written at all |
-| The user database inside the image | not modified |
-
-It works this way because it takes the user database from the running cluster before changing it,
-rather than uploading the one in the image.
-
-## Changing one password later
-
-The same tool, with `--user` instead of `--all`:
+### Wazuh indexer accounts
 
 ```bash
 kubectl -n wazuh exec wazuh-indexer-0 -- /password-tool.sh --user admin
-kubectl -n wazuh exec wazuh-manager-master-0 -- /password-tool.sh --user wazuh-wui
 ```
 
 To choose the password instead of having one generated, pass it on standard input:
 
 ```bash
-printf '%s\n' 'MyNewPassword.1' | \
+printf '%s\n' '<NewPassword.1>' | \
   kubectl -n wazuh exec -i wazuh-indexer-0 -- /password-tool.sh --user admin --stdin
 ```
 
-A password must be 8 to 64 characters and contain an upper case letter, a lower case letter, a digit
-and one of `.*+?-`. The Wazuh API rejects anything else.
+A password must be 12 to 64 characters and contain an upper case letter, a lower case letter, a digit
+and one of `. , _ + : @ % ^ = ~ -`.
 
-If the account you changed has a Secret, repeat steps 5 and 6 for that Secret and the workloads that
-present it. Changing `admin`, `wazuh-admin`, `wazuh-readonly`, `wazuh-demo` or `wazuh` takes effect
-immediately and needs no Secret update and no restart. A Wazuh API account has to be changed on the
-manager master, which is the node that serves the API.
+Any indexer pod works: the change is written to the security index, shared by the whole indexer
+cluster, so `admin` takes effect immediately. `kibanaserver` and `wazuh-manager` are also consumed by
+another workload (the dashboard and the managers respectively) — after changing either, update
+`wazuh/config/credentials/{dashboard,manager}.env` with the same value, re-apply the overlay, and
+restart the pods that consume it (see [Step 3](#step-3-restart-the-workloads-that-consume-it) below),
+or the deployment splits: the indexer accepts the new password, the workload keeps presenting the old
+one.
+
+### Wazuh API accounts
+
+Has to run on the manager master, the only node whose `rbac.db` is live:
+
+```bash
+kubectl -n wazuh exec wazuh-manager-master-0 -- /password-tool.sh --user wazuh-wui
+```
+
+`wazuh-wui` is also consumed by the dashboard — the same "update the `.env`, re-apply, restart" gap
+as `kibanaserver`/`wazuh-manager` above applies here too.
+
+### Step 3: restart the workloads that consume it
+
+A Secret consumed with `valueFrom.secretKeyRef` is read into the environment when the container
+starts. Until the pods are restarted they keep presenting the old password:
+
+```bash
+kubectl apply -k envs/local-env/   # or envs/eks/
+kubectl -n wazuh rollout restart statefulset/wazuh-manager-master
+kubectl -n wazuh rollout restart statefulset/wazuh-manager-worker
+kubectl -n wazuh rollout restart deployment/wazuh-dashboard
+kubectl -n wazuh rollout status statefulset/wazuh-manager-master
+kubectl -n wazuh rollout status statefulset/wazuh-manager-worker
+kubectl -n wazuh rollout status deployment/wazuh-dashboard
+```
+
+The indexer pods need no restart for their own accounts changing: that happened in the security
+index, not in their environment.
+
+> **Note**: between changing the password and finishing the restart above, the consuming workload
+> authenticates with a value that no longer works. That gap is unavoidable. Keep it short, and see
+> the warning about the manager probes under [Notes](#notes).
 
 ## The cluster key and the agent enrollment password
 
 `wazuh-cluster-key` and `wazuh-authd-pass` work differently from every account above. They are not
 rows in a database inside an image: the managers take them from the Secret on **every container
 start**, `WAZUH_CLUSTER_KEY` into `<cluster><key>` of `/var/wazuh-manager/etc/wazuh-manager.conf` and
-`authd.pass` into the file `/var/wazuh-manager/etc/authd.pass`. So `password-tool.sh` has nothing to
-do with them, and changing one is a matter of editing the manifest and restarting the managers.
+`authd.pass` into the file `/var/wazuh-manager/etc/authd.pass`. `password-tool.sh` has nothing to do
+with them; changing one is a matter of editing the manifest and restarting the managers.
 
 | Secret | Key | Default value | Read by | What it protects |
 | --- | --- | --- | --- | --- |
@@ -316,21 +177,19 @@ do with them, and changing one is a matter of editing the manifest and restartin
 
 ### Set them before the first deployment
 
-**These two belong in the installation, not in the first-deployment rotation above.** They are the one
-part of this page that is better done before `kubectl apply -k` than after the pods come up:
+**These two belong in the installation, alongside `credentials-conf.sh`, not after the pods come
+up.**
 
-- Nothing has to be running. The values come from the manifests, so there is no tool to exec into a
-  pod for and no chicken-and-egg with the deployment being up.
+- Nothing has to be running: the values come from the manifests, not from a database inside a pod.
 - **Changing the cluster key on a running deployment interrupts the cluster.** Every manager node has
   to carry the same key, and a restart that does not cover all of them at once leaves workers on the
   old key while the master is already on the new one; they cannot sync until each pod has restarted.
 - The default enrollment password is the string `password`, and it is what stands between port `1517`
   and an unwanted registration. A deployment that is reachable before you get to it has been
   reachable with a documented password.
-- Nothing is lost by doing it up front. Neither value survives on its own in a persistent volume:
-  both are rewritten from the Secret at every container start, which is also why **deleting the
-  PersistentVolumeClaims does not return them to the defaults**, unlike the indexer and Wazuh API
-  passwords.
+- Neither value survives on its own in a persistent volume: both are rewritten from the Secret at
+  every container start, which is also why **deleting the PersistentVolumeClaims does not return
+  them to a default**, unlike the accounts above.
 
 The step is in Installation, placed before the deployment is applied, in both guides:
 [EKS](getting-started/installation.md#step-332-set-the-cluster-key-and-the-agent-enrollment-password)
@@ -374,7 +233,9 @@ variable.
 
 #### The cluster key
 
-The key has to be exactly 32 alphanumeric characters, as the shipped placeholder is. `openssl rand -hex 16` produces exactly that; any other length or character makes the managers refuse to start:
+The key has to be exactly 32 alphanumeric characters, as the shipped placeholder is.
+`openssl rand -hex 16` produces exactly that; any other length or character makes the managers refuse
+to start:
 
 ```bash
 openssl rand -hex 16
@@ -413,29 +274,25 @@ for if a pod comes back `Ready` but never syncs — the manager probes do not de
 
 ## Multi-node deployments and scaling
 
-**The indexer accounts are cluster-wide.** Run the tool on any indexer pod and the change reaches
-every replica, because it is written to the shared security index.
+**The indexer accounts are cluster-wide.** A change reaches every replica, because it is written to
+the shared security index.
 
 **The Wazuh API accounts are not.** Each manager pod keeps its own `rbac.db` on its own persistent
-volume and the cluster does not synchronize them. In the topology these manifests deploy that costs
-nothing, because only the master serves the API: change the accounts there and the deployment is
-rotated.
+volume and the cluster does not synchronize it. In the topology these manifests deploy that costs
+nothing, because only the master serves the API.
 
-> **Important**: scaling the manager workers up later brings up a pod with a fresh persistent volume
-> whose API user database is seeded from the image, defaults included. Those defaults authenticate
-> nothing while the pod is a worker, but they are worth clearing with step 4 after
-> `kubectl -n wazuh scale statefulset wazuh-manager-worker --replicas=<n>`. If you ever change the
-> topology so that another pod serves the Wazuh API, its own database becomes live and step 4 stops
-> being optional for it.
+> **Important**: a freshly scaled-up worker seeds no `rbac.db` at all — see the note under
+> [Wazuh manager](#wazuh-manager). If you later change the topology so this pod serves the API
+> instead of the master, promoting it seeds its database from `config/credentials/manager.env` at
+> that point; only then does step-by-step reconciliation of its `rbac.db` become relevant.
 
 ## Effect on the integration test suite
 
-`tests/k8s_pytest.py` authenticates to the indexer as `admin`. It defaults to the shipped
-password, so after rotating you have to pass the new one:
+`tests/k8s_pytest.py` authenticates to the indexer as `admin`. Pass the generated password:
 
 ```bash
 pytest tests/k8s_pytest.py -v --deployment-type local \
-  --indexer-user admin --indexer-password '<the new admin password>'
+  --indexer-user admin --indexer-password "$(grep '^WAZUH_INDEXER_ADMIN_PASSWORD=' wazuh/config/credentials/indexer.env | cut -d= -f2-)"
 ```
 
 See [How to run the tests](../dev/run-tests.md).
@@ -446,27 +303,11 @@ See [How to run the tests](../dev/run-tests.md).
 tools/tests/check-default-credentials.sh
 ```
 
-It asserts that the indexer carries none of the OpenSearch demo accounts and that no Wazuh indexer or
-Wazuh API account authenticates with its own username as its password. **A deployment that has not
-been through the procedure above fails this check**, which is what it is for.
-
-```console
-$ tools/tests/check-default-credentials.sh
-
-The Wazuh indexer image
-  ok    wazuh-indexer-0 does not ship the OpenSearch demo account 'anomalyadmin'
-  ...
-
-Wazuh indexer accounts (wazuh-indexer-0)
-  ok    admin is refused with 'admin' as its password (HTTP 401)
-  ...
-
-Wazuh API accounts (wazuh-manager-master-0)
-  ok    wazuh is refused with 'wazuh' as its password (HTTP 401)
-  ok    wazuh-wui is refused with 'wazuh-wui' as its password (HTTP 401)
-
-18 checks, all passed.
-```
+It asserts that the indexer carries none of the OpenSearch demo accounts and that every account
+authenticates with its generated password rather than with its own username. **A deployment that
+skipped `credentials-conf.sh` before its first start refuses to start at all**, so this check is
+about confirming resolution succeeded and stayed consistent, not about catching a shipped default —
+there no longer is one.
 
 It authenticates from inside the pods, so it needs neither port-forwarding nor any published port.
 Pass `-n` for a different namespace, `-i` and `-m` to name the indexer and manager pods explicitly.
@@ -474,12 +315,14 @@ Pass `-n` for a different namespace, `-i` and `-m` to name the indexer and manag
 ## Notes
 
 - The passwords live in the security index of the indexer and in the `rbac.db` of each manager pod,
-  both on persistent volumes. **Deleting those PersistentVolumeClaims returns the deployment to the
-  defaults**, and the procedure has to be repeated. On the `eks` overlay the StorageClass uses
-  `reclaimPolicy: Retain`, so the underlying volumes survive a `kubectl delete -k`, but the local
-  overlay may not.
-- `password-tool.sh` writes no file and keeps no copy. A password that is lost is replaced, not
-  recovered: run the tool again for that account.
+  both on persistent volumes. **Deleting those PersistentVolumeClaims makes the pod resolve its
+  credentials again from the still-present Secret** — the same value as before, not a shipped
+  default, since nothing generated at build time survives inside the image to fall back to. Deleting
+  the Secret too (or the whole `config/credentials/` directory before it is recreated) is what would
+  force brand-new values on the next `credentials-conf.sh` run.
+- `password-tool.sh` writes no file on its own and keeps no copy of what it prints; the copy that
+  matters afterwards is what you write into `config/credentials/*.env`. A password that is lost
+  without having been recorded there is replaced, not recovered: run the tool again for that account.
 - **The manager probes do not detect a credential mismatch.** `startupProbe`, `readinessProbe` and
   `livenessProbe` on the manager pods run `wazuh-manager-control status`, which reports on local
   daemons and never contacts the indexer. A manager that cannot authenticate stays `Ready` while
@@ -490,7 +333,7 @@ Pass `-n` for a different namespace, `-i` and `-m` to name the indexer and manag
   to change them.
 - `/securityadmin.sh` on its own is a different thing. With no arguments it uploads the whole security
   configuration of the image, replacing the one the cluster is running: every internal user that is
-  not in the image is deleted, custom role mappings are reverted, and every password returns to the
-  default of the image. Use it only when that is what you want.
+  not in the image is deleted, custom role mappings are reverted, and every password returns to
+  whatever `internal_users.yml` currently holds on that node. Use it only when that is what you want.
 - For production, consider an external secret manager integrated with Kubernetes instead of the
-  committed Secret manifests. See [Security](security.md).
+  generated `config/credentials/` files. See [Security](security.md).

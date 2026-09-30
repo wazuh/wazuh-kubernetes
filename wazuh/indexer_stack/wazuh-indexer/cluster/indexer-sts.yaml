@@ -97,6 +97,21 @@ spec:
               value: "true"
             - name: NODES_DN
               value: CN=indexer,OU=Wazuh,O=Wazuh,L=California,C=US
+            - name: WAZUH_INDEXER_ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: indexer-credentials
+                  key: WAZUH_INDEXER_ADMIN_PASSWORD
+            - name: WAZUH_INDEXER_KIBANASERVER_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: indexer-credentials
+                  key: WAZUH_INDEXER_KIBANASERVER_PASSWORD
+            - name: WAZUH_INDEXER_MANAGER_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: indexer-credentials
+                  key: WAZUH_INDEXER_MANAGER_PASSWORD
             - name: OPENSEARCH_JAVA_OPTS
               value: '-Xms1g -Xmx1g -Dlog4j2.formatMsgNoLookups=true'
             - name: DISCOVERY_SERVICE
@@ -106,8 +121,6 @@ spec:
                 fieldRef:
                   fieldPath: metadata.namespace
           securityContext:
-            runAsUser: 101
-            runAsGroup: 101
             capabilities:
               add: ["SYS_CHROOT"]
           volumeMounts:

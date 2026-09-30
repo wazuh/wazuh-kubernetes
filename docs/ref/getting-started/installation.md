@@ -311,6 +311,21 @@ secretGenerator:
       - config/root-ca/certs/root-ca.pem
 ```
 
+**3.2.4 Run the credentials generator**:
+
+Every Wazuh component now generates or validates its own credentials at install time and refuses to
+start without them. Generate the five passwords before the first `kubectl apply -k`, the same way as
+the certificates above — needs `wazuh-credentials.sh` next to `wazuh-certs-tool.sh`, in the same
+version:
+
+```bash
+sudo bash ../tools/utils/deployment/credentials-conf.sh
+```
+
+It writes `config/credentials/{indexer,manager,dashboard}.env`, which `wazuh/kustomization.yml`'s
+`secretGenerator` turns into Secrets the pods read. **It never overwrites an existing file**: once a
+deployment has started, the passwords it was given are the ones that count.
+
 Return to the root of the repository for the steps that follow:
 
 ```bash
@@ -401,21 +416,21 @@ By using the kustomization file on the `eks` variant we can now deploy the whole
 kubectl apply -k envs/eks/
 ```
 
-#### Step 3.4: Change the default passwords
+#### Step 3.4: First access
 
-**Do this before anything else reaches the deployment.** Every Wazuh indexer and Wazuh API account starts with its own username as its password, `admin` among them, and `admin` holds full control of the indexer and produces a Wazuh API administrator session in the dashboard.
-
-Wait for every pod to be `Ready`, then change them:
+Wait for every pod to be `Ready`:
 
 ```bash
 kubectl -n wazuh wait --for=condition=Ready pod --all --timeout=600s
-kubectl -n wazuh exec wazuh-indexer-0 -- /password-tool.sh --all
-kubectl -n wazuh exec wazuh-manager-master-0 -- /password-tool.sh --all
 ```
 
-Each command prints the new passwords once and stores nothing, so copy the output somewhere safe. Three of them have to be written into the Secrets under `wazuh/secrets/` and the workloads restarted, and the Wazuh API passwords have to be set on every worker pod as well.
+Log in to the Wazuh dashboard as `admin`. Read its generated password with:
 
-The full procedure, including those steps and how to verify the result, is in [Credentials](../credentials.md).
+```bash
+grep '^WAZUH_INDEXER_ADMIN_PASSWORD=' wazuh/config/credentials/indexer.env | cut -d= -f2-
+```
+
+See [Credentials](../credentials.md) for the full list of accounts, and how to rotate one on a deployment that is already running.
 
 #### Conclusion
 
@@ -530,6 +545,16 @@ Run `wazuh-certs-tool.sh` to create the certificates.
 
 ```bash
 sudo bash ../tools/utils/deployment/certificates-conf.sh --cert --copy --priv
+```
+
+#### Run the credentials generator
+
+Every Wazuh component now generates or validates its own credentials at install time and refuses to
+start without them. Generate the five passwords before the first `kubectl apply -k` — needs
+`wazuh-credentials.sh` next to `wazuh-certs-tool.sh`, in the same version:
+
+```bash
+sudo bash ../tools/utils/deployment/credentials-conf.sh
 ```
 
 Return to the root of the repository.
@@ -697,21 +722,21 @@ By using the kustomization file on the `local-env` variant we can now deploy the
 kubectl apply -k envs/local-env/
 ```
 
-#### Change the default passwords
+#### First access
 
-**Do this before anything else reaches the deployment.** Every Wazuh indexer and Wazuh API account starts with its own username as its password, `admin` among them, and `admin` holds full control of the indexer and produces a Wazuh API administrator session in the dashboard.
-
-Wait for every pod to be `Ready`, then change them:
+Wait for every pod to be `Ready`:
 
 ```bash
 kubectl -n wazuh wait --for=condition=Ready pod --all --timeout=600s
-kubectl -n wazuh exec wazuh-indexer-0 -- /password-tool.sh --all
-kubectl -n wazuh exec wazuh-manager-master-0 -- /password-tool.sh --all
 ```
 
-Each command prints the new passwords once and stores nothing, so copy the output somewhere safe. Three of them have to be written into the Secrets under `wazuh/secrets/` and the workloads restarted, and the Wazuh API passwords have to be set on every worker pod as well.
+Log in to the Wazuh dashboard as `admin`. Read its generated password with:
 
-The full procedure, including those steps and how to verify the result, is in [Credentials](../credentials.md).
+```bash
+grep '^WAZUH_INDEXER_ADMIN_PASSWORD=' wazuh/config/credentials/indexer.env | cut -d= -f2-
+```
+
+See [Credentials](../credentials.md) for the full list of accounts, and how to rotate one on a deployment that is already running.
 
 ##### Accessing Dashboard
 

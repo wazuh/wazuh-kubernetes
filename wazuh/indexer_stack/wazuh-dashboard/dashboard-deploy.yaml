@@ -34,8 +34,6 @@ spec:
             secretName: dashboard-certs
       securityContext:
         fsGroup: 101
-        runAsUser: 101
-        runAsGroup: 101
       initContainers:
         - name: init-dashboard-config
           image: 'wazuh/wazuh-dashboard:5.0.0'
@@ -107,15 +105,12 @@ spec:
             - name: OPENSEARCH_HOSTS
               value: 'https://wazuh-indexer:9200'
             - name: DASHBOARD_USERNAME
-              valueFrom:
-                secretKeyRef:
-                  name: dashboard-cred
-                  key: username
+              value: 'kibanaserver'
             - name: DASHBOARD_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: dashboard-cred
-                  key: password
+                  name: dashboard-credentials
+                  key: WAZUH_INDEXER_KIBANASERVER_PASSWORD
             - name: SERVER_SSL_ENABLED
               value: "true"
             - name: SERVER_SSL_CERTIFICATE
@@ -127,12 +122,9 @@ spec:
             - name: WAZUH_API_URL
               value: https://wazuh-api
             - name: API_USERNAME
-              valueFrom:
-                secretKeyRef:
-                  name: wazuh-api-cred
-                  key: username
+              value: 'wazuh-wui'
             - name: API_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: wazuh-api-cred
-                  key: password
+                  name: dashboard-credentials
+                  key: WAZUH_MANAGER_WUI_PASSWORD
