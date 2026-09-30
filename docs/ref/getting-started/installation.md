@@ -469,10 +469,10 @@ To deploy the `local-env` variant the Kubernetes cluster should have at least th
 
 **Note**:
 
-If you are using Minikube, make sure to start the cluster with Calico CNI:
+If you are using Minikube, make sure Docker Desktop has at least 6 GiB of memory allocated (Docker Desktop -> Settings -> Resources), then start the cluster with Calico CNI:
 
 ```bash
-minikube start --memory=8192 --cpus=4 --network-plugin=cni --cni=calico
+minikube start --memory=6144 --cpus=4 --network-plugin=cni --cni=calico
 ```
 
 You will also have to load the docker images used by Wazuh into Minikube:
