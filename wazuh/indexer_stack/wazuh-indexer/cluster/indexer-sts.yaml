@@ -26,6 +26,8 @@ spec:
         app: wazuh-indexer
       name: wazuh-indexer
     spec:
+      # No workload talks to the Kubernetes API.
+      automountServiceAccountToken: false
       securityContext:
         fsGroup: 101
       # Set the wazuh-indexer volume permissions so the wazuh-indexer user can use it
@@ -51,6 +53,11 @@ spec:
             - /bin/sh
             - -c
             - 'umask 077 && cp /credentials-secret/wazuh-credentials /run/secrets/wazuh-credentials && chmod 0400 /run/secrets/wazuh-credentials'
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
           resources:
             requests:
               cpu: 50m

@@ -8,7 +8,7 @@ This section provides practical recommendations to improve performance for Wazuh
 - **Wazuh Manager** load grows with the number of connected agents and event throughput.
 - **Wazuh Dashboard** mainly affects interactive usage and depends on Indexer and Manager responsiveness.
 
-For baseline resource sizing and prerequisites, see [Requirements](../requirements.md).
+For baseline resource sizing and prerequisites, see [Requirements](getting-started/requirements.md).
 
 ## Storage and persistent volumes
 
@@ -84,6 +84,7 @@ After editing, apply the changes with `kubectl apply -k envs/<environment>/`.
   - Indexing throughput (parallel processing)
   - Resilience (data replication across nodes)
 - Update `discovery.seed_hosts` in the indexer StatefulSet (`wazuh/indexer_stack/wazuh-indexer/cluster/indexer-sts.yaml`) when adding nodes.
+- Also add the new pods to `WAZUH_INDEXER_HOSTS` of both manager StatefulSets, and their two `dns` entries (`wazuh-indexer-<n>.wazuh-indexer` and `wazuh-indexer-<n>.wazuh-indexer.wazuh.svc.cluster.local`) to the `indexer` node of `config.yml`, then issue the certificates again: the indexer nodes verify each other's certificate against those names.
 - Apply changes with `kubectl apply -k envs/<environment>/` and monitor cluster health and performance.
 
 ## Wazuh Manager

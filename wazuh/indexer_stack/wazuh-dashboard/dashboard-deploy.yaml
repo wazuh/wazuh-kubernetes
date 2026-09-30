@@ -25,6 +25,8 @@ spec:
         app: wazuh-dashboard
       name: wazuh-dashboard
     spec:
+      # No workload talks to the Kubernetes API.
+      automountServiceAccountToken: false
       volumes:
         # The Secret gets the pod's fsGroup and group read, so the service user
         # could read it: an init container copies it to a root-only file.
@@ -51,6 +53,11 @@ spec:
             - /bin/sh
             - -c
             - 'umask 077 && cp /credentials-secret/wazuh-credentials /run/secrets/wazuh-credentials && chmod 0400 /run/secrets/wazuh-credentials'
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
           resources:
             requests:
               cpu: 50m

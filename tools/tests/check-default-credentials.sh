@@ -133,20 +133,25 @@ fi
  
 # Authenticates from inside the indexer pod, so the check does not need port
 # 9200 to be reachable from outside the cluster, and cannot be made to pass by
-# exposing it.
+# exposing it. The credentials reach curl on stdin (-K -), never as arguments,
+# so they are not in the process list of this host or of the pod.
+curl_user() {
+  printf 'user = "%s:%s"\n' "$1" "$2"
+}
+
 indexer_auth_code() {
-  kubectl -n "${NAMESPACE}" exec "${INDEXER_POD}" -- \
-    curl -sk -o /dev/null -w '%{http_code}' --max-time 15 \
-    -u "$1:$2" 'https://localhost:9200/_plugins/_security/authinfo' 2>/dev/null
+  curl_user "$1" "$2" | kubectl -n "${NAMESPACE}" exec -i "${INDEXER_POD}" -- \
+    curl -sk -K - -o /dev/null -w '%{http_code}' --max-time 15 \
+    'https://localhost:9200/_plugins/_security/authinfo' 2>/dev/null
 }
  
 # POST, which is the method the endpoint accepts: a GET answers 405 whatever the
 # credentials are, and a check that cannot tell a good password from a bad one is
 # worse than no check.
 api_auth_code() {
-  kubectl -n "${NAMESPACE}" exec "${MANAGER_POD}" -- \
-    curl -sk -o /dev/null -w '%{http_code}' --max-time 15 -X POST \
-    -u "$1:$2" 'https://localhost:55000/security/user/authenticate' 2>/dev/null
+  curl_user "$1" "$2" | kubectl -n "${NAMESPACE}" exec -i "${MANAGER_POD}" -- \
+    curl -sk -K - -o /dev/null -w '%{http_code}' --max-time 15 -X POST \
+    'https://localhost:55000/security/user/authenticate' 2>/dev/null
 }
  
 # Retries a 429: rate limiting says nothing about the password.

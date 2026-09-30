@@ -13,7 +13,7 @@ keystore, the dashboard in its keystore. From then on, the stored values are the
 - [How the passwords reach the pods](#how-the-passwords-reach-the-pods)
 - [The accounts](#the-accounts)
 - [Rotating a password on a running deployment](#rotating-a-password-on-a-running-deployment)
-- [The cluster key and the legacy enrollment password](#the-cluster-key-and-the-legacy-enrollment-password)
+- [The cluster key and the agent enrollment password](#the-cluster-key-and-the-agent-enrollment-password)
 - [Multi-node deployments and scaling](#multi-node-deployments-and-scaling)
 - [Effect on the integration test suite](#effect-on-the-integration-test-suite)
 - [Checking that no default is left](#checking-that-no-default-is-left)
@@ -22,10 +22,12 @@ keystore, the dashboard in its keystore. From then on, the stored values are the
 ## Creating the credentials
 
 Run it from the `wazuh/` directory, after the certificates and before the first deployment. It
-needs `wazuh-credentials.sh` next to `wazuh-certs-tool.sh`, in the same version as the images:
+sources the Wazuh credentials library, `wazuh-credentials.sh`, from the same directory
+(`WAZUH_CREDENTIALS_LIB` overrides the path). Download it in the same version as the images:
 
 ```bash
 cd wazuh
+curl -so wazuh-credentials.sh https://raw.githubusercontent.com/wazuh/wazuh-installation-assistant/5.0.0/credentials_lib/wazuh-credentials.sh
 sudo bash ../tools/utils/deployment/certificates-conf.sh --cert --copy --priv
 sudo bash ../tools/utils/deployment/credentials-conf.sh
 cd ..
@@ -33,7 +35,9 @@ kubectl apply -k envs/eks/   # or envs/local-env/
 ```
 
 It writes `wazuh/config/credentials/{indexer,manager,dashboard}.env`, one file per component holding
-only the keys that component needs.
+only the keys that component needs. Keep them for the whole life of the deployment: every
+`kubectl apply -k` and `kubectl delete -k` reads them, and the indexer takes its passwords from them
+again every time one of its pods is recreated.
 
 - **Why `sudo`:** `certificates-conf.sh` creates `config/` as root. The files are still given to the
   user who ran `sudo`, with `0700` on the directory and `0600` on each file, so `kubectl apply -k` can
@@ -69,6 +73,14 @@ Log into the dashboard as `admin` with that value.
 | `manager-credentials` | `config/credentials/manager.env` | `wazuh-manager-master`, `wazuh-manager-worker` |
 | `dashboard-credentials` | `config/credentials/dashboard.env` | `wazuh-dashboard` |
 
+kustomize appends a hash of the content to each name (`indexer-credentials-<hash>`), so a changed file
+produces a new Secret and rolls the workloads that mount it. The three carry the label
+`app.kubernetes.io/component=credentials`:
+
+```bash
+kubectl -n wazuh get secrets -l app.kubernetes.io/component=credentials
+```
+
 A volume of a Secret takes the pod's `fsGroup`, which is the service user's group, and group read. So
 the Secret is mounted only in an init container, `install-credentials`, which copies it to
 `/run/secrets/wazuh-credentials` in a memory `emptyDir`, as a root-only file. The container mounts that
@@ -94,6 +106,16 @@ credentials: create the deployment credentials with tools/utils/deployment/crede
 Fix `wazuh/config/credentials/<file>.env` and apply the overlay again: the Secret gets a new name, so
 the workloads that read it are recreated with the fixed file.
 
+If one of the files is missing, `kubectl apply -k` (and `kubectl delete -k`) stops before sending
+anything to the cluster:
+
+```text
+error: accumulating resources: ... loading KV pairs: file sources: [wazuh-credentials=config/credentials/indexer.env]: evalsymlink failure on '.../wazuh/config/credentials/indexer.env' : lstat .../wazuh/config/credentials: no such file or directory
+```
+
+Run `credentials-conf.sh` for a new deployment, or restore the files from your backup for an existing
+one: new values would not match the ones the components stored.
+
 ## The accounts
 
 | Account | Key | In | Used by |
@@ -106,8 +128,10 @@ the workloads that read it are recreated with the fixed file.
 
 The first three live in the indexer's security index and are cluster-wide. The last two live in the
 Wazuh API user database, `rbac.db`, which only the manager master has: the Wazuh API runs on the
-master, and a worker does not create one. A worker still receives the whole `manager.env`: if it is
-promoted to master, it creates its database from it.
+master, and a worker does not create one. A worker still receives the whole `manager.env`, and needs
+it: the manager image requires `WAZUH_MANAGER_API_PASSWORD` and `WAZUH_MANAGER_WUI_PASSWORD` on
+every start while there is no `rbac.db`, which on a worker is always. If the worker is promoted to
+master, it creates its database from them.
 
 The OpenSearch demo accounts (`anomalyadmin`, `kibanaro`, `logstash`, `readall`,
 `snapshotrestore`) are removed from the indexer image when it is built. They do not exist in the
@@ -116,7 +140,13 @@ deployment.
 ## Rotating a password on a running deployment
 
 **Editing a value in `wazuh/config/credentials/*.env` after the first start changes nothing.** The
-components keep the values they stored. Use `password-tool.sh` instead: it changes the account on the
+components keep the values they stored. The pods roll, and the dashboard and the managers log that
+they ignore the new value:
+
+```text
+resolve-credentials: opensearch.password is already in the keystore; WAZUH_INDEXER_KIBANASERVER_PASSWORD is ignored
+```
+ Use `password-tool.sh` instead: it changes the account on the
 running deployment and prints the new password and the commands that apply it to the rest of the
 deployment. The printed commands are written for Docker Compose. On Kubernetes, run the equivalents
 below, from the root of the repository.
@@ -174,10 +204,25 @@ sed -i "s|^${KEY}=.*|${KEY}=${NEW}|" wazuh/config/credentials/*.env
 kubectl apply -k envs/eks/   # or envs/local-env/
 ```
 
-The files are the deployment's record of its passwords: a pod whose volume is lost, or a new replica,
-takes its credentials from them. Applying the overlay regenerates the Secrets whose file changed, and
-the workloads that mount them are recreated, which is also what makes the dashboard and the managers
-load the new keystore value.
+The files are the deployment's record of its passwords: a pod whose volume is lost, a new replica,
+and every recreated indexer pod take their credentials from them. Applying the overlay regenerates
+the Secrets whose file changed, and the workloads that mount them are recreated, which is also what
+makes the dashboard and the managers load the new keystore value.
+
+Skipping the keystore step leaves the consumer on the old value. The dashboard, for example, answers
+`503` while its pod stays `Ready`.
+
+The previous Secrets stay in the namespace, with the old values. Once the workloads run on the new
+ones, delete those that no workload references:
+
+```bash
+used=$(kubectl -n wazuh get deploy,sts -o jsonpath='{..secretName}' | tr ' ' '\n' | sort -u)
+for secret in $(kubectl -n wazuh get secrets -l app.kubernetes.io/component=credentials -o name); do
+  echo "$used" | grep -qx "${secret#secret/}" || kubectl -n wazuh delete "$secret"
+done
+```
+
+A `kubectl rollout undo` of the dashboard to a revision whose Secret was deleted cannot start its pod.
 
 > **Note**: between changing the password and the consuming workload being recreated, that workload
 > authenticates with a value that no longer works. Keep the gap short, and see the warning about the
@@ -186,7 +231,7 @@ load the new keystore value.
 The manager tool refuses to run on a worker, which has no Wazuh API user database, and before the
 master's first start.
 
-## The cluster key and the legacy enrollment password
+## The cluster key and the agent enrollment password
 
 `wazuh-cluster-key` and `wazuh-authd-pass` are not accounts and `credentials-conf.sh` does not create
 them. They are Secret manifests under `wazuh/secrets/`, and the managers take them on **every
@@ -197,7 +242,7 @@ container start**: `WAZUH_CLUSTER_KEY` into `<cluster><key>` of
 | Secret | Key | Shipped value | Read by | What it protects |
 | --- | --- | --- | --- | --- |
 | `wazuh-cluster-key` | `key` | `REPLACETHISCLUSTERKEYBEFOREDEPLO` (placeholder) | `wazuh-manager-master`, `wazuh-manager-worker` | Membership of the Wazuh manager cluster on port `1516`. A node whose key does not match the master's cannot join it. |
-| `wazuh-authd-pass` | `authd.pass` | `password` | `wazuh-manager-master`, `wazuh-manager-worker` | The legacy `authd` enrollment on port `1515`, used by Wazuh 4.x agents. Wazuh 5.x agents enroll on port `1517` with a token minted through the Wazuh API, and do not use it. |
+| `wazuh-authd-pass` | `authd.pass` | `password` | `wazuh-manager-master`, `wazuh-manager-worker` | Agent enrollment with a password: Password-mode enrollment of Wazuh 5.x agents on port `1517`, and the legacy `authd` enrollment of 4.x agents on port `1515`. Token-mode enrollment on `1517` uses tokens minted through the Wazuh API instead. |
 
 ### Set them before the first deployment
 
@@ -205,15 +250,15 @@ container start**: `WAZUH_CLUSTER_KEY` into `<cluster><key>` of
 - **Changing the cluster key on a running deployment interrupts the cluster.** Every manager node has
   to carry the same key, and a restart that does not cover all of them at once leaves workers on the
   old key while the master is already on the new one.
-- The shipped enrollment password is the string `password`. Replace it if 4.x agents enroll through
-  `1515`.
+- The shipped enrollment password is the string `password`. Replace it before the first deployment:
+  it is the password of Password-mode enrollment on `1517` as well as of the legacy `1515`.
 - Neither value survives on its own in a persistent volume: both are rewritten from the Secret at
   every container start, which is also why **deleting the PersistentVolumeClaims does not return them
   to a default**.
 
 The step is in Installation, before the deployment is applied, in both guides:
-[EKS](getting-started/installation.md#step-332-set-the-cluster-key-and-the-legacy-enrollment-password)
-and [local](getting-started/installation.md#set-the-cluster-key-and-the-legacy-enrollment-password).
+[EKS](getting-started/installation.md#step-332-set-the-cluster-key-and-the-agent-enrollment-password)
+and [local](getting-started/installation.md#set-the-cluster-key-and-the-agent-enrollment-password).
 
 ### Changing them on a deployment that is already running
 
@@ -221,7 +266,7 @@ Both follow the same shape: edit the manifest, apply the overlay, restart the ma
 reaches a running pod on its own: the cluster key is read into the environment when the container
 starts, and `authd.pass` is a `subPath` mount, which Kubernetes never refreshes in place.
 
-#### The legacy enrollment password
+#### The agent enrollment password
 
 Encode the new password without a trailing newline:
 
@@ -239,7 +284,8 @@ kubectl -n wazuh rollout status statefulset/wazuh-manager-worker
 ```
 
 Agents that are already enrolled keep working: they authenticate with the key in `client.keys`. Only
-4.x agents that enroll from this point on have to present the new password.
+agents that enroll from this point on with a password (5.x on `1517`, 4.x on `1515`) have to present
+the new one.
 
 #### The cluster key
 
@@ -285,35 +331,45 @@ kubectl -n wazuh logs statefulset/wazuh-manager-worker --tail=50 | grep -i clust
 
 ## Effect on the integration test suite
 
-`tests/k8s_pytest.py` authenticates to the indexer as `admin`. Pass the generated password:
+`tests/k8s_pytest.py` authenticates to the indexer as `admin`, with the password it reads from
+`wazuh/config/credentials/indexer.env`. Pass `--indexer-password` to use another value, for example
+from a machine that does not have the files:
 
 ```bash
-pytest tests/k8s_pytest.py -v --deployment-type local \
-  --indexer-user admin --indexer-password "$(grep '^WAZUH_INDEXER_ADMIN_PASSWORD=' wazuh/config/credentials/indexer.env | cut -d= -f2-)"
+pytest tests/k8s_pytest.py -v --deployment-type local
 ```
 
 See [How to run the tests](../dev/run-tests.md).
 
 ## Checking that no default is left
 
+Run it from the `wazuh/` directory, where it finds `config/credentials/`:
+
 ```bash
-tools/tests/check-default-credentials.sh
+cd wazuh
+../tools/tests/check-default-credentials.sh
+cd ..
 ```
 
-It asserts that the indexer carries none of the OpenSearch demo accounts and that no account
-authenticates with its own username as its password. It authenticates from inside the pods, so it
-needs neither port-forwarding nor any published port. Pass `-n` for a different namespace, `-i` and
-`-m` to name the indexer and manager pods explicitly.
+It reads the generated passwords from `config/credentials/` and checks, from inside the pods, that
+every account (`admin`, `kibanaserver`, `wazuh-manager`, `wazuh`, `wazuh-wui`) authenticates with its
+generated password and none with its own username, that the indexer carries none of the OpenSearch
+demo accounts, and that only the master holds a Wazuh API user database. The credentials reach `curl`
+on standard input, never as arguments. It needs neither port-forwarding nor any published port. Pass
+`-n` for a different namespace, `-i` and `-m` to name the indexer and manager pods, and `-c` for
+another credentials directory.
 
 ## Notes
 
 - `wazuh/config/credentials/*.env` is the record of the deployment's passwords, in clear text. It is
   in `.gitignore`: keep it out of your commits, back it up with the certificates, and restrict access
   to it.
-- The passwords are stored in the security index of the indexer and in the `rbac.db` and keystore of
-  the managers, and in the dashboard keystore, all on persistent volumes. **Deleting those
-  PersistentVolumeClaims makes the pods take their credentials again from the Secrets**, which hold
-  the values of the files.
+- The passwords are stored on persistent volumes: the indexer security index (with the
+  `/var/lib/wazuh-indexer/.initialized` marker), `rbac.db` on the master, the keystore in
+  `queue/keystore` on every manager pod, and the dashboard keystore on the `wazuh-dashboard-config`
+  claim. **Deleting those PersistentVolumeClaims makes the pods take their credentials again from the
+  Secrets**, which hold the values of the files. A restore therefore has to bring back the volumes
+  and `config/credentials/*.env` from the same point in time.
 - `password-tool.sh` keeps no copy of what it prints; the copy that matters afterwards is what you
   write into `config/credentials/*.env`. A password that is lost without having been recorded there
   is replaced, not recovered: run the tool again for that account.

@@ -55,7 +55,7 @@ Needs the Wazuh credentials library as ${CREDENTIALS_LIB}
 wazuh-certs-tool.sh, in the same version as the images (see
 tools/utils/deployment/certificates-conf.sh).
 
-The files this writes are read by kustomize's secretGenerator (envs:), so
+The files this writes are read by kustomize's secretGenerator (files:), so
 kustomize must be able to read them: run this script as the same user who
 runs kubectl/kustomize, or with sudo if certificates-conf.sh's output
 directory was also created with sudo (the files are then given to the user

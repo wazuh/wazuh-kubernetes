@@ -34,12 +34,21 @@ secretGenerator:
   - name: indexer-credentials
     files:
       - wazuh-credentials=config/credentials/indexer.env
+    options:
+      labels:
+        app.kubernetes.io/component: credentials
   - name: manager-credentials
     files:
       - wazuh-credentials=config/credentials/manager.env
+    options:
+      labels:
+        app.kubernetes.io/component: credentials
   - name: dashboard-credentials
     files:
       - wazuh-credentials=config/credentials/dashboard.env
+    options:
+      labels:
+        app.kubernetes.io/component: credentials
 
 resources:
   - base/wazuh-ns.yaml
