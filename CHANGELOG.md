@@ -24,6 +24,7 @@
 
 | Issue | Comment |
 | - | - |
+| [#1660](https://github.com/wazuh/wazuh-kubernetes/issues/1660) | Adapt Kubernetes manifests to install-time credential generation |
 | [#1673](https://github.com/wazuh/wazuh-kubernetes/issues/1673) | Adapt the deployment to the HTTPS communication changes |
 | [#1636](https://github.com/wazuh/wazuh-kubernetes/issues/1636) | Agent enrollment fails on EKS because Traefik never expose port 1517 |
 | [#1612](https://github.com/wazuh/wazuh-kubernetes/pull/1612) | Adapt certificate deployment to unified manager certificate layout |
