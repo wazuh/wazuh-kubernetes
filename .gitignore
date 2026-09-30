@@ -7,6 +7,7 @@ wazuh/certs/dashboard_http/*.csr
 wazuh/certs/dashboard_http/*.srl
 wazuh/config*.yml
 wazuh/wazuh-certs-tool*.sh
+wazuh/wazuh-credentials*.sh
 wazuh/wazuh-certificates
 wazuh/wazuh-certificates/*
 wazuh/wazuh-certificates-tool.log

@@ -26,15 +26,51 @@ spec:
         app: wazuh-indexer
       name: wazuh-indexer
     spec:
+      # No workload talks to the Kubernetes API.
+      automountServiceAccountToken: false
       securityContext:
         fsGroup: 101
       # Set the wazuh-indexer volume permissions so the wazuh-indexer user can use it
       volumes:
+        # The Secret gets the pod's fsGroup and group read, so the service user
+        # could read it: an init container copies it to a root-only file.
+        - name: wazuh-credentials
+          emptyDir:
+            medium: Memory
+            sizeLimit: 1Mi
+        - name: wazuh-credentials-secret
+          secret:
+            secretName: indexer-credentials
+            defaultMode: 0400
         - name: indexer-certs
           secret:
             secretName: indexer-certs
             defaultMode: 0600
       initContainers:
+        - name: install-credentials
+          image: 'wazuh/wazuh-indexer:5.0.0'
+          command:
+            - /bin/sh
+            - -c
+            - 'umask 077 && cp /credentials-secret/wazuh-credentials /run/secrets/wazuh-credentials && chmod 0400 /run/secrets/wazuh-credentials'
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 100m
+              memory: 128Mi
+          volumeMounts:
+            - name: wazuh-credentials-secret
+              mountPath: /credentials-secret
+              readOnly: true
+            - name: wazuh-credentials
+              mountPath: /run/secrets
         - name: volume-mount-hack
           image: busybox
           resources:
@@ -106,11 +142,12 @@ spec:
                 fieldRef:
                   fieldPath: metadata.namespace
           securityContext:
-            runAsUser: 101
-            runAsGroup: 101
             capabilities:
               add: ["SYS_CHROOT"]
           volumeMounts:
+            - name: wazuh-credentials
+              mountPath: /run/secrets
+              readOnly: true
             - name: wazuh-indexer
               mountPath: /var/lib/wazuh-indexer
             - name: indexer-certs

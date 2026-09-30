@@ -13,5 +13,5 @@ Select the overlay that matches your environment and customize the files in `env
 
 For deployment steps, refer to:
 
-- EKS clusters: [Usage: AWS EKS Deployment](../installation.md#eks-deployment)
-- Local clusters: [Usage: Local Deployment](../installation.md#local-deployment)
+- EKS clusters: [Usage: AWS EKS Deployment](../getting-started/installation.md#eks-deployment)
+- Local clusters: [Usage: Local Deployment](../getting-started/installation.md#local-deployment)
