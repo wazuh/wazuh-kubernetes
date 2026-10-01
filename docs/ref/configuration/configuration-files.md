@@ -22,19 +22,19 @@ CPU, memory, and storage settings are controlled via Kustomize patches under `en
 
 - **Manager resources**:
   - EKS: `envs/eks/wazuh-master-resources.yaml` and `envs/eks/wazuh-worker-resources.yaml` configure CPU, memory, and persistent volume size for the Wazuh manager master and worker StatefulSets
-  - Local: `envs/local-env/wazuh-resources.yaml` reduces the number of Wazuh manager worker replicas
+  - Local: `envs/local-env/wazuh-resources.yaml` reduces the Wazuh manager workers to one replica. It and `envs/local-env/wazuh-master-resources.yaml` also narrow `WAZUH_INDEXER_HOSTS` of the worker and master StatefulSets to the single indexer, `wazuh-indexer-0.wazuh-indexer:9200`
 
 ## Ingress and external access
 
-External access to the Wazuh dashboard is provided through an Ingress resource
+External access to the Wazuh dashboard is provided through a Traefik `IngressRouteTCP` with TLS passthrough
 
-- The base ingress is defined in `wazuh/base/wazuh-ingress.yaml`
-- The `rules.host` field must be updated with the fully qualified domain name (FQDN) or host you will use to access the dashboard
+- The dashboard route is defined in `wazuh/base/ingressRoute-tcp-dashboard.yaml`
+- The `HostSNI(...)` match must be updated with the fully qualified domain name (FQDN) you will use to access the dashboard
 
 Typical values:
 
-- **EKS**: DNS name of the load balancer created by the ingress controller
-- **Local environment**: `localhost` or another local hostname
+- **EKS**: DNS name of the load balancer created by the Traefik Service
+- **Local environment**: leave the file empty and reach the dashboard with `kubectl port-forward`
 
 ## Network policies
 
@@ -51,24 +51,18 @@ Network policies restrict communication between pods to enforce security boundar
 
 ## Credentials and secrets
 
-Default credentials and keys are provided as Kubernetes Secrets under `wazuh/secrets/`. These values are meant to be customized before any production deployment, and the accounts behind them have to be changed inside the components as well. See [Credentials](../credentials.md) for the full procedure.
+The passwords of the Wazuh indexer and Wazuh API accounts are generated for each deployment by `tools/utils/deployment/credentials-conf.sh`, and reach the pods through the `indexer-credentials-<hash>`, `manager-credentials-<hash>` and `dashboard-credentials-<hash>` Secrets that `wazuh/kustomization.yml` generates from `wazuh/config/credentials/*.env`. See [Credentials](../credentials.md).
 
-Main secrets:
+Two more Secrets live under `wazuh/secrets/`:
 
-- `wazuh/secrets/wazuh-api-cred-secret.yaml`
-  Wazuh API `wazuh-wui` service account, read by the manager master and the dashboard.
-- `wazuh/secrets/dashboard-cred-secret.yaml`
-  Wazuh indexer `kibanaserver` service account the dashboard authenticates to the indexer with. This is not the login of the dashboard web interface.
-- `wazuh/secrets/indexer-cred-secret.yaml`
-  Wazuh indexer `wazuh-manager` service account, read by the manager master and the manager workers.
 - `wazuh/secrets/wazuh-authd-pass-secret.yaml`
-  Agent enrollment password, mounted as a file rather than an environment variable. It guards the enrollment `remoted` serves on port `1517` and the legacy `authd` port `1515`.
+  Agent enrollment password, mounted as a file: Password-mode enrollment of Wazuh 5.x agents on port `1517`, and the legacy `authd` enrollment of 4.x agents on port `1515`. Token-mode enrollment on `1517` uses tokens minted through the Wazuh API instead.
 - `wazuh/secrets/wazuh-cluster-key-secret.yaml`
   Shared key for manager cluster membership, on port `1516`.
 
 The last two are not accounts inside an image and `password-tool.sh` does not cover them: the managers read them from the Secret on every container start. **Change them before the first `kubectl apply -k`** — see [The cluster key and the agent enrollment password](../credentials.md#the-cluster-key-and-the-agent-enrollment-password), which also covers changing either one on a deployment that is already running.
 
-> **Important**: these Secrets hold what the pods *present*. The Wazuh indexer StatefulSet reads no credential Secret at all, so editing `indexer-cred` does not change the password the indexer *accepts*.
+> **Important**: each component stores its passwords on its first start. Editing `config/credentials/*.env`, or the generated Secrets, afterwards does not change the accounts: [Credentials](../credentials.md#rotating-a-password-on-a-running-deployment) has the procedure.
 
 ## Persistence configuration
 
@@ -86,12 +80,12 @@ The Wazuh deployment already uses PVCs for every directory that has to outlive a
 | Workload | Path | What it holds |
 | --- | --- | --- |
 | Manager master and worker | `/var/wazuh-manager/etc` | Configuration, `client.keys`, `authd.pass`, certificates |
-| Manager master and worker | `/var/wazuh-manager/api/configuration` | Wazuh API configuration and its user database |
+| Manager master and worker | `/var/wazuh-manager/api/configuration` | Wazuh API configuration and its user database, `rbac.db`, on the master only |
 | Manager master and worker | `/var/wazuh-manager/logs` | Manager logs |
-| Manager master and worker | `/var/wazuh-manager/queue` | Agent state, queues and the manager databases |
+| Manager master and worker | `/var/wazuh-manager/queue` | Agent state, queues, the manager databases, and the manager keystore (`queue/keystore`) with the `wazuh-manager` indexer password |
 | Manager master and worker | `/var/wazuh-manager/var/multigroups` | Generated multigroup shared configuration |
 | Manager master and worker | `/var/wazuh-manager/data` | Detection content: ruleset, IoC databases, GeoIP and time zone data |
-| Indexer | `/var/lib/wazuh-indexer` | Indices |
+| Indexer | `/var/lib/wazuh-indexer` | Indices, the security index (the accounts) and the `.initialized` marker |
 | Dashboard | `/usr/share/wazuh-dashboard/config` | `opensearch_dashboards.yml` and the keystore |
 
 Two of these need seeding, because a PVC starts empty where the equivalent Docker named volume
@@ -108,8 +102,9 @@ first time the claim is used:
   key and anything encrypted with the previous one would become unreadable. The claim also keeps
   `opensearch_dashboards.yml`, which the entrypoint rewrites from the environment on every start:
   the settings this deployment sets are therefore always current, but a setting a newer image
-  ships and no environment variable covers stays at the value the claim was seeded with. Delete
-  the claim to pick those up, and set the passwords again afterwards.
+  ships and no environment variable covers stays at the value the claim was seeded with. Deleting
+  the claim picks those up: the dashboard then takes its passwords again from `dashboard.env`, which
+  must therefore hold the current values, and generates a new `wazuh_ai_assistant.encryptionKey`.
 
 For additional configuration files, use ConfigMaps as described above.
 

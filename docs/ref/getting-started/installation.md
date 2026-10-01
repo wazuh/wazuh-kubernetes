@@ -84,7 +84,7 @@ Details:
 
 - wazuh-api:
   - Internal service for the Wazuh API on port 55000.
-  - Consumed by the Wazuh dashboard and by external clients through the ingress TCP mappings.
+  - Consumed by the Wazuh dashboard. It is not published through Traefik: reach it with `kubectl -n wazuh exec` into `wazuh-manager-master-0`, or with `kubectl port-forward`.
 - wazuh-agents:
   - Internal service for Wazuh 5.x agent traffic and enrollment on port 1517.
   - Selects every manager pod, master included, since `remoted` serves this HTTPS channel on all nodes.
@@ -217,13 +217,17 @@ Wazuh uses certificates to establish confidentiality and encrypt communications 
 
 Download the `wazuh-certs-tool.sh` script. This creates the certificates that encrypt communications between the Wazuh central components.
 
-**3.2.1 Download the Wazuh certificates tool script and config.yml file**:
+**3.2.1 Download the Wazuh certificates tool script, the credentials library and the config.yml file**:
 
 ```bash
 cd wazuh
 curl -so wazuh-certs-tool.sh https://packages.wazuh.com/5.1/wazuh-certs-tool-5.1.0-1.sh
+curl -so wazuh-credentials.sh https://raw.githubusercontent.com/wazuh/wazuh-installation-assistant/5.1.0/credentials_lib/wazuh-credentials.sh
 curl -so config.yml https://packages.wazuh.com/5.1/config-5.1.0-1.yml
 ```
+
+`wazuh-credentials.sh` is the library `credentials-conf.sh` generates and validates the passwords
+with (step 3.2.4). Use the same version as the images.
 
 **3.2.2 Edit the config.yml file with the configuration of the Wazuh components to be deployed**:
 
@@ -311,6 +315,26 @@ secretGenerator:
       - config/root-ca/certs/root-ca.pem
 ```
 
+**3.2.4 Run the credentials generator**:
+
+Every Wazuh component now generates or validates its own credentials at install time and refuses to
+start without them. Generate the five passwords before the first `kubectl apply -k`, the same way as
+the certificates above. The script sources `wazuh-credentials.sh`, downloaded in step 3.2.1
+(`WAZUH_CREDENTIALS_LIB` overrides the path):
+
+```bash
+sudo bash ../tools/utils/deployment/credentials-conf.sh
+```
+
+It writes `config/credentials/{indexer,manager,dashboard}.env`, which `wazuh/kustomization.yml`'s
+`secretGenerator` turns into Secrets the pods read. **It never overwrites an existing file**: once a
+deployment has started, the passwords it was given are the ones that count. `--force` replaces them,
+and is only for a deployment that has never been started.
+
+Keep these files for the whole life of the deployment and back them up with the certificates: every
+`kubectl apply -k` and `kubectl delete -k` reads them, and the indexer takes its passwords from its
+Secret again every time one of its pods is recreated.
+
 Return to the root of the repository for the steps that follow:
 
 ```bash
@@ -327,7 +351,7 @@ Follow the steps below:
 
 #### Step 3.3.1: Update the Ingress host
 
-For TLS Passthrough to work correctly, it is necessary to modify the ingress host `wazuh-ingress` in `wazuh/base/ingressRoute-tcp-dashboard.yaml` with the `FQDN` of the load balancer obtained in the command `kubectl -n traefik get svc`
+For TLS Passthrough to work correctly, it is necessary to replace the placeholder `<UPDATE-WITH-THE-FQDN-OF-THE-INGRESS>` in `HostSNI(...)` of `wazuh/base/ingressRoute-tcp-dashboard.yaml` with the `FQDN` of the load balancer obtained in the command `kubectl -n traefik get svc`
 
 for example:
 
@@ -360,7 +384,7 @@ Two of the Secrets under `wazuh/secrets/` hold shared keys rather than account p
 | `wazuh-cluster-key` | `key` | `REPLACETHISCLUSTERKEYBEFOREDEPLO` (placeholder, not a key) | Membership of the Wazuh manager cluster, on port `1516` |
 | `wazuh-authd-pass` | `authd.pass` | `password` | Agent enrollment: the channel `remoted` serves on port `1517`, and the legacy `authd` port `1515` |
 
-**Change both here, before the first `kubectl apply -k`.** Unlike the Wazuh indexer and Wazuh API accounts of the next step, these are not accounts inside an image, so `password-tool.sh` does not cover them: the managers read them from the Secrets on every container start. Setting them now costs nothing, while changing the cluster key on a running deployment stops the workers from syncing until every manager pod has restarted on the new key.
+**Change both here, before the first `kubectl apply -k`.** Unlike the Wazuh indexer and Wazuh API accounts created in step 3.2.4, these are not accounts inside an image, so `password-tool.sh` does not cover them: the managers read them from the Secrets on every container start. Setting them now costs nothing, while changing the cluster key on a running deployment stops the workers from syncing until every manager pod has restarted on the new key.
 
 Generate the two values. The cluster key has to be **exactly 32 alphanumeric characters** (`^[a-zA-Z0-9]{32}$`); `openssl rand -hex 16` produces exactly that. A key of any other length, or one carrying `-`, `_` or any other punctuation, makes every manager refuse to start with `(1244): Invalid configuration at '/cluster/key': does not satisfy 'pattern'`:
 
@@ -401,27 +425,27 @@ By using the kustomization file on the `eks` variant we can now deploy the whole
 kubectl apply -k envs/eks/
 ```
 
-#### Step 3.4: Change the default passwords
+#### Step 3.4: First access
 
-**Do this before anything else reaches the deployment.** Every Wazuh indexer and Wazuh API account starts with its own username as its password, `admin` among them, and `admin` holds full control of the indexer and produces a Wazuh API administrator session in the dashboard.
-
-Wait for every pod to be `Ready`, then change them:
+Wait for every pod to be `Ready`:
 
 ```bash
 kubectl -n wazuh wait --for=condition=Ready pod --all --timeout=600s
-kubectl -n wazuh exec wazuh-indexer-0 -- /password-tool.sh --all
-kubectl -n wazuh exec wazuh-manager-master-0 -- /password-tool.sh --all
 ```
 
-Each command prints the new passwords once and stores nothing, so copy the output somewhere safe. Three of them have to be written into the Secrets under `wazuh/secrets/` and the workloads restarted, and the Wazuh API passwords have to be set on every worker pod as well.
+Log in to the Wazuh dashboard as `admin`. Read its generated password with:
 
-The full procedure, including those steps and how to verify the result, is in [Credentials](../credentials.md).
+```bash
+grep '^WAZUH_INDEXER_ADMIN_PASSWORD=' wazuh/config/credentials/indexer.env | cut -d= -f2-
+```
+
+See [Credentials](../credentials.md) for the full list of accounts, and how to rotate one on a deployment that is already running.
 
 #### Conclusion
 
 At this point, the Wazuh stack should be deployed in your EKS cluster.
 
-To validate the deployment and open the web UI, follow the steps in the **Accessing Wazuh dashboard** section: [verify.md](verify.md#accessing-wazuh-dashboard).
+To validate the deployment and open the web UI, follow the steps in the **Accessing Wazuh dashboard** section: [Accessing Wazuh dashboard (EKS)](#accessing-wazuh-dashboard-eks).
 
 ## Local deployment
 
@@ -438,17 +462,17 @@ As an important additional isolation layer, this deployment includes NetworkPoli
 To deploy the `local-env` variant the Kubernetes cluster should have at least the following resources **available**:
 
 - 2 CPU units
-- 3 Gi of memory
-- 2 Gi of storage
+- 4.5 Gi of memory
+- 2.5 Gi of storage
 
 ### Deployment
 
 **Note**:
 
-If you are using Minikube, make sure to start the cluster with Calico CNI:
+If you are using Minikube, make sure Docker Desktop has at least 6 GiB of memory allocated (Docker Desktop -> Settings -> Resources), then start the cluster with Calico CNI:
 
 ```bash
-minikube start --network-plugin=cni --cni=calico
+minikube start --memory=6144 --cpus=4 --network-plugin=cni --cni=calico
 ```
 
 You will also have to load the docker images used by Wazuh into Minikube:
@@ -478,8 +502,12 @@ Download the `wazuh-certs-tool.sh` script. This creates the certificates that en
 ```bash
 cd wazuh/
 curl -so wazuh-certs-tool.sh https://packages.wazuh.com/5.1/wazuh-certs-tool-5.1.0-1.sh
+curl -so wazuh-credentials.sh https://raw.githubusercontent.com/wazuh/wazuh-installation-assistant/5.1.0/credentials_lib/wazuh-credentials.sh
 curl -so config.yml https://packages.wazuh.com/5.1/config-5.1.0-1.yml
 ```
+
+`wazuh-credentials.sh` is the library `credentials-conf.sh` uses in the next steps. Use the same
+version as the images.
 
 Edit the `config.yml` file to set corresponding name and IP address for each Wazuh component.
 For a local environment, you can use:
@@ -530,6 +558,16 @@ Run `wazuh-certs-tool.sh` to create the certificates.
 
 ```bash
 sudo bash ../tools/utils/deployment/certificates-conf.sh --cert --copy --priv
+```
+
+#### Run the credentials generator
+
+Every Wazuh component now generates or validates its own credentials at install time and refuses to
+start without them. Generate the five passwords before the first `kubectl apply -k`. The script
+sources `wazuh-credentials.sh`, downloaded with the certificates tool:
+
+```bash
+sudo bash ../tools/utils/deployment/credentials-conf.sh
 ```
 
 Return to the root of the repository.
@@ -586,6 +624,8 @@ microk8s-hostpath (default)   microk8s.io/hostpath   Delete          Immediate  
 ```
 
 The provisioner column displays `microk8s.io/hostpath`, you must edit the file `envs/local-env/storage-class.yaml` and setup this provisioner.
+
+On Minikube the provisioner is `k8s.io/minikube-hostpath`: comment out the `microk8s.io/hostpath` line in `envs/local-env/storage-class.yaml` and uncomment the `k8s.io/minikube-hostpath` one. Otherwise the claims stay `Pending`.
 
 #### Change Wazuh ingress host
 
@@ -664,7 +704,7 @@ Every agent you enroll afterwards has to present the new enrollment password. Se
 
 We are using the overlay feature of kustomize to create two variants: `eks` and `local-env`, in this guide we're using `local-env`.
 
-It is possible to adjust resources for the cluster by editing patches on `envs/local-env/`, the number of replicas for Wazuh Indexer nodes and Wazuh Server workers are reduced on the `local-env` variant to save resources. This could be undone by removing these patches from the `kustomization.yaml` or alter the patches themselves with different values.
+It is possible to adjust resources for the cluster by editing patches on `envs/local-env/`, the number of replicas for Wazuh Indexer nodes and Wazuh Server workers are reduced on the `local-env` variant to save resources. This could be undone by removing these patches from `envs/local-env/kustomization.yml` or alter the patches themselves with different values.
 
 > **Note**: This guide was created using Minikube and Calico as the CNI.
 
@@ -697,21 +737,21 @@ By using the kustomization file on the `local-env` variant we can now deploy the
 kubectl apply -k envs/local-env/
 ```
 
-#### Change the default passwords
+#### First access
 
-**Do this before anything else reaches the deployment.** Every Wazuh indexer and Wazuh API account starts with its own username as its password, `admin` among them, and `admin` holds full control of the indexer and produces a Wazuh API administrator session in the dashboard.
-
-Wait for every pod to be `Ready`, then change them:
+Wait for every pod to be `Ready`:
 
 ```bash
 kubectl -n wazuh wait --for=condition=Ready pod --all --timeout=600s
-kubectl -n wazuh exec wazuh-indexer-0 -- /password-tool.sh --all
-kubectl -n wazuh exec wazuh-manager-master-0 -- /password-tool.sh --all
 ```
 
-Each command prints the new passwords once and stores nothing, so copy the output somewhere safe. Three of them have to be written into the Secrets under `wazuh/secrets/` and the workloads restarted, and the Wazuh API passwords have to be set on every worker pod as well.
+Log in to the Wazuh dashboard as `admin`. Read its generated password with:
 
-The full procedure, including those steps and how to verify the result, is in [Credentials](../credentials.md).
+```bash
+grep '^WAZUH_INDEXER_ADMIN_PASSWORD=' wazuh/config/credentials/indexer.env | cut -d= -f2-
+```
+
+See [Credentials](../credentials.md) for the full list of accounts, and how to rotate one on a deployment that is already running.
 
 ##### Accessing Dashboard
 
@@ -723,7 +763,7 @@ kubectl -n wazuh port-forward service/dashboard 8443:443
 
 Access to Wazuh dashboard using <https://localhost:8443>
 
-Log in as `admin`, with the password you set in the previous step. On a deployment that has not been through it, the account still answers to the shipped default. See [Credentials](../credentials.md).
+Log in as `admin` with the password `credentials-conf.sh` generated (see [First access](#first-access) above). See [Credentials](../credentials.md).
 
 <!-- If you need to access the dashboard from another host (or register agents pointing to the Minikube host IP), you can bind the port-forward to a specific interface/IP address: -->
 
@@ -757,9 +797,12 @@ If you need to register agents pointing directly to the Minikube host IP, bind t
 
 At this point, the Wazuh stack should be deployed in your local Kubernetes cluster.
 
-To validate the deployment and its created resources check the following section: [verify.md](verify.md).
+To validate the deployment and its created resources check the following section: [Verifying the deployment](#verifying-the-deployment).
 
 ## Verifying the deployment
+
+The outputs below are for `envs/eks`. With `envs/local-env` there is one indexer and one worker, the
+claims are 500Mi (1Gi for the dashboard), and the three `allow-ingress-to-*` policies are not created.
 
 ### Namespace
 
@@ -892,12 +935,38 @@ wazuh-api-ingress                 app=wazuh-manager,node-type=master   42s
 wazuh-worker-egress               app=wazuh-manager,node-type=worker   41s
 ```
 
+### Secrets
+
+```bash
+kubectl -n wazuh get secrets
+```
+
+Expected: `dashboard-certs-<hash>`, `dashboard-credentials-<hash>`, `indexer-certs-<hash>`,
+`indexer-credentials-<hash>`, `manager-certs-<hash>`, `manager-credentials-<hash>`, `wazuh-authd-pass`
+and `wazuh-cluster-key`.
+
+### Credentials
+
+Every pod runs an `install-credentials` init container that hands it its credentials file. No
+password is in the container environment:
+
+```bash
+kubectl -n wazuh exec wazuh-manager-master-0 -c wazuh-manager -- env | grep -c PASSWORD
+```
+
+Expected output: `0`. Check that every account authenticates with its generated password and none
+with a default:
+
+```bash
+cd wazuh && ../tools/tests/check-default-credentials.sh && cd ..
+```
+
 ### Accessing Wazuh dashboard (EKS)
 
 In case you created domain names for the services, you should be able to access Wazuh dashboard using the proposed domain name: <https://wazuh.your-domain.com>.
-Log in as `admin`, with the password set in **Step 3.4**. See [Credentials](../credentials.md).
-Also, you can access using the External-IP (from the VPC): <https://xxx-yyy-zzz.us-east-1.elb.amazonaws.com:443>
-To access the Wazuh dashboard of a local deployment, please refer to [local.md](local.md#accessing-dashboard).
+Log in as `admin` with the password `credentials-conf.sh` generated (**Step 3.4**). See [Credentials](../credentials.md).
+Also, you can access using the External-IP of the load balancer, from any address the `ip-allowlist` middleware (`wazuh/base/middleware.yaml`) allows: <https://xxx-yyy-zzz.us-west-1.elb.amazonaws.com:443>
+To access the Wazuh dashboard of a local deployment, please refer to [Accessing Dashboard](#accessing-dashboard).
 
 ```bash
 kubectl -n traefik get svc

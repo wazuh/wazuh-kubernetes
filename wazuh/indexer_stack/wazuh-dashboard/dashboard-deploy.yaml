@@ -25,7 +25,19 @@ spec:
         app: wazuh-dashboard
       name: wazuh-dashboard
     spec:
+      # No workload talks to the Kubernetes API.
+      automountServiceAccountToken: false
       volumes:
+        # The Secret gets the pod's fsGroup and group read, so the service user
+        # could read it: an init container copies it to a root-only file.
+        - name: wazuh-credentials
+          emptyDir:
+            medium: Memory
+            sizeLimit: 1Mi
+        - name: wazuh-credentials-secret
+          secret:
+            secretName: dashboard-credentials
+            defaultMode: 0400
         - name: dashboard-config
           persistentVolumeClaim:
             claimName: wazuh-dashboard-config
@@ -34,9 +46,31 @@ spec:
             secretName: dashboard-certs
       securityContext:
         fsGroup: 101
-        runAsUser: 101
-        runAsGroup: 101
       initContainers:
+        - name: install-credentials
+          image: 'wazuh/wazuh-dashboard:5.0.0'
+          command:
+            - /bin/sh
+            - -c
+            - 'umask 077 && cp /credentials-secret/wazuh-credentials /run/secrets/wazuh-credentials && chmod 0400 /run/secrets/wazuh-credentials'
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 100m
+              memory: 128Mi
+          volumeMounts:
+            - name: wazuh-credentials-secret
+              mountPath: /credentials-secret
+              readOnly: true
+            - name: wazuh-credentials
+              mountPath: /run/secrets
         - name: init-dashboard-config
           image: 'wazuh/wazuh-dashboard:5.1.0'
           command:
@@ -58,6 +92,9 @@ spec:
               cpu: 500m
               memory: 1Gi
           volumeMounts:
+            - name: wazuh-credentials
+              mountPath: /run/secrets
+              readOnly: true
             - name: dashboard-config
               mountPath: /usr/share/wazuh-dashboard/config
               subPath: config
@@ -106,16 +143,6 @@ spec:
           env:
             - name: OPENSEARCH_HOSTS
               value: 'https://wazuh-indexer:9200'
-            - name: DASHBOARD_USERNAME
-              valueFrom:
-                secretKeyRef:
-                  name: dashboard-cred
-                  key: username
-            - name: DASHBOARD_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: dashboard-cred
-                  key: password
             - name: SERVER_SSL_ENABLED
               value: "true"
             - name: SERVER_SSL_CERTIFICATE
@@ -126,13 +153,3 @@ spec:
               value: /usr/share/wazuh-dashboard/config/certs/root-ca.pem
             - name: WAZUH_API_URL
               value: https://wazuh-api
-            - name: API_USERNAME
-              valueFrom:
-                secretKeyRef:
-                  name: wazuh-api-cred
-                  key: username
-            - name: API_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: wazuh-api-cred
-                  key: password
