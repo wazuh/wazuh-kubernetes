@@ -29,12 +29,15 @@ To deploy a cluster on your local environment (like Minikube, Kind or Microk8s) 
 │   │   ├── run-tests.md
 │   │   └── setup.md
 │   ├── ref
+│   │   ├── configuration
 │   │   ├── getting-started
+│   │   ├── integration_test
 │   │   ├── introduction
 │   │   ├── backup-restore.md
+│   │   ├── credentials.md
 │   │   ├── glossary.md
-│   │   ├── introduction.md
 │   │   ├── performance.md
+│   │   ├── security.md
 │   │   ├── uninstall.md
 │   │   └── upgrade.md
 │   ├── README.md
@@ -56,11 +59,18 @@ To deploy a cluster on your local environment (like Minikube, Kind or Microk8s) 
 │       ├── indexer-resources.yaml
 │       ├── kustomization.yml
 │       ├── storage-class.yaml
+│       ├── wazuh-master-resources.yaml
 │       └── wazuh-resources.yaml
 ├── tests
 │   ├── conftest.py
 │   └── k8s_pytest.py
 ├── tools
+│   ├── tests
+│   │   └── check-default-credentials.sh
+│   ├── utils
+│   │   └── deployment
+│   │       ├── certificates-conf.sh
+│   │       └── credentials-conf.sh
 │   └── repository_bumper.sh
 ├── traefik
 │   ├── crd
@@ -88,9 +98,6 @@ To deploy a cluster on your local environment (like Minikube, Kind or Microk8s) 
 │   │   ├── wazuh-dashboard
 │   │   └── wazuh-indexer
 │   ├── secrets
-│   │   ├── dashboard-cred-secret.yaml
-│   │   ├── indexer-cred-secret.yaml
-│   │   ├── wazuh-api-cred-secret.yaml
 │   │   ├── wazuh-authd-pass-secret.yaml
 │   │   └── wazuh-cluster-key-secret.yaml
 │   ├── wazuh_managers
@@ -102,6 +109,7 @@ To deploy a cluster on your local environment (like Minikube, Kind or Microk8s) 
 │   │   ├── wazuh-master-sts.yaml
 │   │   ├── wazuh-registration-svc.yaml
 │   │   └── wazuh-worker-sts.yaml
+│   ├── config                  # generated, git-ignored: certificates and credentials/*.env
 │   └── kustomization.yml
 ├── CHANGELOG.md
 ├── LICENSE
