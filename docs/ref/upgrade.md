@@ -2,9 +2,10 @@
 
 When upgrading our version of Wazuh installed in Kubernetes we must follow the following steps.
 
-## Check which files are exported to the volume
+## What survives an upgrade
 
-Our Kubernetes deployment uses our Wazuh images from Docker. If we look at the following code extracted from the Wazuh configuration using Docker we can see which directories and files are used in the upgrades.
+Our Kubernetes deployment uses the Wazuh images from Docker. These are the directories of the manager
+that the image keeps across containers, and that this deployment puts on the manager claim:
 
 ```
 PERMANENT_DATA[((i++))]="/var/wazuh-manager/api/configuration"
@@ -20,180 +21,62 @@ time the claim is used. The subtrees the image owns (`data/tzdb`, `data/store/sc
 `data/store/enrichment`) are refreshed from the new image on every start, which is what makes an
 upgrade over an existing claim pick up the new content.
 
-Any file that we modify referring to the files previously mentioned, will be changed also the corresponding volume. When the corresponding Wazuh pod is created again, it will get the cited files from the volume, thus keeping the changes made previously.
+A change made in any of those directories, for example a rule added to
+`/var/wazuh-manager/etc/rules/local_rules.xml` in `wazuh-manager-master-0`, is written to the claim
+(`subPath: wazuh/var/wazuh-manager/etc`). When the pod is recreated with a new image, it finds the
+file on the claim again.
 
-To better understand it, we will give an example:
+The credentials survive the upgrade in the same way, on the persistent volumes:
 
-We have our newly created Kubernetes environment following our instructions. In this example, the image of Wazuh used has been `wazuh/wazuh:3.13.1_7.8.0`.
+- the indexer security index, with the `admin`, `kibanaserver` and `wazuh-manager` accounts;
+- the Wazuh API user database, `rbac.db`, on the master;
+- the manager keystore, `queue/keystore`, on every manager pod;
+- the dashboard keystore, on the `wazuh-dashboard-config` claim.
 
-```
-containers:
-- name: wazuh-manager
-  image: 'wazuh/wazuh:3.13.2_7.9.1'
-```
+The indexer also takes its passwords from its Secret again every time one of its pods is recreated,
+so `wazuh/config/credentials/*.env` has to hold the current passwords, including any rotated with
+`password-tool.sh`.
 
-Let's proceed by creating a set of rules in our `local_rules.xml` file at location `/var/wazuh-manager/etc/rules` in our wazuh manager master pod.
+## Upgrading a 5.0 deployment
 
-```
-root@wazuh-manager-master-0:/# vim /var/wazuh-manager/etc/rules/local_rules.xml
-root@wazuh-manager-master-0:/# cat /var/wazuh-manager/etc/rules/local_rules.xml
-<!-- Local rules -->
+1. Check out the new release, and carry over from the directory the deployment was created from:
+   `wazuh/config/` (certificates and `credentials/*.env`), your edits to `wazuh/secrets/*.yaml`,
+   `wazuh/base/ingressRoute-tcp-dashboard.yaml`, and any change to `envs/`. Do not run
+   `credentials-conf.sh` again: the deployment keeps the passwords it was first started with, and
+   new values would not match them.
+2. If you pin the images yourself, change every `wazuh/wazuh-*` image, the init containers
+   included: `install-credentials` (every workload), `init-wazuh-etc` (managers) and
+   `init-dashboard-config` (dashboard). All the nodes of the Wazuh cluster have to run the same
+   version.
+3. Apply the overlay. Always the overlay, never a single manifest: the Secrets the workloads mount
+   carry a name kustomize generates, and a manifest applied on its own references a Secret that does
+   not exist.
 
-<!-- Modify it at your will. -->
+   ```bash
+   kubectl apply -k envs/eks/   # or envs/local-env/
+   kubectl -n wazuh rollout status statefulset/wazuh-indexer
+   kubectl -n wazuh rollout status statefulset/wazuh-manager-master
+   kubectl -n wazuh rollout status statefulset/wazuh-manager-worker
+   kubectl -n wazuh rollout status deployment/wazuh-dashboard
+   ```
 
-<!-- Example -->
-<group name="local,syslog,sshd,">
+4. Check that every account still authenticates with its password:
 
-  <!--
-  Dec 10 01:02:02 host sshd[1234]: Failed none for root from 1.1.1.1 port 1066 ssh2
-  -->
-  <rule id="100001" level="5">
-    <if_sid>5716</if_sid>
-    <srcip>1.1.1.1</srcip>
-    <description>sshd: authentication failed from IP 1.1.1.1.</description>
-    <group>authentication_failed,pci_dss_10.2.4,pci_dss_10.2.5,</group>
-  </rule>
+   ```bash
+   cd wazuh && ../tools/tests/check-default-credentials.sh && cd ..
+   ```
 
-  <rule id="100002" level="5">
-    <if_sid>5716</if_sid>
-    <srcip>2.1.1.1</srcip>
-    <description>sshd: authentication failed from IP 2.1.1.1.</description>
-    <group>authentication_failed,pci_dss_10.2.4,pci_dss_10.2.5,</group>
-  </rule>
+## From 4.x
 
-  <rule id="100003" level="7">
-    <if_sid>5716</if_sid>
-    <srcip>3.1.1.1</srcip>
-    <description>sshd: authentication failed from IP 3.1.1.1.</description>
-    <group>authentication_failed,pci_dss_10.2.4,pci_dss_10.2.5,</group>
-  </rule>
+The 4.x manifests differ in ways this procedure does not cover:
 
-</group>
+- The credentials came from the `indexer-cred`, `dashboard-cred` and `wazuh-api-cred` Secrets and from
+  environment variables (`INDEXER_PASSWORD`, `API_PASSWORD`, `DASHBOARD_PASSWORD` and their
+  `*_USERNAME` pairs). The 5.0 workloads read none of them, and `kubectl apply -k` does not delete
+  those Secrets.
+- The manager claims use the `wazuh/var/ossec/*` subPaths, where 5.0 uses `wazuh/var/wazuh-manager/*`.
+  A 5.0 manager on a 4.x claim does not see the 4.x state.
+- The 4.x indexer StatefulSet has no `podManagementPolicy: Parallel`, and the field cannot be
+  changed on an existing StatefulSet.
 
-```
-
-This action has modified the `local_rules.xml` file in the `/var/wazuh-manager/data/etc/rules` path and in the `/etc/postfix/etc/` rules path due these routes reference our volume assembly points.
-
-```
-volumeMounts:
-- name: wazuh-manager-master
-  mountPath: /var/wazuh-manager/etc
-  subPath: wazuh/var/wazuh-manager/etc
-- name: wazuh-manager-master
-  mountPath: /var/wazuh-manager/data
-  subPath: wazuh/var/wazuh-manager/data
-```
-
-We can see their content.
-
-```
-root@wazuh-manager-master-0:/# cat /var/wazuh-manager/data/etc/rules/local_rules.xml
-<!-- Local rules -->
-
-<!-- Modify it at your will. -->
-
-<!-- Example -->
-<group name="local,syslog,sshd,">
-
-  <!--
-  Dec 10 01:02:02 host sshd[1234]: Failed none for root from 1.1.1.1 port 1066 ssh2
-  -->
-  <rule id="100001" level="5">
-    <if_sid>5716</if_sid>
-    <srcip>1.1.1.1</srcip>
-    <description>sshd: authentication failed from IP 1.1.1.1.</description>
-    <group>authentication_failed,pci_dss_10.2.4,pci_dss_10.2.5,</group>
-  </rule>
-
-  <rule id="100002" level="5">
-    <if_sid>5716</if_sid>
-    <srcip>2.1.1.1</srcip>
-    <description>sshd: authentication failed from IP 2.1.1.1.</description>
-    <group>authentication_failed,pci_dss_10.2.4,pci_dss_10.2.5,</group>
-  </rule>
-
-  <rule id="100003" level="7">
-    <if_sid>5716</if_sid>
-    <srcip>3.1.1.1</srcip>
-    <description>sshd: authentication failed from IP 3.1.1.1.</description>
-    <group>authentication_failed,pci_dss_10.2.4,pci_dss_10.2.5,</group>
-  </rule>
-
-</group>
-root@wazuh-manager-master-0:/# cat /etc/postfix/etc/rules/local_rules.xml
-<!-- Local rules -->
-
-<!-- Modify it at your will. -->
-
-<!-- Example -->
-<group name="local,syslog,sshd,">
-
-  <!--
-  Dec 10 01:02:02 host sshd[1234]: Failed none for root from 1.1.1.1 port 1066 ssh2
-  -->
-  <rule id="100001" level="5">
-    <if_sid>5716</if_sid>
-    <srcip>1.1.1.1</srcip>
-    <description>sshd: authentication failed from IP 1.1.1.1.</description>
-    <group>authentication_failed,pci_dss_10.2.4,pci_dss_10.2.5,</group>
-  </rule>
-
-  <rule id="100002" level="5">
-    <if_sid>5716</if_sid>
-    <srcip>2.1.1.1</srcip>
-    <description>sshd: authentication failed from IP 2.1.1.1.</description>
-    <group>authentication_failed,pci_dss_10.2.4,pci_dss_10.2.5,</group>
-  </rule>
-
-  <rule id="100003" level="7">
-    <if_sid>5716</if_sid>
-    <srcip>3.1.1.1</srcip>
-    <description>sshd: authentication failed from IP 3.1.1.1.</description>
-    <group>authentication_failed,pci_dss_10.2.4,pci_dss_10.2.5,</group>
-  </rule>
-
-</group>
-
-```
-
-At this point, if the pod was dropped or updated, Kubernetes would be in charge of creating a replica of it that would link to the volumes created and would maintain any changes referenced in the files and directories that we export to those volumes.
-
-Once explained the operation regarding the volumes, we proceed to update Wazuh in two simple steps.
-
-## 1. Change the image of the container
-
-The first step is to change the image of the pod in each file that deploys each node of the Wazuh cluster.
-
-These files are the statefulSet files:
-- wazuh-master-sts.yaml
-- wazuh-worker-sts.yaml
-
-For example we had this version before:
-
-```
-containers:
-- name: wazuh-manager
-  image: 'wazuh/wazuh:3.13.1_7.8.0'
-```
-
-And now we're going to upgrade to the next version:
-
-```
-containers:
-- name: wazuh-manager
-  image: 'wazuh/wazuh:3.13.2_7.9.1'
-```
-
-
-## 2. Apply the new configuration
-
-The second and last step is to apply the new configuration of each pod. For example for the wazuh manager master:
-
-```
-ubuntu@k8s-control-server:~/wazuh-kubernetes/manager_cluster$ kubectl apply -f wazuh-manager-master-sts.yaml
-statefulset.apps "wazuh-manager-master" configured
-```
-
-This process will end the old pod while creating a new one with the new version, linked to the same volume. Once the Pods are booted, we will have our update ready and we can check the new version of Wazuh installed, the cluster and the changes that have been maintained through the use of the volumes.
-
-### Note: It is important to update all Wazuh node pods, because the cluster only works when all nodes have the same version.
+Deploy 5.0 as a new deployment, following [Installation](getting-started/installation.md).

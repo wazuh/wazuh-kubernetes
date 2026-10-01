@@ -46,7 +46,7 @@ runs:
         sed -i 's/\r//g' "${{ inputs.artifact-urls-file-temp }}"
 
         # Remove unwanted entries
-        sed -i -e '/wazuh_certs_tool/b' -e '/wazuh_config_yml/b' -e 'd' "${{ inputs.artifact-urls-file-temp }}"
+        sed -i -e '/wazuh_certs_tool/b' -e '/wazuh_credentials/b' -e '/wazuh_config_yml/b' -e 'd' "${{ inputs.artifact-urls-file-temp }}"
 
     - name: Generate the variables file
       shell: bash

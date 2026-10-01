@@ -23,7 +23,7 @@ def pytest_addoption(parser):
     parser.addoption(
         "--indexer-password",
         action="store",
-        default="admin",
-        help="Password of the Wazuh indexer account. Pass the new value after "
-             "rotating credentials (see docs/ref/credentials.md)"
+        default=None,
+        help="Password of the Wazuh indexer account. Defaults to its value in "
+             "wazuh/config/credentials/indexer.env (see docs/ref/credentials.md)"
     )
