@@ -31,6 +31,24 @@ secretGenerator:
       - config/manager/certs/manager-remoted-key.pem
       - config/manager/certs/manager-remoted.pem
       - config/root-ca/certs/root-ca.pem
+  - name: indexer-credentials
+    files:
+      - wazuh-credentials=config/credentials/indexer.env
+    options:
+      labels:
+        app.kubernetes.io/component: credentials
+  - name: manager-credentials
+    files:
+      - wazuh-credentials=config/credentials/manager.env
+    options:
+      labels:
+        app.kubernetes.io/component: credentials
+  - name: dashboard-credentials
+    files:
+      - wazuh-credentials=config/credentials/dashboard.env
+    options:
+      labels:
+        app.kubernetes.io/component: credentials
 
 resources:
   - base/wazuh-ns.yaml
@@ -43,11 +61,8 @@ resources:
   - base/Allow-DNS-np.yaml
   - base/default-deny-all.yaml
 
-  - secrets/wazuh-api-cred-secret.yaml
   - secrets/wazuh-authd-pass-secret.yaml
   - secrets/wazuh-cluster-key-secret.yaml
-  - secrets/dashboard-cred-secret.yaml
-  - secrets/indexer-cred-secret.yaml
 
   - wazuh_managers/wazuh-cluster-svc.yaml
   - wazuh_managers/wazuh-agents-svc.yaml

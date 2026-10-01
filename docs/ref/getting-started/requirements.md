@@ -8,7 +8,7 @@ This page outlines the prerequisites and resource requirements for deploying Waz
 
 - A running Kubernetes cluster
 - `kubectl` command-line tool configured to communicate with your cluster
-- `kustomize` for applying manifests (built into kubectl 1.14+)
+- `kustomize` v4 or higher for applying manifests (built into kubectl 1.21+)
 
 ### Storage Class
 
@@ -41,7 +41,7 @@ Production environments may require additional CPU, memory, and storage dependin
 
 To deploy Wazuh on Kubernetes on AWS EKS, the cluster should have at least the following resources available:
 
-- 4 CPU units
+- 5 CPU units
 - 8 Gi of memory
 
 #### Locally
