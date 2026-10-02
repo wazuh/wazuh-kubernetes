@@ -441,6 +441,56 @@ grep '^WAZUH_INDEXER_ADMIN_PASSWORD=' wazuh/config/credentials/indexer.env | cut
 
 See [Credentials](../credentials.md) for the full list of accounts, and how to rotate one on a deployment that is already running.
 
+#### Step 3.5: Enroll an agent
+
+A Wazuh 5.x agent enrolls and reports over the same HTTPS channel, port `1517`, which Traefik publishes on the load balancer from step 3.1 and spreads across every manager node. The steps below enroll it with an enrollment token minted through the Wazuh API: the token carries the manager address and its CA, so the agent needs no other setting.
+
+The address in the token has to be in the SAN of the agent listener certificate: use the load balancer FQDN passed with `--agent-san` in step 3.2.3. Any other address is refused with `address not in certificate SAN`.
+
+The Wazuh API is not published through Traefik, so forward it to mint the token. From the root of the repository:
+
+```bash
+kubectl -n wazuh port-forward service/wazuh-api 55000:55000 &
+```
+
+Mint a token with the `wazuh` API user, whose password is in `wazuh/config/credentials/manager.env`:
+
+```bash
+WAZUH_MANAGER_ADDRESS=$(kubectl -n traefik get svc traefik -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
+
+WAZUH_API_TOKEN=$(printf 'user = "wazuh:%s"\n' "$(grep '^WAZUH_MANAGER_API_PASSWORD=' wazuh/config/credentials/manager.env | cut -d= -f2-)" | \
+  curl -sk -K - -X POST "https://localhost:55000/security/user/authenticate?raw=true")
+
+RESPONSE=$(curl -sk -X POST "https://localhost:55000/agents/enrollment-tokens" \
+  -H "Authorization: Bearer ${WAZUH_API_TOKEN}" -H "Content-Type: application/json" \
+  -d "{\"address\": \"${WAZUH_MANAGER_ADDRESS}\", \"embed_ca\": true}")
+WAZUH_ENROLLMENT_TOKEN=$(printf '%s' "${RESPONSE}" | sed -n 's/.*"token": *"\([^"]*\)".*/\1/p')
+[ -n "${WAZUH_ENROLLMENT_TOKEN}" ] && echo "Token minted" || echo "${RESPONSE}"
+```
+
+Start an agent container with it, on any host that reaches the load balancer on port `1517`:
+
+```bash
+docker run -d --name wazuh-agent \
+  -e WAZUH_ENROLLMENT_TOKEN="${WAZUH_ENROLLMENT_TOKEN}" \
+  -e WAZUH_AGENT_NAME=eks-test-agent \
+  -v wazuh_agent_etc:/var/ossec/etc \
+  wazuh/wazuh-agent:5.0.0
+```
+
+The agent container variables and the optional fields of `POST /agents/enrollment-tokens` (`ttl`, `max_uses`, `description`) are described in the [wazuh-docker agent guide](https://github.com/wazuh/wazuh-docker/blob/5.0.0/docs/ref/getting-started/deployment/wazuh-agent.md).
+
+Check that it is listed as `active`:
+
+```bash
+curl -sk -H "Authorization: Bearer ${WAZUH_API_TOKEN}" \
+  "https://localhost:55000/agents?select=name,status&pretty=true"
+```
+
+The API token lasts 15 minutes; if the answer is `Invalid token`, run the `WAZUH_API_TOKEN=...` command again.
+
+> **Note**: For about the first 30 seconds the agent may log `Enrollment rejected by the manager: token_unknown`, `credential rejected (401); re-enrolling` and `Manager unreachable`. The token and the agent key are created on the master and take a few seconds to reach every manager node, and the load balancer can send the agent to a node that does not have them yet. The agent retries on its own until `re-enrollment succeeded` and `Manager reachable again`.
+
 #### Conclusion
 
 At this point, the Wazuh stack should be deployed in your EKS cluster.
@@ -546,18 +596,12 @@ nodes:
 > entries per indexer replica, or the nodes cannot form a cluster. Adjust it if you change the
 > replica count of the overlay.
 
-> **Note**: The `manager` entry also produces the agent listener certificate (`manager-remoted.pem` and `manager-remoted-key.pem`), which `remoted` serves on port `1517`. Its SAN is taken from the `dns` list above. Any other name agents use to reach the manager has to be there too, or be passed to the next command with `--agent-san`, which adds it to that certificate only:
->
-> ```bash
-> sudo bash ../tools/utils/deployment/certificates-conf.sh --cert --copy --priv --agent-san localhost
-> ```
->
-> `localhost` is the usual one here, for agents connecting through a port-forward.
+> **Note**: The `manager` entry also produces the agent listener certificate (`manager-remoted.pem` and `manager-remoted-key.pem`), which `remoted` serves on port `1517`. Its SAN is taken from the `dns` list above, plus every `--agent-san` passed to the next command, which adds an address to that certificate only. `--agent-san localhost` is what lets agents enroll through a port-forward, as in [Enrolling an agent](#enrolling-an-agent). Repeat the flag for any other address agents use to reach the manager.
 
 Run `wazuh-certs-tool.sh` to create the certificates.
 
 ```bash
-sudo bash ../tools/utils/deployment/certificates-conf.sh --cert --copy --priv
+sudo bash ../tools/utils/deployment/certificates-conf.sh --cert --copy --priv --agent-san localhost
 ```
 
 #### Run the credentials generator
@@ -792,6 +836,63 @@ kubectl -n wazuh port-forward service/wazuh-registration 1515:1515
 If you need to register agents pointing directly to the Minikube host IP, bind the port-forward to a specific interface/IP address adding the `--address` flag (as done previously for the dashboard).
 
 > **Note**: You can run the process in background adding `&` to the port-forward command, for example: kubectl -n wazuh port-forward service/wazuh-agents 1517:1517 &
+
+##### Enrolling an agent
+
+A Wazuh 5.x agent enrolls and reports over the same HTTPS channel, port `1517`, so the `wazuh-agents` port-forward above is the only agent port it needs. The steps below enroll it with an enrollment token minted through the Wazuh API: the token carries the manager address and its CA, so the agent needs no other setting.
+
+The address in the token has to be in the SAN of the agent listener certificate. For an agent going through the port-forward that address is `localhost`, which is there when the certificates were created with `--agent-san localhost` (see [Setup SSL certificates](#setup-ssl-certificates)). Otherwise the API refuses the token:
+
+```text
+{"title": "Bad Request", "detail": "Enrollment token refused: address not in certificate SAN", ...}
+```
+
+On a deployment whose certificates do not have `localhost`, use `WAZUH_MANAGER_ADDRESS=wazuh-agents` below, which is always in the SAN, and add `--add-host wazuh-agents:127.0.0.1` to the `docker run` command so that the name resolves to the port-forward.
+
+Forward the Wazuh API and the agent port, from the root of the repository:
+
+```bash
+kubectl -n wazuh port-forward service/wazuh-api 55000:55000 &
+kubectl -n wazuh port-forward service/wazuh-agents 1517:1517 &
+```
+
+Mint a token with the `wazuh` API user, whose password is in `wazuh/config/credentials/manager.env`:
+
+```bash
+WAZUH_MANAGER_ADDRESS=localhost
+
+WAZUH_API_TOKEN=$(printf 'user = "wazuh:%s"\n' "$(grep '^WAZUH_MANAGER_API_PASSWORD=' wazuh/config/credentials/manager.env | cut -d= -f2-)" | \
+  curl -sk -K - -X POST "https://localhost:55000/security/user/authenticate?raw=true")
+
+RESPONSE=$(curl -sk -X POST "https://localhost:55000/agents/enrollment-tokens" \
+  -H "Authorization: Bearer ${WAZUH_API_TOKEN}" -H "Content-Type: application/json" \
+  -d "{\"address\": \"${WAZUH_MANAGER_ADDRESS}\", \"embed_ca\": true}")
+WAZUH_ENROLLMENT_TOKEN=$(printf '%s' "${RESPONSE}" | sed -n 's/.*"token": *"\([^"]*\)".*/\1/p')
+[ -n "${WAZUH_ENROLLMENT_TOKEN}" ] && echo "Token minted" || echo "${RESPONSE}"
+```
+
+Start an agent container with it. `--network host` lets the container reach the port-forward on `localhost:1517`:
+
+```bash
+docker run -d --name wazuh-agent --network host \
+  -e WAZUH_ENROLLMENT_TOKEN="${WAZUH_ENROLLMENT_TOKEN}" \
+  -e WAZUH_AGENT_NAME=k8s-test-agent \
+  -v wazuh_agent_etc:/var/ossec/etc \
+  wazuh/wazuh-agent:5.0.0
+```
+
+Check that it is listed as `active`:
+
+```bash
+curl -sk -H "Authorization: Bearer ${WAZUH_API_TOKEN}" \
+  "https://localhost:55000/agents?select=name,status&pretty=true"
+```
+
+The API token lasts 15 minutes; if the answer is `Invalid token`, run the `WAZUH_API_TOKEN=...` command again. The optional fields of `POST /agents/enrollment-tokens` (`ttl`, `max_uses`, `description`) and the agent container variables are described in the [wazuh-docker agent guide](https://github.com/wazuh/wazuh-docker/blob/5.0.0/docs/ref/getting-started/deployment/wazuh-agent.md).
+
+> **Note**: A port-forward to a Service attaches to a single manager pod, so every agent enrolled this way reports to that pod.
+
+> **Note**: For about the first 30 seconds the agent may log `Enrollment rejected by the manager: token_unknown`, `credential rejected (401); re-enrolling` and `Manager unreachable`. The token and the agent key are created on the master and take a few seconds to reach the other manager nodes, and the port-forward may have attached to a worker. The agent retries on its own until `re-enrollment succeeded` and `Manager reachable again`.
 
 ### Conclusion
 
