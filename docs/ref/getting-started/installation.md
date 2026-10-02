@@ -270,7 +270,7 @@ nodes:
 > entries per indexer replica, or the nodes cannot form a cluster. Adjust it if you change the
 > replica count of the overlay.
 
-> **Note**: Traefik passes the dashboard TLS connection through untouched, so the browser checks `dashboard.pem` itself. Its SAN has to carry every name the dashboard is opened with: the load balancer FQDN from step 3.1, and any domain of your own from step 2. A name that is not in the `dashboard` list fails verification with `no alternative certificate subject name matches target host name`.
+> **Note**: Traefik passes the dashboard TLS connection through untouched, so the browser checks `dashboard.pem` itself. Its SAN has to carry every name the dashboard is opened with: the load balancer FQDN from step 3.1, and any domain of your own from step 2. A name that is not in the `dashboard` list fails verification with `no alternative certificate subject name matches target host name`. A domain of your own also has to be added to the `HostSNI` rule in step 3.3.1, or Traefik does not route it to the dashboard.
 
 > **Note**: The `manager` entry also produces the agent listener certificate (`manager-remoted.pem` and `manager-remoted-key.pem`), which `remoted` serves on port `1517`. Its SAN has to cover every name an agent dials: the `wazuh-agents` Service inside the cluster, which the `dns` list above provides, and the FQDN of the load balancer from step 3.1 for agents enrolling from outside, which `--agent-san` adds in the command below. Agents that verify the manager certificate fail to connect to a name the certificate does not carry.
 
@@ -376,6 +376,12 @@ spec:
       port: 443
   tls:
     passthrough: true
+```
+
+If you also open the dashboard with a domain of your own (step 2), add it to the same rule, joined with `||`. Traefik routes the passthrough connection by SNI, so a name that is not in the rule never reaches the dashboard: Traefik answers with its own `TRAEFIK DEFAULT CERT`, and `curl` fails with `self-signed certificate`. The domain also has to be in the `dashboard` list of `config.yml` (step 3.2.2):
+
+```yaml
+  - match: HostSNI(`a7f3cfbd27cee45559254f08b24651ed-448249308.us-west-1.elb.amazonaws.com`) || HostSNI(`wazuh.your-domain.com`)
 ```
 
 #### Step 3.3.2: Set the cluster key and the agent enrollment password
