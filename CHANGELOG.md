@@ -4,6 +4,7 @@
 
 | Issue | Comment |
 | - | - |
+| [#1681](https://github.com/wazuh/wazuh-kubernetes/issues/1681) | Add a worked agent enrollment example to the EKS and local deployment guides, and pass `--agent-san localhost` in the certificate command of the local guide. |
 | [#1647](https://github.com/wazuh/wazuh-kubernetes/issues/1647) | Add the agent listener (`remoted`) certificate to the `manager-certs` secret and to both manager statefulsets. |
 | [#1638](https://github.com/wazuh/wazuh-kubernetes/issues/1638) | Document how to change the default Wazuh indexer and Wazuh API passwords, the manager cluster key and the agent enrollment password, and add a check for default credentials. |
 | [#1578](https://github.com/wazuh/wazuh-kubernetes/issues/1578) | Readiness and liveness probes on Wazuh deployment. |
@@ -57,6 +58,7 @@
 
 | Issue | Comment |
 | - | - |
+| [#1685](https://github.com/wazuh/wazuh-kubernetes/issues/1685) | Add `localhost` (local) and the load balancer FQDN (EKS) to the dashboard certificate SAN in the sample `config.yml`, document how to verify it, and that a domain of your own also goes in the dashboard `HostSNI` rule. |
 | [#1613](https://github.com/wazuh/wazuh-kubernetes/pull/1613) | Report skipped bumps in the repository bumper workflow |
 | [#1595](https://github.com/wazuh/wazuh-kubernetes/pull/1595) | Fix changelog check to accept Prior versions entries |
 | [#1563](https://github.com/wazuh/wazuh-kubernetes/pull/1563) | Fix bumper workflow failure when bump produces no changes |
