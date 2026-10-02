@@ -261,6 +261,7 @@ nodes:
       dns:
         - "dashboard"
         - "dashboard.wazuh.svc.cluster.local"
+        - "a7ffe29bfcf38420988fd52a698be422-862207742.us-west-1.elb.amazonaws.com"   # load balancer FQDN from step 3.1
 ```
 
 > **Note**: The Wazuh indexer nodes verify each other's certificate on the transport port against
@@ -268,6 +269,8 @@ nodes:
 > by `network.publish_host` in `indexer-sts.yaml`. The `dns` list therefore needs one pair of
 > entries per indexer replica, or the nodes cannot form a cluster. Adjust it if you change the
 > replica count of the overlay.
+
+> **Note**: Traefik passes the dashboard TLS connection through untouched, so the browser checks `dashboard.pem` itself. Its SAN has to carry every name the dashboard is opened with: the load balancer FQDN from step 3.1, and any domain of your own from step 2. A name that is not in the `dashboard` list fails verification with `no alternative certificate subject name matches target host name`.
 
 > **Note**: The `manager` entry also produces the agent listener certificate (`manager-remoted.pem` and `manager-remoted-key.pem`), which `remoted` serves on port `1517`. Its SAN has to cover every name an agent dials: the `wazuh-agents` Service inside the cluster, which the `dns` list above provides, and the FQDN of the load balancer from step 3.1 for agents enrolling from outside, which `--agent-san` adds in the command below. Agents that verify the manager certificate fail to connect to a name the certificate does not carry.
 
@@ -588,6 +591,7 @@ nodes:
       dns:
         - "dashboard"
         - "dashboard.wazuh.svc.cluster.local"
+        - "localhost"
 ```
 
 > **Note**: The Wazuh indexer nodes verify each other's certificate on the transport port against
@@ -595,6 +599,21 @@ nodes:
 > by `network.publish_host` in `indexer-sts.yaml`. The `dns` list therefore needs one pair of
 > entries per indexer replica, or the nodes cannot form a cluster. Adjust it if you change the
 > replica count of the overlay.
+
+> **Note**: `localhost` in the `dashboard` list is the name the dashboard is opened with through the port-forward in [Accessing Dashboard](#accessing-dashboard). Add any other name you open it with. An IP address, such as the one given to `--address` there, goes in an `ip` list of the same node, because `wazuh-certs-tool.sh` refuses an IP in `dns`:
+>
+> ```yaml
+>   dashboard:
+>     - name: dashboard
+>       ip:
+>         - "192.168.1.34"
+>       dns:
+>         - "dashboard"
+>         - "dashboard.wazuh.svc.cluster.local"
+>         - "localhost"
+> ```
+>
+> A name that is not in the certificate fails verification with `no alternative certificate subject name matches target host name`.
 
 > **Note**: The `manager` entry also produces the agent listener certificate (`manager-remoted.pem` and `manager-remoted-key.pem`), which `remoted` serves on port `1517`. Its SAN is taken from the `dns` list above, plus every `--agent-san` passed to the next command, which adds an address to that certificate only. `--agent-san localhost` is what lets agents enroll through a port-forward, as in [Enrolling an agent](#enrolling-an-agent). Repeat the flag for any other address agents use to reach the manager.
 
@@ -808,6 +827,14 @@ kubectl -n wazuh port-forward service/dashboard 8443:443
 Access to Wazuh dashboard using <https://localhost:8443>
 
 Log in as `admin` with the password `credentials-conf.sh` generated (see [First access](#first-access) above). See [Credentials](../credentials.md).
+
+The certificate is signed by the deployment's own CA, so the browser warns about it until `wazuh/config/root-ca/certs/root-ca.pem` is trusted. To check the certificate without trusting the CA system-wide:
+
+```bash
+curl -sS -o /dev/null -w '%{http_code}\n' --cacert wazuh/config/root-ca/certs/root-ca.pem https://localhost:8443/
+```
+
+Any answer other than `000` means the name and the chain verified. `no alternative certificate subject name matches target host name 'localhost'` means the certificates were created without `localhost` in the `dashboard` list (see [Setup SSL certificates](#setup-ssl-certificates)).
 
 <!-- If you need to access the dashboard from another host (or register agents pointing to the Minikube host IP), you can bind the port-forward to a specific interface/IP address: -->
 
@@ -1068,6 +1095,13 @@ In case you created domain names for the services, you should be able to access 
 Log in as `admin` with the password `credentials-conf.sh` generated (**Step 3.4**). See [Credentials](../credentials.md).
 Also, you can access using the External-IP of the load balancer, from any address the `ip-allowlist` middleware (`wazuh/base/middleware.yaml`) allows: <https://xxx-yyy-zzz.us-west-1.elb.amazonaws.com:443>
 To access the Wazuh dashboard of a local deployment, please refer to [Accessing Dashboard](#accessing-dashboard).
+
+The certificate is signed by the deployment's own CA, so the browser warns about it until `wazuh/config/root-ca/certs/root-ca.pem` is trusted. The name you open the dashboard with has to be in the `dashboard` list of `config.yml` (step 3.2.2). To check both without trusting the CA system-wide:
+
+```bash
+curl -sS -o /dev/null -w '%{http_code}\n' --cacert wazuh/config/root-ca/certs/root-ca.pem \
+  "https://$(kubectl -n traefik get svc traefik -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')/"
+```
 
 ```bash
 kubectl -n traefik get svc
