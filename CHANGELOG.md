@@ -70,4 +70,4 @@
 
 ## Prior version
 
-- []()
+- [v4.99.0](https://github.com/wazuh/wazuh-kubernetes/blob/v4.99.0/CHANGELOG.md)
