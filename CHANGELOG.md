@@ -53,6 +53,7 @@
 
 | Issue | Comment |
 | - | - |
+| This is not a valid entry format | Missing issue link entirely |
 
 ### Fixed
 
