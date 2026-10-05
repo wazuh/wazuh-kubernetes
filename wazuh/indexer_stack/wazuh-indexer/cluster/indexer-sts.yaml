@@ -48,7 +48,7 @@ spec:
             defaultMode: 0600
       initContainers:
         - name: install-credentials
-          image: 'wazuh/wazuh-indexer:5.0.0'
+          image: 'wazuh/wazuh-indexer:5.0.0-rc1'
           command:
             - /bin/sh
             - -c
@@ -97,7 +97,7 @@ spec:
             privileged: true
       containers:
         - name: wazuh-indexer
-          image: 'wazuh/wazuh-indexer:5.0.0'
+          image: 'wazuh/wazuh-indexer:5.0.0-rc1'
           resources:
             limits:
               cpu: 500m
