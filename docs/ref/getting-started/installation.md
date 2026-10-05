@@ -486,7 +486,7 @@ docker run -d --name wazuh-agent \
   -e WAZUH_ENROLLMENT_TOKEN="${WAZUH_ENROLLMENT_TOKEN}" \
   -e WAZUH_AGENT_NAME=eks-test-agent \
   -v wazuh_agent_etc:/var/ossec/etc \
-  wazuh/wazuh-agent:5.0.0-rc1
+  wazuh/wazuh-agent:5.0.0
 ```
 
 The agent container variables and the optional fields of `POST /agents/enrollment-tokens` (`ttl`, `max_uses`, `description`) are described in the [wazuh-docker agent guide](https://github.com/wazuh/wazuh-docker/blob/5.0.0/docs/ref/getting-started/deployment/wazuh-agent.md).
@@ -539,12 +539,12 @@ minikube start --memory=6144 --cpus=4 --network-plugin=cni --cni=calico
 You will also have to load the docker images used by Wazuh into Minikube:
 
 ```bash
-docker pull wazuh/wazuh-indexer:5.0.0-rc1
-docker pull wazuh/wazuh-manager:5.0.0-rc1
-docker pull wazuh/wazuh-dashboard:5.0.0-rc1
-minikube image load wazuh/wazuh-indexer:5.0.0-rc1
-minikube image load wazuh/wazuh-manager:5.0.0-rc1
-minikube image load wazuh/wazuh-dashboard:5.0.0-rc1
+docker pull wazuh/wazuh-indexer:5.0.0
+docker pull wazuh/wazuh-manager:5.0.0
+docker pull wazuh/wazuh-dashboard:5.0.0
+minikube image load wazuh/wazuh-indexer:5.0.0
+minikube image load wazuh/wazuh-manager:5.0.0
+minikube image load wazuh/wazuh-dashboard:5.0.0
 ```
 
 #### Clone this repository
@@ -915,7 +915,7 @@ docker run -d --name wazuh-agent --network host \
   -e WAZUH_ENROLLMENT_TOKEN="${WAZUH_ENROLLMENT_TOKEN}" \
   -e WAZUH_AGENT_NAME=k8s-test-agent \
   -v wazuh_agent_etc:/var/ossec/etc \
-  wazuh/wazuh-agent:5.0.0-rc1
+  wazuh/wazuh-agent:5.0.0
 ```
 
 On Docker Desktop (macOS, Windows), `--network host` puts the container on the Docker VM's network unless **Enable host networking** is on, so `localhost` there is not the machine running `kubectl port-forward` and the agent fails with `Failed to connect to localhost port 1517`. Mint the token with `WAZUH_MANAGER_ADDRESS=wazuh-agents` instead and point that name at the host:
@@ -925,7 +925,7 @@ docker run -d --name wazuh-agent --add-host wazuh-agents:host-gateway \
   -e WAZUH_ENROLLMENT_TOKEN="${WAZUH_ENROLLMENT_TOKEN}" \
   -e WAZUH_AGENT_NAME=k8s-test-agent \
   -v wazuh_agent_etc:/var/ossec/etc \
-  wazuh/wazuh-agent:5.0.0-rc1
+  wazuh/wazuh-agent:5.0.0
 ```
 
 This variant does not work on Linux: there `host-gateway` is the `docker0` address, and the port-forward listens only on `127.0.0.1`.
