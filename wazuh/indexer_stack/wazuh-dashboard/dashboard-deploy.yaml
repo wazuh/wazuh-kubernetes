@@ -48,7 +48,7 @@ spec:
         fsGroup: 101
       initContainers:
         - name: install-credentials
-          image: 'wazuh/wazuh-dashboard:5.0.0'
+          image: 'wazuh/wazuh-dashboard:5.0.0-rc1'
           command:
             - /bin/sh
             - -c
@@ -72,7 +72,7 @@ spec:
             - name: wazuh-credentials
               mountPath: /run/secrets
         - name: init-dashboard-config
-          image: 'wazuh/wazuh-dashboard:5.0.0'
+          image: 'wazuh/wazuh-dashboard:5.0.0-rc1'
           command:
             - /bin/sh
             - -c
@@ -86,7 +86,7 @@ spec:
               subPath: config
       containers:
         - name: wazuh-dashboard
-          image: 'wazuh/wazuh-dashboard:5.0.0'
+          image: 'wazuh/wazuh-dashboard:5.0.0-rc1'
           resources:
             limits:
               cpu: 500m
