@@ -85,11 +85,11 @@ When triggered by a PR label, all parameters are derived automatically:
 | Parameter | Source |
 |---|---|
 | `pr_head_ref` | PR head branch from the event payload |
-| `pr_head_sha` | PR head SHA from GitHub API |
+| `pr_head_sha` | PR head SHA from the event payload |
 | `deployment_matrix` | Mapped from the label name |
 | `version` / `stage` | Read from `VERSION.json` on the PR branch |
 | `registry` | Defaults to ECR |
-| `automation_reference` | Defaults to `main` |
+| `automation_reference` | Base branch of the PR (for example `5.0.0` for a PR against `5.0.0`) |
 
 ---
 

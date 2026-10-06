@@ -49,7 +49,7 @@ permissions:
   issues: write
 
 env:
-  AUTOMATION_REFERENCE: ${{ inputs.automation_reference || 'main' }}
+  AUTOMATION_REFERENCE: ${{ inputs.automation_reference || github.base_ref || 'main' }}
   REGION: us-east-1
   WAZUH_REVISION: latest
   ARTIFACT_URLS_FILE_TEMP: '/tmp/wazuh-docker/artifact_urls.yaml'
@@ -350,7 +350,7 @@ jobs:
           ARCH=amd64
           PLATFORM=$(uname -s)_$ARCH
           curl -sLO "https://github.com/eksctl-io/eksctl/releases/latest/download/eksctl_$PLATFORM.tar.gz"
-          curl -sL "https://github.com/eksctl-io/eksctl/releases/latest/download/eksctl_checksums.txt" | grep $PLATFORM | sha256sum --check
+          curl -sL "https://github.com/eksctl-io/eksctl/releases/latest/download/eksctl_checksums.txt" | grep " eksctl_${PLATFORM}.tar.gz$" | sha256sum --check
           tar -xzf eksctl_$PLATFORM.tar.gz -C /tmp && rm eksctl_$PLATFORM.tar.gz
           sudo mv /tmp/eksctl /usr/local/bin
 
