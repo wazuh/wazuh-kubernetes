@@ -2,7 +2,7 @@
 
 Workflow file: `.github/workflows/5_check_k8s_integration_tests.yaml`
 
-This workflow provisions a Kubernetes cluster (Minikube or EKS), deploys Wazuh, and runs the integration test suite against the live deployment. It can be triggered manually or from a PR comment.
+This workflow provisions a Kubernetes cluster (Minikube or EKS), deploys Wazuh, and runs the integration test suite against the live deployment. It can be triggered manually or by adding a label to a PR.
 
 ---
 
@@ -12,43 +12,47 @@ The workflow supports two execution modes:
 
 | Mode | Trigger | Who can trigger |
 |---|---|---|
-| PR comment | `issue_comment` on an open PR | OWNER, MEMBER, or COLLABORATOR |
+| PR label | `pull_request` (`labeled`) on a non-draft PR opened from a branch of this repository | Anyone who can add labels (triage access or higher) |
 | Manual | `workflow_dispatch` | Anyone with repo write access |
+
+To run the tests on a pull request, add one of the labels listed in [pull_request (label) flow](#pull_request-label-flow). Each label added starts one run against the PR head at that moment:
+
+- To run the tests again (for example after pushing new commits), remove the label and add it again.
+- Labels added while the PR is a draft are ignored. Mark the PR as ready for review and add the label again.
+- PRs opened from forks do not run: GitHub does not pass secrets or the OIDC token to `pull_request` runs from forks. Push the branch to this repository to test it.
 
 ---
 
 ## Execution Flows
 
-### issue_comment flow
+### pull_request (label) flow
 
-Triggered when an authorized user posts a recognized command on an open PR.
+Triggered when one of these labels is added to a non-draft PR opened from a branch of this repository.
 
 ```mermaid
 flowchart TD
-    A[PR comment posted] --> B{Recognized command\nand authorized user?}
+    A[Label added to PR] --> B{Test label on a non-draft\nPR from this repository?}
     B -- No --> Z[Ignored]
-    B -- Yes --> C[get_pr_info\nReact · Extract PR data\nParse command · Create Check Run]
+    B -- Yes --> C[get_pr_info\nExtract PR data · Parse label]
     C --> D[prepare\nResolve branch · Read VERSION.json]
     D --> E{deployment_matrix}
     E --> F[kubernetes_test\ndeployment_type=local]
     E --> G[kubernetes_test\ndeployment_type=eks]
-    F --> H[update_check\nUpdate GitHub Check Run]
-    G --> H
 ```
 
-**Recognized commands:**
+**Labels:**
 
-| Comment | Deployment matrix |
+| Label | Deployment matrix |
 |---|---|
-| `/test-k8s` | `["local"]` |
-| `/test-k8s-local` | `["local"]` |
-| `/test-k8s-eks` | `["eks"]` |
+| `test/k8s` | `["local","eks"]` |
+| `test/k8s-local` | `["local"]` |
+| `test/k8s-eks` | `["eks"]` |
 
-Only comments on **open** PRs from users with `OWNER`, `MEMBER`, or `COLLABORATOR` association are processed. All other comments are silently ignored.
+Any other label, a draft PR or a PR opened from a fork skips `get_pr_info` and the rest of the workflow.
 
 ### workflow_dispatch flow
 
-Triggered manually. Skips `get_pr_info` and `update_check` (no Check Run is created).
+Triggered manually. Skips `get_pr_info`.
 
 ```mermaid
 flowchart TD
@@ -74,15 +78,15 @@ flowchart TD
 | `stage` | No | — | Image stage suffix (e.g. `beta1`, `beta2-latest`). Required when `version` is set manually |
 | `registry` | No | `ECR` | `ECR` (dev images) or `DockerHub` (prod images) |
 
-### issue_comment parameters
+### pull_request (label) parameters
 
-When triggered by a PR comment, all parameters are derived automatically:
+When triggered by a PR label, all parameters are derived automatically:
 
 | Parameter | Source |
 |---|---|
-| `pr_head_ref` | PR head branch from GitHub API |
+| `pr_head_ref` | PR head branch from the event payload |
 | `pr_head_sha` | PR head SHA from GitHub API |
-| `deployment_matrix` | Parsed from comment command |
+| `deployment_matrix` | Mapped from the label name |
 | `version` / `stage` | Read from `VERSION.json` on the PR branch |
 | `registry` | Defaults to ECR |
 | `automation_reference` | Defaults to `main` |
@@ -110,20 +114,18 @@ The effective `WAZUH_VERSION` (passed to `test_runner`) is always the version th
 
 ## Job Details
 
-### Job 1 — `get_pr_info` (issue_comment only)
+### Job 1 — `get_pr_info` (pull_request only)
 
 | Step | What it does |
 |---|---|
-| React to comment | Adds a 🚀 reaction to the triggering PR comment |
-| Extract PR data | Calls GitHub API to get PR `head_ref` and `head_sha` |
-| Parse command | Maps comment text → `deployment_matrix` JSON and `check_name` string |
-| Create Check Run | Creates a GitHub Check Run in `in_progress` state on the PR head SHA; passes the `check_run_id` to `update_check` |
+| Extract PR data | Reads the PR number, head branch and head SHA from the event payload |
+| Parse label | Maps the label name → `deployment_matrix` JSON |
 
 ### Job 2 — `prepare` (both triggers)
 
 | Step | What it does |
 |---|---|
-| Resolve context | If `workflow_dispatch`: reads inputs. If `issue_comment`: reads outputs from `get_pr_info` |
+| Resolve context | If `workflow_dispatch`: reads inputs. If `pull_request`: reads outputs from `get_pr_info` |
 | Checkout VERSION.json | Sparse-checks out only `VERSION.json` from the target branch |
 | Read version info | Extracts `version` and `stage` fields from `VERSION.json` |
 | Show test plan | Writes a summary table to the GitHub Actions step summary |
@@ -238,7 +240,7 @@ For details on what `kubernetes-local` and `kubernetes-eks` test types validate,
 | Output | When | Content |
 |---|---|---|
 | Step summary | Always | Test results appended to `$GITHUB_STEP_SUMMARY` |
-| PR comment | `issue_comment` trigger only | Posts or updates a comment (identified by HTML marker `<!-- k8s-integration-check-{deploy} -->`) with ✅/❌ and the results file content |
+| PR comment | `pull_request` trigger only | Posts or updates a comment (identified by HTML marker `<!-- k8s-integration-check-{deploy} -->`) with ✅/❌ and the results file content |
 | Artifact: `test-results-k8s-{deploy}-{run_id}` | Always | The `.github` results file, retained 7 days |
 | Artifact: `k8s-logs-{deploy}-{run_id}` | On failure only | `kubectl` logs of every container, init containers included, of all pods in `wazuh` namespace, retained 7 days |
 
@@ -253,17 +255,6 @@ aws ec2 delete-volume --volume-id <id>
 
 Minikube clusters are ephemeral — no explicit cleanup is needed for local deployments.
 
-### Job 4 — `update_check` (issue_comment only)
-
-Updates the GitHub Check Run created in Job 1 with the final conclusion:
-
-| `kubernetes_test` result | Check conclusion |
-|---|---|
-| `success` | `success` — ✅ All Kubernetes integration tests passed |
-| `failure` | `failure` — ❌ One or more tests failed |
-| `cancelled` | `cancelled` |
-| `skipped` | `skipped` |
-
 ---
 
 ## Required Secrets and Variables
@@ -277,7 +268,7 @@ Updates the GitHub Check Run created in Job 1 with the final conclusion:
 | `AWS_IAM_ROLE` | OIDC role assumption for AWS credentials |
 | `ARTIFACTS_S3_BUCKET` | Download `artifact_urls.yaml` |
 | `GH_CLONE_TOKEN` | Checkout `wazuh-automation` (private repo) |
-| `GITHUB_TOKEN` | PR comments and Check Run updates (built-in) |
+| `GITHUB_TOKEN` | PR comments (built-in) |
 
 ### Repository variables
 
@@ -297,7 +288,6 @@ Updates the GitHub Check Run created in Job 1 with the final conclusion:
 | `contents: read` | Repository | Checkout the PR branch |
 | `pull-requests: write` | PR | Post/update PR comments |
 | `issues: write` | Issues | Post comments (PR comments use the issues API) |
-| `checks: write` | Checks | Create and update GitHub Check Runs |
 
 ---
 

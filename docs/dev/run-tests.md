@@ -55,4 +55,4 @@ If neither is available, every test that authenticates stops with `no password f
 
 ## Automated testing workflows
 
-The PR check `.github/workflows/5_check_k8s_integration_tests.yaml` deploys the branch on Minikube or on a temporary EKS cluster and runs the integration test module of wazuh-automation (`test_runner`), not this suite. It runs on a `/test-k8s`, `/test-k8s-local` or `/test-k8s-eks` comment on a pull request, or manually from the Actions tab. See [Kubernetes Integration Tests](../ref/integration_test/k8s_integration_tests.md).
+The PR check `.github/workflows/5_check_k8s_integration_tests.yaml` deploys the branch on Minikube or on a temporary EKS cluster and runs the integration test module of wazuh-automation (`test_runner`), not this suite. It runs when the `test/k8s`, `test/k8s-local` or `test/k8s-eks` label is added to a non-draft pull request, or manually from the Actions tab. See [Kubernetes Integration Tests](../ref/integration_test/k8s_integration_tests.md).
