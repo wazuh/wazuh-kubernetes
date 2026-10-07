@@ -13,7 +13,7 @@ When backing up Wazuh deployments on Kubernetes, also consider:
 
 - Wazuh manager, indexer and dashboard state is stored in PersistentVolumes:
   - Indexer: the indices, the security index (internal users and their passwords) and the `.initialized` marker
-  - Manager master: the Wazuh API user database, `rbac.db`, under `api/configuration`
+  - Manager master: the Wazuh API user database, `rbac.db`, under `api/configuration`, and the agent enrollment password, `etc/authd.pass`
   - Manager master and workers: the manager keystore, `queue/keystore`, with the `wazuh-manager` indexer password
   - Dashboard: its keystore (`opensearch.password`, `wazuh_core.hosts.default.password`, `wazuh_ai_assistant.encryptionKey`) and `opensearch_dashboards.yml`, on the `wazuh-dashboard-config` claim
 - Use your storage provider's snapshot or backup capabilities:
@@ -28,8 +28,7 @@ When backing up Wazuh deployments on Kubernetes, also consider:
 Back up the following files, from which kustomize generates the Secrets:
 
 - `wazuh/config/credentials/*.env` - The deployment's passwords, including any rotated with `password-tool.sh`. Without them `kubectl apply -k` fails, and generating them again produces passwords that do not match the ones stored on the volumes
-- `wazuh/secrets/wazuh-authd-pass-secret.yaml` - Agent enrollment password
-- `wazuh/secrets/wazuh-cluster-key-secret.yaml` - Cluster communication key
+- `wazuh/config/credentials/cluster.key` - Cluster communication key
 - `wazuh/config/{indexer,manager,dashboard,root-ca}/certs/` - What the `*-certs` Secrets are generated from
 - `wazuh/wazuh-certificates/` - Output of `wazuh-certs-tool.sh`, including `root-ca.key`, needed to issue new certificates
 
