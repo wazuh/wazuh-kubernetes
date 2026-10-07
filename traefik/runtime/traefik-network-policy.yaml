@@ -1,0 +1,21 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: traefik-ingress
+  namespace: traefik
+spec:
+  podSelector:
+    matchLabels:
+      app: traefik
+  policyTypes:
+  - Ingress
+  ingress:
+  - ports:
+    - protocol: TCP
+      port: 443
+    - protocol: TCP
+      port: 1514
+    - protocol: TCP
+      port: 1515
+    - protocol: TCP
+      port: 1517

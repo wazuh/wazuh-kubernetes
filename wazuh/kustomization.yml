@@ -54,6 +54,7 @@ resources:
   - base/wazuh-ns.yaml
   - base/storage-class.yaml
   - base/middleware.yaml
+  - base/traefik-role-binding.yaml
   - base/ingressRoute-tcp-dashboard.yaml
   - base/ingressRoute-tcp-agents.yaml
   - base/ingressRoute-tcp-events.yaml

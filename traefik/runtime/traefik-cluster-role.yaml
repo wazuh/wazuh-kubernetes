@@ -3,30 +3,21 @@ kind: ClusterRole
 metadata:
   name: traefik
 rules:
-  # Core Kubernetes resources
+  # Bound only in the wazuh namespace (wazuh/base/traefik-role-binding.yaml).
+  # Traefik's kubernetescrd provider starts informers for all of these and
+  # does not load any route until every one of them has synced.
   - apiGroups: [""]
     resources:
       - services
-      - endpoints
       - secrets
       - configmaps
-      - nodes
     verbs: ["get","list","watch"]
 
-  # EndpointSlice (mandatory)
   - apiGroups: ["discovery.k8s.io"]
     resources:
       - endpointslices
     verbs: ["get","list","watch"]
 
-  # Traefik CRDs
   - apiGroups: ["traefik.io"]
     resources: ["*"]
-    verbs: ["get","list","watch"]
-
-  # Ingress API (optional but commonly enabled)
-  - apiGroups: ["networking.k8s.io"]
-    resources:
-      - ingresses
-      - ingressclasses
     verbs: ["get","list","watch"]
