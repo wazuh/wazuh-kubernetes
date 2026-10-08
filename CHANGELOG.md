@@ -25,6 +25,7 @@
 
 | Issue | Comment |
 | - | - |
+| [#1710](https://github.com/wazuh/wazuh-kubernetes/issues/1710) | Hardening traefik deployment |
 | [#1705](https://github.com/wazuh/wazuh-kubernetes/issues/1705) | Start the Kubernetes integration tests from PR labels |
 | [#1660](https://github.com/wazuh/wazuh-kubernetes/issues/1660) | Adapt Kubernetes manifests to install-time credential generation |
 | [#1673](https://github.com/wazuh/wazuh-kubernetes/issues/1673) | Adapt the deployment to the HTTPS communication changes |
