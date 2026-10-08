@@ -26,6 +26,7 @@
 | Issue | Comment |
 | - | - |
 | [#1708](https://github.com/wazuh/wazuh-kubernetes/issues/1708) | Delete secrets and add random creation for authd.pass and cluster_key |
+| [#1705](https://github.com/wazuh/wazuh-kubernetes/issues/1705) | Start the Kubernetes integration tests from PR labels |
 | [#1660](https://github.com/wazuh/wazuh-kubernetes/issues/1660) | Adapt Kubernetes manifests to install-time credential generation |
 | [#1673](https://github.com/wazuh/wazuh-kubernetes/issues/1673) | Adapt the deployment to the HTTPS communication changes |
 | [#1636](https://github.com/wazuh/wazuh-kubernetes/issues/1636) | Agent enrollment fails on EKS because Traefik never expose port 1517 |
