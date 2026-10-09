@@ -14,7 +14,7 @@ namespace: traefik
 resources:
   - traefik-ns.yaml
   - traefik-cluster-role.yaml
-  - traefik-cluster-role-binding.yaml
   - traefik-sa.yaml
   - traefik-deployment.yaml
   - traefik-service.yaml
+  - traefik-network-policy.yaml

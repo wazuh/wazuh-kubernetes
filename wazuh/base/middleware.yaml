@@ -4,6 +4,6 @@ metadata:
   name: ip-allowlist
   namespace: wazuh
 spec:
-  ipWhiteList:
+  ipAllowList:
     sourceRange:
       - 0.0.0.0/0

@@ -22,6 +22,8 @@ spec:
           args:
             # Providers
             - "--providers.kubernetescrd"
+            - "--providers.kubernetescrd.namespaces=wazuh"
+            - "--providers.kubernetescrd.disableClusterScopeResources=true"
             - "--providers.kubernetesingress=false"
 
             # EntryPoints (TCP)
@@ -39,10 +41,6 @@ spec:
             # Logging (adjust as needed)
             - "--log.level=INFO"
 
-            # Optional dashboard (DO NOT expose publicly)
-            - "--api.dashboard=true"
-            - "--api.insecure=true"
-
           ports:
             - name: websecure
               containerPort: 443
@@ -55,9 +53,6 @@ spec:
               protocol: TCP
             - name: wazuh-1515
               containerPort: 1515
-              protocol: TCP
-            - name: admin
-              containerPort: 8080
               protocol: TCP
 
           securityContext:

@@ -41,7 +41,7 @@ so `wazuh/config/credentials/*.env` has to hold the current passwords, including
 
 1. Check out the new release, and carry over from the directory the deployment was created from:
    `wazuh/config/` (certificates, `credentials/*.env` and `credentials/cluster.key`),
-   `wazuh/base/ingressRoute-tcp-dashboard.yaml`, and any change to `envs/`. Do not run
+   `wazuh/base/ingressRoute-tcp-dashboard.yaml`, `wazuh/base/middleware.yaml`, and any change to `envs/`. Do not run
    `credentials-conf.sh` again: the deployment keeps the passwords it was first started with, and
    new values would not match them. The exception is a deployment created before
    `credentials-conf.sh` wrote `cluster.key`: run it once to add that file only, as described in
@@ -50,7 +50,17 @@ so `wazuh/config/credentials/*.env` has to hold the current passwords, including
    included: `install-credentials` (every workload), `init-wazuh-etc` (managers) and
    `init-dashboard-config` (dashboard). All the nodes of the Wazuh cluster have to run the same
    version.
-3. Apply the overlay. Always the overlay, never a single manifest: the Secrets the workloads mount
+3. Apply the Traefik runtime. From 5.0.0, also delete the `traefik` ClusterRoleBinding, which
+   `kubectl apply` does not remove and which gives Traefik read access to the Secrets of every
+   namespace. Traefik stops routing until the overlay of the next step creates its RoleBinding in the
+   `wazuh` namespace.
+
+   ```bash
+   kubectl delete clusterrolebinding traefik --ignore-not-found
+   kubectl apply -k traefik/runtime/
+   ```
+
+4. Apply the overlay. Always the overlay, never a single manifest: the Secrets the workloads mount
    carry a name kustomize generates, and a manifest applied on its own references a Secret that does
    not exist.
 
@@ -62,7 +72,7 @@ so `wazuh/config/credentials/*.env` has to hold the current passwords, including
    kubectl -n wazuh rollout status deployment/wazuh-dashboard
    ```
 
-4. Check that every account still authenticates with its password:
+5. Check that every account still authenticates with its password:
 
    ```bash
    cd wazuh && ../tools/tests/check-default-credentials.sh && cd ..
