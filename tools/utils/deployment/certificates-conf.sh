@@ -134,11 +134,24 @@ if $DO_CERT; then
     exit 1
   fi
   echo "Generating certificates"
-  bash $CERT_TOOL -A "${AGENT_SAN[@]}" "${API_SAN[@]}"
+  rc=0
+  bash "$CERT_TOOL" -A "${AGENT_SAN[@]}" "${API_SAN[@]}" || rc=$?
+  # wazuh-certs-tool.sh rewrites config.yml as root with mode 0600
+  if [ "$(id -u)" -eq 0 ]; then
+    chown "${CERT_UID}:${CERT_GID}" "$CONFIG_FILE"
+  fi
+  if [ "$rc" -ne 0 ]; then
+    echo "Error: wazuh-certs-tool.sh failed (exit code $rc). No certificates were copied." >&2
+    exit 1
+  fi
 fi
 
 # 2. Copy certificates to config directories
 if $DO_COPY; then
+  if [ ! -d "$OUTPUT_DIR" ]; then
+    echo "Error: $OUTPUT_DIR not found. Run with --cert first." >&2
+    exit 1
+  fi
   FIRST_INDEXER=true
   for node in "${INDEXER_NODES[@]}"; do
     dir_name=$(node_to_dir "$node")
