@@ -3,8 +3,8 @@
 #
 # Asserts that every account of a deployment authenticates with its generated
 # password, that none of them authenticates with its own username as its
-# password, and that the Wazuh indexer image carries none of the OpenSearch
-# demo accounts.
+# password, that the Wazuh indexer image carries none of the OpenSearch demo
+# accounts, and that every manager node runs on the generated cluster key.
 #
 # The packages refuse to start without a resolved credential, so a deployment
 # that answers at all has already been through credentials-conf.sh and its
@@ -31,6 +31,10 @@ INDEXER_USERS="admin kibanaserver wazuh-manager"
 API_USERS="wazuh wazuh-wui"
  
 INTERNAL_USERS_FILE="/usr/share/wazuh-indexer/config/opensearch-security/internal_users.yml"
+
+# Value the cluster key Secret shipped with before credentials-conf.sh
+# generated it.
+CLUSTER_KEY_PLACEHOLDER="REPLACETHISCLUSTERKEYBEFOREDEPLO"
  
 failures=0
 checks=0
@@ -50,7 +54,7 @@ Usage: check-default-credentials.sh [options]
                                     the first pod labelled
                                     app=wazuh-manager,node-type=master
   -c, --credentials-dir <dir>       Where credentials-conf.sh wrote indexer.env,
-                                    manager.env and dashboard.env. Default:
+                                    manager.env, dashboard.env and cluster.key. Default:
                                     ${CREDENTIALS_DIR} (run this from the same
                                     directory as credentials-conf.sh, i.e. wazuh/)
   -h, --help                        Show this help.
@@ -89,7 +93,7 @@ fi
 # Reads the values credentials-conf.sh wrote, so this checks the same
 # passwords the deployment was actually given, not a guess at them.
 missing=()
-for file in indexer.env manager.env; do
+for file in indexer.env manager.env cluster.key; do
   [ -r "${CREDENTIALS_DIR}/${file}" ] || missing+=("${CREDENTIALS_DIR}/${file}")
 done
 if [ "${#missing[@]}" -gt 0 ]; then
@@ -166,6 +170,12 @@ auth_code() {
   printf '%s' "${code}"
 }
  
+# The cluster key the manager is running with, from its own configuration.
+cluster_key_of() {
+  kubectl -n "${NAMESPACE}" exec "$1" -- \
+    /var/wazuh-manager/bin/wazuh-manager-conf get cluster.key 2>/dev/null | tr -d '\r'
+}
+
 # The same test the manager's credentials resolver makes before it skips
 # seeding the Wazuh API user database.
 node_type() {
@@ -345,6 +355,27 @@ for pod in ${MANAGER_PODS}; do
   done
 done
  
+info ""
+################################################################################
+info ""
+info "Manager cluster key of each manager pod"
+################################################################################
+
+CLUSTER_KEY=$(cat "${CREDENTIALS_DIR}/cluster.key")
+
+for pod in ${MANAGER_PODS}; do
+  running_key=$(cluster_key_of "${pod}")
+  if [ -z "${running_key}" ]; then
+    fail "${pod}: could not read its cluster key"
+  elif [ "${running_key}" = "${CLUSTER_KEY_PLACEHOLDER}" ]; then
+    fail "${pod}: runs on the public placeholder cluster key"
+  elif [ "${running_key}" != "${CLUSTER_KEY}" ]; then
+    fail "${pod}: its cluster key is not the one in ${CREDENTIALS_DIR}/cluster.key"
+  else
+    pass "${pod}: runs on the generated cluster key"
+  fi
+done
+
 info ""
 info "The Wazuh API is served by the manager master only, so ${MANAGER_POD} is the"
 info "node whose user database authenticates requests over HTTP. Worker pods run no"

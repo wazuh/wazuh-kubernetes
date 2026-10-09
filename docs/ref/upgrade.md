@@ -42,8 +42,12 @@ so `wazuh/config/credentials/*.env` has to hold the current passwords, including
 1. Check out the new release, and carry over from the directory the deployment was created from:
    `wazuh/config/` (certificates and `credentials/*.env`), your edits to `wazuh/secrets/*.yaml`,
    `wazuh/base/ingressRoute-tcp-dashboard.yaml`, `wazuh/base/middleware.yaml`, and any change to `envs/`. Do not run
+   `wazuh/config/` (certificates, `credentials/*.env` and `credentials/cluster.key`),
+   `wazuh/base/ingressRoute-tcp-dashboard.yaml`, and any change to `envs/`. Do not run
    `credentials-conf.sh` again: the deployment keeps the passwords it was first started with, and
-   new values would not match them.
+   new values would not match them. The exception is a deployment created before
+   `credentials-conf.sh` wrote `cluster.key`: run it once to add that file only, as described in
+   [The cluster key](credentials.md#the-cluster-key).
 2. If you pin the images yourself, change every `wazuh/wazuh-*` image, the init containers
    included: `install-credentials` (every workload), `init-wazuh-etc` (managers) and
    `init-dashboard-config` (dashboard). All the nodes of the Wazuh cluster have to run the same
