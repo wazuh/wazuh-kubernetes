@@ -53,14 +53,9 @@ Network policies restrict communication between pods to enforce security boundar
 
 The passwords of the Wazuh indexer and Wazuh API accounts are generated for each deployment by `tools/utils/deployment/credentials-conf.sh`, and reach the pods through the `indexer-credentials-<hash>`, `manager-credentials-<hash>` and `dashboard-credentials-<hash>` Secrets that `wazuh/kustomization.yml` generates from `wazuh/config/credentials/*.env`. See [Credentials](../credentials.md).
 
-Two more Secrets live under `wazuh/secrets/`:
+The same script generates the shared key for manager cluster membership, on port `1516`, into `wazuh/config/credentials/cluster.key`, which reaches the managers through the `wazuh-cluster-key-<hash>` Secret. It is not an account inside an image and `password-tool.sh` does not cover it: the managers read it from the Secret on every container start. See [The cluster key and the agent enrollment password](../credentials.md#the-cluster-key-and-the-agent-enrollment-password), which also covers changing it on a deployment that is already running.
 
-- `wazuh/secrets/wazuh-authd-pass-secret.yaml`
-  Agent enrollment password, mounted as a file: Password-mode enrollment of Wazuh 5.x agents on port `1517`, and the legacy `authd` enrollment of 4.x agents on port `1515`. Token-mode enrollment on `1517` uses tokens minted through the Wazuh API instead.
-- `wazuh/secrets/wazuh-cluster-key-secret.yaml`
-  Shared key for manager cluster membership, on port `1516`.
-
-The last two are not accounts inside an image and `password-tool.sh` does not cover them: the managers read them from the Secret on every container start. **Change them before the first `kubectl apply -k`** — see [The cluster key and the agent enrollment password](../credentials.md#the-cluster-key-and-the-agent-enrollment-password), which also covers changing either one on a deployment that is already running.
+The agent enrollment password is not in the manifests: the master generates a random one in `/var/wazuh-manager/etc/authd.pass` on its first start, and distributes it to the workers.
 
 > **Important**: each component stores its passwords on its first start. Editing `config/credentials/*.env`, or the generated Secrets, afterwards does not change the accounts: [Credentials](../credentials.md#rotating-a-password-on-a-running-deployment) has the procedure.
 
@@ -79,7 +74,7 @@ The Wazuh deployment already uses PVCs for every directory that has to outlive a
 
 | Workload | Path | What it holds |
 | --- | --- | --- |
-| Manager master and worker | `/var/wazuh-manager/etc` | Configuration, `client.keys`, `authd.pass`, certificates |
+| Manager master and worker | `/var/wazuh-manager/etc` | Configuration, `client.keys`, the agent enrollment password `authd.pass`, certificates |
 | Manager master and worker | `/var/wazuh-manager/api/configuration` | Wazuh API configuration and its user database, `rbac.db`, on the master only |
 | Manager master and worker | `/var/wazuh-manager/logs` | Manager logs |
 | Manager master and worker | `/var/wazuh-manager/queue` | Agent state, queues, the manager databases, and the manager keystore (`queue/keystore`) with the `wazuh-manager` indexer password |

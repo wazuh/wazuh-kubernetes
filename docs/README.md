@@ -97,9 +97,6 @@ To deploy a cluster on your local environment (like Minikube, Kind or Microk8s) 
 │   ├── indexer_stack
 │   │   ├── wazuh-dashboard
 │   │   └── wazuh-indexer
-│   ├── secrets
-│   │   ├── wazuh-authd-pass-secret.yaml
-│   │   └── wazuh-cluster-key-secret.yaml
 │   ├── wazuh_managers
 │   │   ├── network-policies
 │   │   ├── wazuh-agents-svc.yaml

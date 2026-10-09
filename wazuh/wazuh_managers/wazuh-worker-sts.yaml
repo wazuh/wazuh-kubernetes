@@ -50,9 +50,6 @@ spec:
           secret:
             secretName: manager-credentials
             defaultMode: 0400
-        - name: wazuh-authd-pass
-          secret:
-            secretName: wazuh-authd-pass
         - name: wazuh-manager-certs-raw
           secret:
             secretName: manager-certs
@@ -137,10 +134,6 @@ spec:
           volumeMounts:
             - name: wazuh-credentials
               mountPath: /run/secrets
-              readOnly: true
-            - name: wazuh-authd-pass
-              mountPath: /wazuh-config-mount/etc/authd.pass
-              subPath: authd.pass
               readOnly: true
             - name: wazuh-manager-worker
               mountPath: /var/wazuh-manager/api/configuration

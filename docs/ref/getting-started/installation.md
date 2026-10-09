@@ -321,16 +321,16 @@ secretGenerator:
 **3.2.4 Run the credentials generator**:
 
 Every Wazuh component now generates or validates its own credentials at install time and refuses to
-start without them. Generate the five passwords before the first `kubectl apply -k`, the same way as
-the certificates above. The script sources `wazuh-credentials.sh`, downloaded in step 3.2.1
+start without them. Generate the five passwords and the manager cluster key before the first
+`kubectl apply -k`, the same way as the certificates above. The script sources `wazuh-credentials.sh`, downloaded in step 3.2.1
 (`WAZUH_CREDENTIALS_LIB` overrides the path):
 
 ```bash
 sudo bash ../tools/utils/deployment/credentials-conf.sh
 ```
 
-It writes `config/credentials/{indexer,manager,dashboard}.env`, which `wazuh/kustomization.yml`'s
-`secretGenerator` turns into Secrets the pods read. **It never overwrites an existing file**: once a
+It writes `config/credentials/{indexer,manager,dashboard}.env` and `config/credentials/cluster.key`,
+which `wazuh/kustomization.yml`'s `secretGenerator` turns into Secrets the pods read. **It never overwrites an existing file**: once a
 deployment has started, the passwords it was given are the ones that count. `--force` replaces them,
 and is only for a deployment that has never been started.
 
@@ -384,49 +384,7 @@ If you also open the dashboard with a domain of your own (step 2), add it to the
   - match: HostSNI(`a7f3cfbd27cee45559254f08b24651ed-448249308.us-west-1.elb.amazonaws.com`) || HostSNI(`wazuh.your-domain.com`)
 ```
 
-#### Step 3.3.2: Set the cluster key and the agent enrollment password
-
-Two of the Secrets under `wazuh/secrets/` hold shared keys rather than account passwords. Neither ships with a usable value: the cluster key is a placeholder, and the enrollment password is the string `password`.
-
-| Secret | Key | Default value | What it protects |
-| --- | --- | --- | --- |
-| `wazuh-cluster-key` | `key` | `REPLACETHISCLUSTERKEYBEFOREDEPLO` (placeholder, not a key) | Membership of the Wazuh manager cluster, on port `1516` |
-| `wazuh-authd-pass` | `authd.pass` | `password` | Agent enrollment: the channel `remoted` serves on port `1517`, and the legacy `authd` port `1515` |
-
-**Change both here, before the first `kubectl apply -k`.** Unlike the Wazuh indexer and Wazuh API accounts created in step 3.2.4, these are not accounts inside an image, so `password-tool.sh` does not cover them: the managers read them from the Secrets on every container start. Setting them now costs nothing, while changing the cluster key on a running deployment stops the workers from syncing until every manager pod has restarted on the new key.
-
-Generate the two values. The cluster key has to be **exactly 32 alphanumeric characters** (`^[a-zA-Z0-9]{32}$`); `openssl rand -hex 16` produces exactly that. A key of any other length, or one carrying `-`, `_` or any other punctuation, makes every manager refuse to start with `(1244): Invalid configuration at '/cluster/key': does not satisfy 'pattern'`:
-
-```bash
-openssl rand -hex 16   # cluster key, 32 hexadecimal characters
-openssl rand -hex 24   # enrollment password
-```
-
-Encode each one, without a trailing newline:
-
-```bash
-echo -n '8f3c1d0b7a5e49628c1f0a3d5b7e9c21' | base64
-```
-
-Then write them into the two manifests, keeping the key names as they are:
-
-```yaml
-# wazuh/secrets/wazuh-cluster-key-secret.yaml
-data:
-  key: OGYzYzFkMGI3YTVlNDk2MjhjMWYwYTNkNWI3ZTljMjE=   # the new cluster key
-```
-
-```yaml
-# wazuh/secrets/wazuh-authd-pass-secret.yaml
-data:
-  authd.pass: <base64 of the new enrollment password>   # the new enrollment password
-```
-
-Drop the `# string "..." base64 encoded` comments the manifests ship with, so they do not describe a value that is no longer there, and keep these edits out of your commits: base64 is encoding, not encryption.
-
-Every agent you enroll afterwards has to present the new enrollment password. See [Credentials](../credentials.md#the-cluster-key-and-the-agent-enrollment-password) for how to change either value on a deployment that is already running.
-
-#### Step 3.3.3: Deploy Wazuh cluster
+#### Step 3.3.2: Deploy Wazuh cluster
 
 By using the kustomization file on the `eks` variant we can now deploy the whole cluster with a single command:
 
@@ -634,8 +592,8 @@ sudo bash ../tools/utils/deployment/certificates-conf.sh --cert --copy --priv --
 #### Run the credentials generator
 
 Every Wazuh component now generates or validates its own credentials at install time and refuses to
-start without them. Generate the five passwords before the first `kubectl apply -k`. The script
-sources `wazuh-credentials.sh`, downloaded with the certificates tool:
+start without them. Generate the five passwords and the manager cluster key before the first
+`kubectl apply -k`. The script sources `wazuh-credentials.sh`, downloaded with the certificates tool:
 
 ```bash
 sudo bash ../tools/utils/deployment/credentials-conf.sh
@@ -728,48 +686,6 @@ The `wazuh/base/ingressRoute-tcp-dashboard.yaml` file configures the Wazuh Dashb
 ```bash
 echo "" > wazuh/base/ingressRoute-tcp-dashboard.yaml
 ```
-
-#### Set the cluster key and the agent enrollment password
-
-Two of the Secrets under `wazuh/secrets/` hold shared keys rather than account passwords. Neither ships with a usable value: the cluster key is a placeholder, and the enrollment password is the string `password`.
-
-| Secret | Key | Default value | What it protects |
-| --- | --- | --- | --- |
-| `wazuh-cluster-key` | `key` | `REPLACETHISCLUSTERKEYBEFOREDEPLO` (placeholder, not a key) | Membership of the Wazuh manager cluster, on port `1516` |
-| `wazuh-authd-pass` | `authd.pass` | `password` | Agent enrollment: the channel `remoted` serves on port `1517`, and the legacy `authd` port `1515` |
-
-**Change both here, before the first `kubectl apply -k`.** Unlike the Wazuh indexer and Wazuh API accounts, these are not accounts inside an image, so `password-tool.sh` does not cover them: the managers read them from the Secrets on every container start. Setting them now costs nothing, while changing the cluster key on a running deployment stops the workers from syncing until every manager pod has restarted on the new key.
-
-Generate the two values. The cluster key has to be **exactly 32 alphanumeric characters** (`^[a-zA-Z0-9]{32}$`); `openssl rand -hex 16` produces exactly that. A key of any other length, or one carrying `-`, `_` or any other punctuation, makes every manager refuse to start with `(1244): Invalid configuration at '/cluster/key': does not satisfy 'pattern'`:
-
-```bash
-openssl rand -hex 16   # cluster key, 32 hexadecimal characters
-openssl rand -hex 24   # enrollment password
-```
-
-Encode each one, without a trailing newline:
-
-```bash
-echo -n '8f3c1d0b7a5e49628c1f0a3d5b7e9c21' | base64
-```
-
-Then write them into the two manifests, keeping the key names as they are:
-
-```yaml
-# wazuh/secrets/wazuh-cluster-key-secret.yaml
-data:
-  key: OGYzYzFkMGI3YTVlNDk2MjhjMWYwYTNkNWI3ZTljMjE=   # the new cluster key
-```
-
-```yaml
-# wazuh/secrets/wazuh-authd-pass-secret.yaml
-data:
-  authd.pass: <base64 of the new enrollment password>   # the new enrollment password
-```
-
-Drop the `# string "..." base64 encoded` comments the manifests ship with, so they do not describe a value that is no longer there, and keep these edits out of your commits: base64 is encoding, not encryption.
-
-Every agent you enroll afterwards has to present the new enrollment password. See [Credentials](../credentials.md#the-cluster-key-and-the-agent-enrollment-password) for how to change either value on a deployment that is already running.
 
 #### Apply all manifests using kustomize
 
@@ -1092,8 +1008,8 @@ kubectl -n wazuh get secrets
 ```
 
 Expected: `dashboard-certs-<hash>`, `dashboard-credentials-<hash>`, `indexer-certs-<hash>`,
-`indexer-credentials-<hash>`, `manager-certs-<hash>`, `manager-credentials-<hash>`, `wazuh-authd-pass`
-and `wazuh-cluster-key`.
+`indexer-credentials-<hash>`, `manager-certs-<hash>`, `manager-credentials-<hash>` and
+`wazuh-cluster-key-<hash>`.
 
 ### Credentials
 

@@ -49,6 +49,12 @@ secretGenerator:
     options:
       labels:
         app.kubernetes.io/component: credentials
+  - name: wazuh-cluster-key
+    files:
+      - key=config/credentials/cluster.key
+    options:
+      labels:
+        app.kubernetes.io/component: credentials
 
 resources:
   - base/wazuh-ns.yaml
@@ -60,9 +66,6 @@ resources:
   - base/ingressRoute-tcp-registration.yaml
   - base/Allow-DNS-np.yaml
   - base/default-deny-all.yaml
-
-  - secrets/wazuh-authd-pass-secret.yaml
-  - secrets/wazuh-cluster-key-secret.yaml
 
   - wazuh_managers/wazuh-cluster-svc.yaml
   - wazuh_managers/wazuh-agents-svc.yaml
