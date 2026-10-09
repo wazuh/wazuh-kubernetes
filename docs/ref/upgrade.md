@@ -40,10 +40,8 @@ so `wazuh/config/credentials/*.env` has to hold the current passwords, including
 ## Upgrading a 5.0 deployment
 
 1. Check out the new release, and carry over from the directory the deployment was created from:
-   `wazuh/config/` (certificates and `credentials/*.env`), your edits to `wazuh/secrets/*.yaml`,
-   `wazuh/base/ingressRoute-tcp-dashboard.yaml`, `wazuh/base/middleware.yaml`, and any change to `envs/`. Do not run
    `wazuh/config/` (certificates, `credentials/*.env` and `credentials/cluster.key`),
-   `wazuh/base/ingressRoute-tcp-dashboard.yaml`, and any change to `envs/`. Do not run
+   `wazuh/base/ingressRoute-tcp-dashboard.yaml`, `wazuh/base/middleware.yaml`, and any change to `envs/`. Do not run
    `credentials-conf.sh` again: the deployment keeps the passwords it was first started with, and
    new values would not match them. The exception is a deployment created before
    `credentials-conf.sh` wrote `cluster.key`: run it once to add that file only, as described in
