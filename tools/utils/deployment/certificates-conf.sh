@@ -10,9 +10,10 @@ DO_CERT=false
 DO_COPY=false
 DO_PRIV=false
 AGENT_SAN=()
+API_SAN=()
 
 usage() {
-  echo "Usage: $0 [--cert] [--copy] [--priv] [--agent-san <ip|dns>]..."
+  echo "Usage: $0 [--cert] [--copy] [--priv] [--agent-san <ip|dns>]... [--api-san <ip|dns>]..."
   echo "  --cert       Generate certificates using wazuh-certs-tool.sh"
   echo "  --copy       Copy certificates to the corresponding config directories"
   echo "  --priv       Give the certificate files to the user running the script,"
@@ -20,6 +21,8 @@ usage() {
   echo "  --agent-san  Additional address for the manager agent listener"
   echo "               certificates, such as the ingress load balancer FQDN."
   echo "               Repeat it for more than one."
+  echo "  --api-san    Additional address for the manager Server API"
+  echo "               certificate. Repeat it for more than one."
 }
 
 while [ $# -gt 0 ]; do
@@ -34,6 +37,15 @@ while [ $# -gt 0 ]; do
         exit 1
       fi
       AGENT_SAN+=(--agent-san "$2")
+      shift 2
+      ;;
+    --api-san)
+      if [ -z "$2" ]; then
+        echo "Missing <ip|dns> after --api-san"
+        usage
+        exit 1
+      fi
+      API_SAN+=(--api-san "$2")
       shift 2
       ;;
     *)
@@ -122,7 +134,7 @@ if $DO_CERT; then
     exit 1
   fi
   echo "Generating certificates"
-  bash $CERT_TOOL -A "${AGENT_SAN[@]}"
+  bash $CERT_TOOL -A "${AGENT_SAN[@]}" "${API_SAN[@]}"
 fi
 
 # 2. Copy certificates to config directories
@@ -141,14 +153,15 @@ if $DO_COPY; then
 
   for node in "${MANAGER_NODES[@]}"; do
     dir_name=$(node_to_dir "$node")
-    # The agent listener (remoted) pair, ${node}-remoted.pem and
-    # ${node}-remoted-key.pem, is copied by the glob below along with
-    # ${node}.pem and ${node}-key.pem. The manager does not start without it.
-    for cert in "${node}-remoted.pem" "${node}-remoted-key.pem"; do
+    # The agent listener (remoted) and Server API (apid) pairs are copied by
+    # the glob below along with ${node}.pem and ${node}-key.pem. The manager
+    # does not start without them.
+    for cert in "${node}-remoted.pem" "${node}-remoted-key.pem" \
+                "${node}-apid.pem" "${node}-apid-key.pem"; do
       if [[ ! -f "$OUTPUT_DIR/$cert" ]]; then
-        echo "Error: '$OUTPUT_DIR/$cert' not found. The agent listener certificate is" >&2
-        echo "required by the Wazuh manager. Regenerate the certificates with a" >&2
-        echo "wazuh-certs-tool.sh version that creates the remoted pair." >&2
+        echo "Error: '$OUTPUT_DIR/$cert' not found. The Wazuh manager requires the" >&2
+        echo "agent listener (remoted) and Server API (apid) certificates. Regenerate" >&2
+        echo "the certificates with a wazuh-certs-tool.sh version that creates both pairs." >&2
         exit 1
       fi
     done

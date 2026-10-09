@@ -128,7 +128,7 @@ one: new values would not match the ones the components stored.
 | `kibanaserver` | `WAZUH_INDEXER_KIBANASERVER_PASSWORD` | `indexer.env`, `dashboard.env` | The dashboard, to authenticate to the indexer |
 | `wazuh-manager` | `WAZUH_INDEXER_MANAGER_PASSWORD` | `indexer.env`, `manager.env` | The managers, master and workers, to write events and read state in the indexer |
 | `wazuh` | `WAZUH_MANAGER_API_PASSWORD` | `manager.env` | People and automation: superuser of the Wazuh API, for example to mint agent enrollment tokens |
-| `wazuh-wui` | `WAZUH_MANAGER_WUI_PASSWORD` | `manager.env`, `dashboard.env` | The dashboard, to call the Wazuh API on behalf of the logged-in user |
+| `wazuh-internal-client` | `WAZUH_MANAGER_WUI_PASSWORD` | `manager.env`, `dashboard.env` | The dashboard, to call the Wazuh API on behalf of the logged-in user. A service account: it is not a dashboard login |
 
 The first three live in the indexer's security index and are cluster-wide. The last two live in the
 Wazuh API user database, `rbac.db`, which only the manager master has: the Wazuh API runs on the
@@ -136,6 +136,14 @@ master, and a worker does not create one. A worker still receives the whole `man
 it: the manager image requires `WAZUH_MANAGER_API_PASSWORD` and `WAZUH_MANAGER_WUI_PASSWORD` on
 every start while there is no `rbac.db`, which on a worker is always. If the worker is promoted to
 master, it creates its database from them.
+
+> **Note**: Up to 5.0.0 `rc1`, the dashboard's Wazuh API account was called `wazuh-wui`. The key,
+> `WAZUH_MANAGER_WUI_PASSWORD`, keeps its name. The new name only applies when `rbac.db` is created,
+> and `rbac.db` lives on the `wazuh-manager-master` claim, so a deployment first started with an
+> earlier 5.0.0 pre-release image keeps `wazuh-wui` after the images are updated. On such a
+> deployment, add `API_USERNAME` with the value `wazuh-wui` to the `env` of the `wazuh-dashboard`
+> container in `wazuh/indexer_stack/wazuh-dashboard/dashboard-deploy.yaml`, or the dashboard cannot
+> authenticate to the Wazuh API.
 
 The OpenSearch demo accounts (`anomalyadmin`, `kibanaro`, `logstash`, `readall`,
 `snapshotrestore`) are removed from the indexer image when it is built. They do not exist in the
@@ -159,7 +167,7 @@ Change the account:
 
 ```bash
 kubectl -n wazuh exec wazuh-indexer-0 -c wazuh-indexer -- /password-tool.sh --user kibanaserver    # admin, kibanaserver, wazuh-manager
-kubectl -n wazuh exec wazuh-manager-master-0 -c wazuh-manager -- /password-tool.sh --user wazuh-wui # wazuh, wazuh-wui
+kubectl -n wazuh exec wazuh-manager-master-0 -c wazuh-manager -- /password-tool.sh --user wazuh-internal-client # wazuh, wazuh-internal-client
 ```
 
 To choose the password yourself, pass it on standard input:
@@ -182,7 +190,7 @@ NEW='<the password the tool printed>'
     runuser -u wazuh-dashboard -- /usr/share/wazuh-dashboard/bin/opensearch-dashboards-keystore add -f --stdin opensearch.password
   ```
 
-- **`wazuh-wui`**: the dashboard keystore.
+- **`wazuh-internal-client`**: the dashboard keystore.
 
   ```bash
   printf '%s' "$NEW" | kubectl -n wazuh exec -i deploy/wazuh-dashboard -c wazuh-dashboard -- \
@@ -364,7 +372,7 @@ cd ..
 ```
 
 It reads the generated passwords from `config/credentials/` and checks, from inside the pods, that
-every account (`admin`, `kibanaserver`, `wazuh-manager`, `wazuh`, `wazuh-wui`) authenticates with its
+every account (`admin`, `kibanaserver`, `wazuh-manager`, `wazuh`, `wazuh-internal-client`) authenticates with its
 generated password and none with its own username, that the indexer carries none of the OpenSearch
 demo accounts, that only the master holds a Wazuh API user database, and that every manager pod runs
 on the key in `config/credentials/cluster.key`. The credentials reach `curl`

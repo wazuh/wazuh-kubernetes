@@ -28,7 +28,7 @@ DEMO_USERS="anomalyadmin kibanaro logstash readall snapshotrestore"
 INDEXER_USERS="admin kibanaserver wazuh-manager"
  
 # Accounts the Wazuh API seeds its user database with.
-API_USERS="wazuh wazuh-wui"
+API_USERS="wazuh wazuh-internal-client"
  
 INTERNAL_USERS_FILE="/usr/share/wazuh-indexer/config/opensearch-security/internal_users.yml"
 
@@ -292,7 +292,7 @@ info "Wazuh API accounts (${MANAGER_POD})"
  
 declare -A API_PASSWORD_OF=(
   [wazuh]="${WAZUH_MANAGER_API_PASSWORD}"
-  [wazuh-wui]="${WAZUH_MANAGER_WUI_PASSWORD}"
+  [wazuh-internal-client]="${WAZUH_MANAGER_WUI_PASSWORD}"
 )
  
 for user in ${API_USERS}; do

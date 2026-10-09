@@ -274,6 +274,8 @@ nodes:
 
 > **Note**: The `manager` entry also produces the agent listener certificate (`manager-remoted.pem` and `manager-remoted-key.pem`), which `remoted` serves on port `1517`. Its SAN has to cover every name an agent dials: the `wazuh-agents` Service inside the cluster, which the `dns` list above provides, and the FQDN of the load balancer from step 3.1 for agents enrolling from outside, which `--agent-san` adds in the command below. Agents that verify the manager certificate fail to connect to a name the certificate does not carry.
 
+> **Note**: The `manager` entry also produces the Server API certificate (`manager-apid.pem` and `manager-apid-key.pem`), which the master serves on port `55000`. The Wazuh manager no longer generates it on its first start: without it, the Server API refuses to start with error `2003` and the master pod never becomes ready. Its SAN is taken from the `dns` list above, which carries `wazuh-api`, the name the dashboard uses, plus `localhost`, `127.0.0.1` and `::1`. `--api-san` adds any other name or address API clients use, to this certificate only.
+
 **3.2.3 Run the Wazuh certificates tool script**:
 
 Pass the load balancer FQDN from step 3.1 with `--agent-san`. It goes only into the agent listener certificate, leaving `manager.pem`, `indexer.pem` and `dashboard.pem` untouched. Repeat the flag for every extra address, such as a CNAME of your own that agents will use:
@@ -315,6 +317,8 @@ secretGenerator:
       - config/manager/certs/manager.pem
       - config/manager/certs/manager-remoted-key.pem
       - config/manager/certs/manager-remoted.pem
+      - config/manager/certs/manager-apid-key.pem
+      - config/manager/certs/manager-apid.pem
       - config/root-ca/certs/root-ca.pem
 ```
 
@@ -583,6 +587,8 @@ nodes:
 
 > **Note**: The `manager` entry also produces the agent listener certificate (`manager-remoted.pem` and `manager-remoted-key.pem`), which `remoted` serves on port `1517`. Its SAN is taken from the `dns` list above, plus every `--agent-san` passed to the next command, which adds an address to that certificate only. `--agent-san localhost` is what lets agents enroll through a port-forward, as in [Enrolling an agent](#enrolling-an-agent). Repeat the flag for any other address agents use to reach the manager.
 
+> **Note**: The `manager` entry also produces the Server API certificate (`manager-apid.pem` and `manager-apid-key.pem`), which the master serves on port `55000`. The Wazuh manager no longer generates it on its first start: without it, the Server API refuses to start with error `2003` and the master pod never becomes ready. Its SAN is taken from the `dns` list above, which carries `wazuh-api`, the name the dashboard uses, plus `localhost`, `127.0.0.1` and `::1`. `--api-san` adds any other name or address API clients use, to this certificate only.
+
 Run `wazuh-certs-tool.sh` to create the certificates.
 
 ```bash
@@ -629,6 +635,8 @@ secretGenerator:
       - config/manager/certs/manager.pem
       - config/manager/certs/manager-remoted-key.pem
       - config/manager/certs/manager-remoted.pem
+      - config/manager/certs/manager-apid-key.pem
+      - config/manager/certs/manager-apid.pem
       - config/root-ca/certs/root-ca.pem
 ```
 

@@ -30,6 +30,8 @@ secretGenerator:
       - config/manager/certs/manager.pem
       - config/manager/certs/manager-remoted-key.pem
       - config/manager/certs/manager-remoted.pem
+      - config/manager/certs/manager-apid-key.pem
+      - config/manager/certs/manager-apid.pem
       - config/root-ca/certs/root-ca.pem
   - name: indexer-credentials
     files:

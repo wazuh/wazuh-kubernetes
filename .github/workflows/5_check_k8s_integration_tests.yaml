@@ -732,6 +732,24 @@ jobs:
               fi'
           done
 
+      - name: Verify the Server API certificate over TLS
+        run: |
+          # The dashboard reaches the API as https://wazuh-api, so the handshake
+          # uses that name and the deployment CA, never -k.
+          kubectl exec -n wazuh wazuh-manager-master-0 -c wazuh-manager -- sh -c '
+            CA=/var/wazuh-manager/etc/certs/root-ca.pem
+            if command -v openssl >/dev/null 2>&1; then
+              echo | openssl s_client -connect 127.0.0.1:55000 \
+                -servername wazuh-api -verify_hostname wazuh-api \
+                -CAfile "$CA" -verify_return_error -brief
+            elif command -v curl >/dev/null 2>&1; then
+              curl -sS --cacert "$CA" --resolve wazuh-api:55000:127.0.0.1 \
+                -o /dev/null -w "TLS verified (HTTP %{http_code})\n" \
+                https://wazuh-api:55000/
+            else
+              echo "neither openssl nor curl is in the image"; exit 1
+            fi'
+
       # -----------------------------------------------------------------------
       # Run integration tests
       # -----------------------------------------------------------------------

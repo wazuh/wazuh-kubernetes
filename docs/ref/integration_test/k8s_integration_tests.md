@@ -209,6 +209,8 @@ Then waits up to **10 minutes** for:
 - OpenSearch to report `"status"` in cluster health (requires 3 consecutive healthy responses), authenticated as `admin` with `WAZUH_SERVICE_PASSWORD`, sent to `curl` on standard input
 - Dashboard to return HTTP 200/302 on `/app/status`
 
+Then verifies over TLS, from inside the pods and against `root-ca.pem`, the agent listener of every manager pod as `wazuh-agents` on port `1517`, and the Server API of the master as `wazuh-api` on port `55000`, the name the dashboard uses.
+
 #### Test execution
 
 ```bash
