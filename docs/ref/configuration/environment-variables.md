@@ -33,7 +33,7 @@ Defined in:
 - Update `WAZUH_INDEXER_HOSTS` only if your Indexer service name/port differs from the default, or if you change the number of indexer replicas: it lists one `host:port` per indexer pod, and the `local-env` overlay narrows it to the single node that environment runs.
 - `WAZUH_CLUSTER_NODES` has to name the master pod, not the `wazuh-cluster` Service. That Service is headless and selects every manager pod, so a worker resolving it would try to join the cluster through another worker.
 - The manager reads the certificate paths it presents to the Wazuh indexer from `<indexer><ssl>` in `/var/wazuh-manager/etc/wazuh-manager.conf`, not from the environment. The files are mounted at the paths that configuration already names: `etc/certs/indexer-connector.pem`, `etc/certs/indexer-connector-key.pem` and `etc/certs/root-ca.pem`. Earlier releases of this repository set `SSL_CERTIFICATE`, `SSL_KEY` and `SSL_CERTIFICATE_AUTHORITIES`; the Wazuh manager image reads none of them.
-- The manager's passwords (the indexer account `wazuh-manager` and the Wazuh API accounts `wazuh` and `wazuh-wui`) come from the `manager-credentials` Secret, as a file, not from the environment. Do not add them as variables: the environment takes precedence over the file, and puts the values within reach of anyone who can run `kubectl exec`. See [Credentials](../credentials.md).
+- The manager's passwords (the indexer account `wazuh-manager` and the Wazuh API accounts `wazuh` and `wazuh-internal-client`) come from the `manager-credentials` Secret, as a file, not from the environment. Do not add them as variables: the environment takes precedence over the file, and puts the values within reach of anyone who can run `kubectl exec`. See [Credentials](../credentials.md).
 - `WAZUH_CLUSTER_KEY` is rewritten into `<cluster><key>` of `/var/wazuh-manager/etc/wazuh-manager.conf` on every container start, so the value in the Secret always wins over what is on the persistent volume. It has to be exactly 32 alphanumeric characters and identical on every manager node. `credentials-conf.sh` generates it before the first deployment; changing it later restarts the master and the workers, and the nodes still on the old key cannot sync in the meantime. See [The cluster key and the agent enrollment password](../credentials.md#the-cluster-key-and-the-agent-enrollment-password).
 
 ## Wazuh indexer variables
@@ -87,7 +87,7 @@ Defined in:
 
 - If you change service names, update `OPENSEARCH_HOSTS` and `WAZUH_API_URL` accordingly.
 - Keep TLS-related variables consistent with mounted certificate paths.
-- The dashboard authenticates to the Wazuh indexer as `kibanaserver` and to the Wazuh API as `wazuh-wui`, with the passwords of the `dashboard-credentials` Secret, which it stores in its keystore on the first start. The account names are fixed. See [Credentials](../credentials.md).
+- The dashboard authenticates to the Wazuh indexer as `kibanaserver` and to the Wazuh API as `wazuh-internal-client`, with the passwords of the `dashboard-credentials` Secret, which it stores in its keystore on the first start. The account names are fixed. See [Credentials](../credentials.md).
 
 ## Secret-backed variable mapping
 

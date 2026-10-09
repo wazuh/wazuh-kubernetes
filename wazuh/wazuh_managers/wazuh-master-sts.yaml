@@ -100,6 +100,12 @@ spec:
               cp /tmp/certs-raw/manager-remoted-key.pem /etc/wazuh-certs-final/remoted-key.pem
               chown 101:101 /etc/wazuh-certs-final/remoted.pem /etc/wazuh-certs-final/remoted-key.pem
               chmod 0640 /etc/wazuh-certs-final/remoted.pem /etc/wazuh-certs-final/remoted-key.pem
+              # The Server API pair, read by the API after it drops privileges.
+              # Only the master runs the API.
+              cp /tmp/certs-raw/manager-apid.pem /etc/wazuh-certs-final/apid.pem
+              cp /tmp/certs-raw/manager-apid-key.pem /etc/wazuh-certs-final/apid-key.pem
+              chown 101:101 /etc/wazuh-certs-final/apid.pem /etc/wazuh-certs-final/apid-key.pem
+              chmod 0640 /etc/wazuh-certs-final/apid.pem /etc/wazuh-certs-final/apid-key.pem
           volumeMounts:
             - name: wazuh-manager-master
               mountPath: /pvc-etc
@@ -146,6 +152,12 @@ spec:
             - name: wazuh-manager-certs
               mountPath: /var/wazuh-manager/etc/certs/remoted-key.pem
               subPath: remoted-key.pem
+            - name: wazuh-manager-certs
+              mountPath: /var/wazuh-manager/etc/certs/apid.pem
+              subPath: apid.pem
+            - name: wazuh-manager-certs
+              mountPath: /var/wazuh-manager/etc/certs/apid-key.pem
+              subPath: apid-key.pem
             - name: wazuh-manager-master
               mountPath: /var/wazuh-manager/logs
               subPath: wazuh/var/wazuh-manager/logs

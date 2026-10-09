@@ -20,6 +20,8 @@ This section summarizes security recommendations for Wazuh Kubernetes deployment
   - Indexer API access (dashboard and manager connections)
   - Manager-to-indexer communication
   - Dashboard HTTPS access (the dashboard serves TLS itself; Traefik passes it through)
+  - Agent communication with the manager (`manager-remoted.pem`, port `1517`)
+  - Server API access (`manager-apid.pem`, port `55000`, master only). The certificate is signed by the deployment CA, so API clients can verify it with `root-ca.pem` as `wazuh-api`
 - Certificates are stored as Kubernetes Secrets and mounted into pods at runtime.
 - For production deployments, use certificates signed by a trusted Certificate Authority (CA) rather than self-signed certificates.
 - Ensure certificate DNS names match the service names and external endpoints used in your deployment.

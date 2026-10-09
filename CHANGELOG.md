@@ -25,6 +25,8 @@
 
 | Issue | Comment |
 | - | - |
+| [#1703](https://github.com/wazuh/wazuh-kubernetes/issues/1703) | Rename the `wazuh-wui` Server API user to `wazuh-internal-client` in the credentials check and the documentation. The `WAZUH_MANAGER_WUI_PASSWORD` key keeps its name. |
+| [#1714](https://github.com/wazuh/wazuh-kubernetes/issues/1714) | Add the Server API certificate (`apid`) issued by `wazuh-certs-tool.sh` to the `manager-certs` secret and the master statefulset, and add `--api-san` to `certificates-conf.sh`. |
 | [#1710](https://github.com/wazuh/wazuh-kubernetes/issues/1710) | Hardening traefik deployment |
 | [#1708](https://github.com/wazuh/wazuh-kubernetes/issues/1708) | Delete secrets and add random creation for authd.pass and cluster_key |
 | [#1705](https://github.com/wazuh/wazuh-kubernetes/issues/1705) | Start the Kubernetes integration tests from PR labels |
