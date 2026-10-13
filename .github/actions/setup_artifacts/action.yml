@@ -91,6 +91,10 @@ runs:
           echo "$line" >> "$OUTPUT_FILE"
         done < "$ARTIFACT_URLS_FILE_TEMP"
 
+        if ! grep -q '^wazuh_credentials:' "$OUTPUT_FILE"; then
+          echo "wazuh_credentials: s3://${DEV_S3_BUCKET}/development/wazuh/${WAZUH_MAJOR}.x/secondary/installation-assistant/${WAZUH_VERSION}/wazuh-credentials-${WAZUH_VERSION}-${ASSISTANT_REVISION}.sh" >> "$OUTPUT_FILE"
+        fi
+
         # Verify the output file
         if [ -f "$OUTPUT_FILE" ]; then
           echo "The downloaded file artifact_urls.yaml was successfully processed at $OUTPUT_FILE."

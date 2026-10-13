@@ -35,7 +35,8 @@ kubectl apply -k envs/eks/   # or envs/local-env/
 ```
 
 It writes `wazuh/config/credentials/{indexer,manager,dashboard}.env`, one file per component holding
-only the keys that component needs. Keep them for the whole life of the deployment: every
+only the keys that component needs, and `wazuh/config/credentials/cluster.key`, the key the manager
+nodes share to form the cluster. Keep them for the whole life of the deployment: every
 `kubectl apply -k` and `kubectl delete -k` reads them, and the indexer takes its passwords from them
 again every time one of its pods is recreated.
 
@@ -48,6 +49,9 @@ again every time one of its pods is recreated.
   ```bash
   sudo WAZUH_INDEXER_ADMIN_PASSWORD='<password>' bash ../tools/utils/deployment/credentials-conf.sh
   ```
+
+  The cluster key is given the same way, as `WAZUH_CLUSTER_KEY`: exactly 32 characters from
+  `A-Z a-z 0-9`.
 
 - **No overwrite:** the script never replaces existing files. `--force` replaces them, and is only for
   a deployment that has never been started.
@@ -124,7 +128,7 @@ one: new values would not match the ones the components stored.
 | `kibanaserver` | `WAZUH_INDEXER_KIBANASERVER_PASSWORD` | `indexer.env`, `dashboard.env` | The dashboard, to authenticate to the indexer |
 | `wazuh-manager` | `WAZUH_INDEXER_MANAGER_PASSWORD` | `indexer.env`, `manager.env` | The managers, master and workers, to write events and read state in the indexer |
 | `wazuh` | `WAZUH_MANAGER_API_PASSWORD` | `manager.env` | People and automation: superuser of the Wazuh API, for example to mint agent enrollment tokens |
-| `wazuh-wui` | `WAZUH_MANAGER_WUI_PASSWORD` | `manager.env`, `dashboard.env` | The dashboard, to call the Wazuh API on behalf of the logged-in user |
+| `wazuh-internal-client` | `WAZUH_MANAGER_WUI_PASSWORD` | `manager.env`, `dashboard.env` | The dashboard, to call the Wazuh API on behalf of the logged-in user. A service account: it is not a dashboard login |
 
 The first three live in the indexer's security index and are cluster-wide. The last two live in the
 Wazuh API user database, `rbac.db`, which only the manager master has: the Wazuh API runs on the
@@ -132,6 +136,14 @@ master, and a worker does not create one. A worker still receives the whole `man
 it: the manager image requires `WAZUH_MANAGER_API_PASSWORD` and `WAZUH_MANAGER_WUI_PASSWORD` on
 every start while there is no `rbac.db`, which on a worker is always. If the worker is promoted to
 master, it creates its database from them.
+
+> **Note**: Up to 5.0.0 `rc1`, the dashboard's Wazuh API account was called `wazuh-wui`. The key,
+> `WAZUH_MANAGER_WUI_PASSWORD`, keeps its name. The new name only applies when `rbac.db` is created,
+> and `rbac.db` lives on the `wazuh-manager-master` claim, so a deployment first started with an
+> earlier 5.0.0 pre-release image keeps `wazuh-wui` after the images are updated. On such a
+> deployment, add `API_USERNAME` with the value `wazuh-wui` to the `env` of the `wazuh-dashboard`
+> container in `wazuh/indexer_stack/wazuh-dashboard/dashboard-deploy.yaml`, or the dashboard cannot
+> authenticate to the Wazuh API.
 
 The OpenSearch demo accounts (`anomalyadmin`, `kibanaro`, `logstash`, `readall`,
 `snapshotrestore`) are removed from the indexer image when it is built. They do not exist in the
@@ -155,7 +167,7 @@ Change the account:
 
 ```bash
 kubectl -n wazuh exec wazuh-indexer-0 -c wazuh-indexer -- /password-tool.sh --user kibanaserver    # admin, kibanaserver, wazuh-manager
-kubectl -n wazuh exec wazuh-manager-master-0 -c wazuh-manager -- /password-tool.sh --user wazuh-wui # wazuh, wazuh-wui
+kubectl -n wazuh exec wazuh-manager-master-0 -c wazuh-manager -- /password-tool.sh --user wazuh-internal-client # wazuh, wazuh-internal-client
 ```
 
 To choose the password yourself, pass it on standard input:
@@ -178,7 +190,7 @@ NEW='<the password the tool printed>'
     runuser -u wazuh-dashboard -- /usr/share/wazuh-dashboard/bin/opensearch-dashboards-keystore add -f --stdin opensearch.password
   ```
 
-- **`wazuh-wui`**: the dashboard keystore.
+- **`wazuh-internal-client`**: the dashboard keystore.
 
   ```bash
   printf '%s' "$NEW" | kubectl -n wazuh exec -i deploy/wazuh-dashboard -c wazuh-dashboard -- \
@@ -233,83 +245,91 @@ master's first start.
 
 ## The cluster key and the agent enrollment password
 
-`wazuh-cluster-key` and `wazuh-authd-pass` are not accounts and `credentials-conf.sh` does not create
-them. They are Secret manifests under `wazuh/secrets/`, and the managers take them on **every
-container start**: `WAZUH_CLUSTER_KEY` into `<cluster><key>` of
-`/var/wazuh-manager/etc/wazuh-manager.conf`, and `authd.pass` into the file
-`/var/wazuh-manager/etc/authd.pass`. `password-tool.sh` has nothing to do with them.
+Neither is an account, so `password-tool.sh` has nothing to do with them, and neither ships with the
+manifests.
 
-| Secret | Key | Shipped value | Read by | What it protects |
-| --- | --- | --- | --- | --- |
-| `wazuh-cluster-key` | `key` | `REPLACETHISCLUSTERKEYBEFOREDEPLO` (placeholder) | `wazuh-manager-master`, `wazuh-manager-worker` | Membership of the Wazuh manager cluster on port `1516`. A node whose key does not match the master's cannot join it. |
-| `wazuh-authd-pass` | `authd.pass` | `password` | `wazuh-manager-master`, `wazuh-manager-worker` | Agent enrollment with a password: Password-mode enrollment of Wazuh 5.x agents on port `1517`, and the legacy `authd` enrollment of 4.x agents on port `1515`. Token-mode enrollment on `1517` uses tokens minted through the Wazuh API instead. |
+- **The cluster key** is generated by `credentials-conf.sh` into `wazuh/config/credentials/cluster.key`,
+  with the passwords. `wazuh/kustomization.yml` turns it into the `wazuh-cluster-key-<hash>` Secret,
+  and the managers take it on **every container start** as `WAZUH_CLUSTER_KEY`, into `<cluster><key>`
+  of `/var/wazuh-manager/etc/wazuh-manager.conf`.
+- **The agent enrollment password** is generated by the master on its first start, as 64
+  hexadecimal characters in `/var/wazuh-manager/etc/authd.pass`, on its persistent volume. The
+  manager cluster distributes it to the workers.
 
-### Set them before the first deployment
+| Value | Where it lives | Read by | What it protects |
+| --- | --- | --- | --- |
+| Cluster key | `wazuh/config/credentials/cluster.key`, Secret `wazuh-cluster-key-<hash>` (`key`) | `wazuh-manager-master`, `wazuh-manager-worker` | Membership of the Wazuh manager cluster on port `1516`. A node whose key does not match the master's cannot join it. |
+| Agent enrollment password | `/var/wazuh-manager/etc/authd.pass` on the master, synchronized to the workers | `wazuh-manager-master`, `wazuh-manager-worker` | Agent enrollment with a password: Password-mode enrollment of Wazuh 5.x agents on port `1517`, and the legacy `authd` enrollment of 4.x agents on port `1515`. Token-mode enrollment on `1517` uses tokens minted through the Wazuh API instead. |
 
-- Nothing has to be running: the values come from the manifests.
-- **Changing the cluster key on a running deployment interrupts the cluster.** Every manager node has
-  to carry the same key, and a restart that does not cover all of them at once leaves workers on the
-  old key while the master is already on the new one.
-- The shipped enrollment password is the string `password`. Replace it before the first deployment:
-  it is the password of Password-mode enrollment on `1517` as well as of the legacy `1515`.
-- Neither value survives on its own in a persistent volume: both are rewritten from the Secret at
-  every container start, which is also why **deleting the PersistentVolumeClaims does not return them
-  to a default**.
+Keep `cluster.key` with the other files in `config/credentials/`: every `kubectl apply -k` reads it.
+The key does not survive on its own in a persistent volume: it is rewritten from the Secret at every
+container start, so **deleting the PersistentVolumeClaims does not return it to a default**.
 
-The step is in Installation, before the deployment is applied, in both guides:
-[EKS](getting-started/installation.md#step-332-set-the-cluster-key-and-the-agent-enrollment-password)
-and [local](getting-started/installation.md#set-the-cluster-key-and-the-agent-enrollment-password).
+### Reading the agent enrollment password
+
+The guides enroll agents with tokens, which need no password. To enroll with the shared password
+instead, read it from the master:
+
+```bash
+kubectl -n wazuh exec wazuh-manager-master-0 -c wazuh-manager -- cat /var/wazuh-manager/etc/authd.pass
+```
 
 ### Changing them on a deployment that is already running
 
-Both follow the same shape: edit the manifest, apply the overlay, restart the managers. Neither
-reaches a running pod on its own: the cluster key is read into the environment when the container
-starts, and `authd.pass` is a `subPath` mount, which Kubernetes never refreshes in place.
-
 #### The agent enrollment password
 
-Encode the new password without a trailing newline:
+Delete the file on the master and restart it. The master generates a new password and the cluster
+distributes it to the workers:
 
 ```bash
-echo -n '<new enrollment password>' | base64
-```
-
-Write it into `wazuh/secrets/wazuh-authd-pass-secret.yaml` under `authd.pass`, then apply and restart:
-
-```bash
-kubectl apply -k envs/eks/   # or envs/local-env/
-kubectl -n wazuh rollout restart statefulset/wazuh-manager-master statefulset/wazuh-manager-worker
+kubectl -n wazuh exec wazuh-manager-master-0 -c wazuh-manager -- rm /var/wazuh-manager/etc/authd.pass
+kubectl -n wazuh rollout restart statefulset/wazuh-manager-master
 kubectl -n wazuh rollout status statefulset/wazuh-manager-master
-kubectl -n wazuh rollout status statefulset/wazuh-manager-worker
 ```
 
-Agents that are already enrolled keep working: they authenticate with the key in `client.keys`. Only
-agents that enroll from this point on with a password (5.x on `1517`, 4.x on `1515`) have to present
-the new one.
+Agents that are already enrolled keep working: they authenticate with the key in
+`client.keys`. Only agents that enroll from this point on with a password (5.x on `1517`, 4.x on
+`1515`) have to present the new one.
+
+> **Note**: deployments created from a release that shipped `wazuh/secrets/wazuh-authd-pass-secret.yaml`
+> keep its value, the string `password`, on the persistent volume after upgrading. Rotate it as shown
+> above, and delete the old Secret with `kubectl -n wazuh delete secret wazuh-authd-pass`.
 
 #### The cluster key
 
-The key has to be exactly 32 alphanumeric characters, as the shipped placeholder is.
-`openssl rand -hex 16` produces exactly that; any other length or character makes the managers refuse
-to start:
+Write a new key into `cluster.key`, without a trailing newline, and apply. The key has to be exactly
+32 alphanumeric characters; `openssl rand -hex 16` produces exactly that, and any other length or
+character makes the managers refuse to start:
 
 ```bash
-openssl rand -hex 16
-```
-
-Write it into `wazuh/secrets/wazuh-cluster-key-secret.yaml` under `key`, then apply and restart
-**both** manager StatefulSets in one go:
-
-```bash
+openssl rand -hex 16 | tr -d '\n' > wazuh/config/credentials/cluster.key
 kubectl apply -k envs/eks/   # or envs/local-env/
-kubectl -n wazuh rollout restart statefulset/wazuh-manager-master statefulset/wazuh-manager-worker
 kubectl -n wazuh rollout status statefulset/wazuh-manager-master
 kubectl -n wazuh rollout status statefulset/wazuh-manager-worker
 ```
+
+The new content gives the Secret a new name, so `kubectl apply -k` rolls **both** manager
+StatefulSets on its own.
 
 > **Warning**: until every manager pod has restarted, the ones still on the old key cannot sync with
 > the master. The cluster is degraded for the length of the restart, so do this in a maintenance
 > window on a production deployment.
+
+> **Note**: deployments created from a release that shipped `wazuh/secrets/wazuh-cluster-key-secret.yaml`
+> have every `*.env` file but no `cluster.key`. Run `credentials-conf.sh` again: it adds only
+> `cluster.key` and leaves the passwords as they are. To keep the key the cluster runs on, pass it in
+> `WAZUH_CLUSTER_KEY`:
+>
+> ```bash
+> cd wazuh
+> sudo WAZUH_CLUSTER_KEY="$(kubectl -n wazuh get secret wazuh-cluster-key -o jsonpath='{.data.key}' | base64 -d)" \
+>   bash ../tools/utils/deployment/credentials-conf.sh
+> cd ..
+> ```
+>
+> The placeholder `REPLACETHISCLUSTERKEYBEFOREDEPLO` is refused; leave `WAZUH_CLUSTER_KEY` unset to
+> generate a new key instead. After `kubectl apply -k`, delete the old Secret with
+> `kubectl -n wazuh delete secret wazuh-cluster-key`.
 
 Confirm the new key is in place on each node and that the workers rejoined:
 
@@ -352,9 +372,10 @@ cd ..
 ```
 
 It reads the generated passwords from `config/credentials/` and checks, from inside the pods, that
-every account (`admin`, `kibanaserver`, `wazuh-manager`, `wazuh`, `wazuh-wui`) authenticates with its
+every account (`admin`, `kibanaserver`, `wazuh-manager`, `wazuh`, `wazuh-internal-client`) authenticates with its
 generated password and none with its own username, that the indexer carries none of the OpenSearch
-demo accounts, and that only the master holds a Wazuh API user database. The credentials reach `curl`
+demo accounts, that only the master holds a Wazuh API user database, and that every manager pod runs
+on the key in `config/credentials/cluster.key`. The credentials reach `curl`
 on standard input, never as arguments. It needs neither port-forwarding nor any published port. Pass
 `-n` for a different namespace, `-i` and `-m` to name the indexer and manager pods, and `-c` for
 another credentials directory.
