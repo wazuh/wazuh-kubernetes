@@ -72,7 +72,7 @@ flowchart TD
 | Input | Required | Default | Description |
 |---|---|---|---|
 | `pr_head_ref` | Yes | — | Branch of `wazuh-kubernetes` to check out and test |
-| `automation_reference` | No | `5.0.0` | Branch of `wazuh-automation` to install `test_runner` from |
+| `automation_reference` | No | `5.0.1` | Branch of `wazuh-automation` to install `test_runner` from |
 | `deployment_type` | Yes | — | `local`, `eks`, or `both` |
 | `version` | No | — | Override image version (e.g. `5.0.1`). If empty, reads from `VERSION.json` |
 | `stage` | No | — | Image stage suffix (e.g. `beta1`, `beta2-latest`). Required when `version` is set manually |
@@ -89,7 +89,7 @@ When triggered by a PR label, all parameters are derived automatically:
 | `deployment_matrix` | Mapped from the label name |
 | `version` / `stage` | Read from `VERSION.json` on the PR branch |
 | `registry` | Defaults to ECR |
-| `automation_reference` | Base branch of the PR (for example `5.0.0` for a PR against `5.0.0`) |
+| `automation_reference` | Base branch of the PR (for example `5.0.1` for a PR against `5.0.1`) |
 
 ---
 

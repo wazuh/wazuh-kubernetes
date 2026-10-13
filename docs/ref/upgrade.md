@@ -50,7 +50,7 @@ so `wazuh/config/credentials/*.env` has to hold the current passwords, including
    included: `install-credentials` (every workload), `init-wazuh-etc` (managers) and
    `init-dashboard-config` (dashboard). All the nodes of the Wazuh cluster have to run the same
    version.
-3. Apply the Traefik runtime. From 5.0.0, also delete the `traefik` ClusterRoleBinding, which
+3. Apply the Traefik runtime. From 5.0.1, also delete the `traefik` ClusterRoleBinding, which
    `kubectl apply` does not remove and which gives Traefik read access to the Secrets of every
    namespace. Traefik stops routing until the overlay of the next step creates its RoleBinding in the
    `wazuh` namespace.
