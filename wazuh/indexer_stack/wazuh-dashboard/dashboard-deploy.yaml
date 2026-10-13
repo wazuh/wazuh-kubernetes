@@ -118,7 +118,7 @@ spec:
               command:
                 - /bin/sh
                 - -c
-                - curl -k -s -o /dev/null https://localhost:443/login
+                - curl -k -s -o /dev/null https://localhost:443/app/login
             periodSeconds: 10
             timeoutSeconds: 10
             failureThreshold: 12
@@ -127,7 +127,7 @@ spec:
               command:
                 - /bin/sh
                 - -c
-                - curl -k -s -o /dev/null https://localhost:443/login
+                - curl -kfsS -o /dev/null https://localhost:443/app/login
             periodSeconds: 30
             timeoutSeconds: 10
             failureThreshold: 3
@@ -136,7 +136,7 @@ spec:
               command:
                 - /bin/sh
                 - -c
-                - curl -k -s -o /dev/null https://localhost:443/login
+                - curl -k -s -o /dev/null https://localhost:443/app/login
             periodSeconds: 30
             timeoutSeconds: 10
             failureThreshold: 3
