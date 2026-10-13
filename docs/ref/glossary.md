@@ -32,7 +32,7 @@ A Kustomize configuration file (`kustomization.yml`) that declares resources, ge
 
 ## MiddlewareTCP
 
-A Traefik custom resource used to apply middleware to TCP routes (for example, source IP allow lists). In this deployment, `MiddlewareTCP` (`ip-allowlist`) is attached to TCP routes and can be tightened to trusted source ranges as needed.
+A Traefik custom resource used to apply middleware to TCP routes (for example, source IP allow lists). In this deployment, `MiddlewareTCP` (`ip-allowlist`) is attached to the dashboard route. It allows every address by default; see [Security](security.md#network-exposure) before tightening it, as it matches the address Traefik sees.
 
 ## NetworkPolicy
 
