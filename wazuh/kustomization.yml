@@ -30,6 +30,8 @@ secretGenerator:
       - config/manager/certs/manager.pem
       - config/manager/certs/manager-remoted-key.pem
       - config/manager/certs/manager-remoted.pem
+      - config/manager/certs/manager-apid-key.pem
+      - config/manager/certs/manager-apid.pem
       - config/root-ca/certs/root-ca.pem
   - name: indexer-credentials
     files:
@@ -49,20 +51,24 @@ secretGenerator:
     options:
       labels:
         app.kubernetes.io/component: credentials
+  - name: wazuh-cluster-key
+    files:
+      - key=config/credentials/cluster.key
+    options:
+      labels:
+        app.kubernetes.io/component: credentials
 
 resources:
   - base/wazuh-ns.yaml
   - base/storage-class.yaml
   - base/middleware.yaml
+  - base/traefik-role-binding.yaml
   - base/ingressRoute-tcp-dashboard.yaml
   - base/ingressRoute-tcp-agents.yaml
   - base/ingressRoute-tcp-events.yaml
   - base/ingressRoute-tcp-registration.yaml
   - base/Allow-DNS-np.yaml
   - base/default-deny-all.yaml
-
-  - secrets/wazuh-authd-pass-secret.yaml
-  - secrets/wazuh-cluster-key-secret.yaml
 
   - wazuh_managers/wazuh-cluster-svc.yaml
   - wazuh_managers/wazuh-agents-svc.yaml
