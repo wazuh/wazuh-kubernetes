@@ -1,4 +1,4 @@
-# Copyright (C) 2019, Wazuh Inc.
+# Copyright (C) Wazuh Inc.
 #
 # This program is a free software; you can redistribute it
 # and/or modify it under the terms of the GNU General Public
@@ -30,8 +30,8 @@ spec:
       # No workload talks to the Kubernetes API.
       automountServiceAccountToken: false
       volumes:
-        # The Secret gets the pod's fsGroup and group read, so the service user
-        # could read it: an init container copies it to a root-only file.
+        # A Secret volume holds symbolic links: an init container copies the
+        # credentials to a regular file that only root can read.
         - name: wazuh-credentials
           emptyDir:
             medium: Memory
@@ -46,8 +46,8 @@ spec:
             defaultMode: 0400
         - name: wazuh-manager-certs
           emptyDir: {}
-      securityContext:
-        fsGroup: 101
+      # No fsGroup: kubelet would make the claim group-writable, and the
+      # manager refuses a configuration directory that is.
       initContainers:
         - name: install-credentials
           image: 'wazuh/wazuh-manager:5.0.0'
@@ -79,37 +79,33 @@ spec:
             - /bin/sh
             - -c
             - |
+              set -e
+              # /. keeps the directory's own root:wazuh-manager 0770.
               if [ -z "$(ls -A /pvc-etc)" ]; then
-                cp -a /var/wazuh-manager/etc/* /pvc-etc/
-                chown root:101 /pvc-etc/certs
-                chmod 1770 /pvc-etc/certs
+                cp -a /etc/wazuh-manager/. /pvc-etc/
               fi
               # data/ is not in the image's permanent-data snapshot.
               if [ -z "$(ls -A /pvc-data)" ]; then
                 cp -a /var/wazuh-manager/data/. /pvc-data/
               fi
-              cp /tmp/certs-raw/root-ca.pem /etc/wazuh-certs-final/root-ca.pem
-              cp /tmp/certs-raw/manager.pem /etc/wazuh-certs-final/indexer-connector.pem
-              cp /tmp/certs-raw/manager-key.pem /etc/wazuh-certs-final/indexer-connector-key.pem
-              chown root:101 /etc/wazuh-certs-final/root-ca.pem /etc/wazuh-certs-final/indexer-connector.pem /etc/wazuh-certs-final/indexer-connector-key.pem
-              chmod 0640 /etc/wazuh-certs-final/root-ca.pem /etc/wazuh-certs-final/indexer-connector.pem /etc/wazuh-certs-final/indexer-connector-key.pem
-              # The agent listener pair is read by remoted after the manager drops
-              # privileges, so it is owned by the manager user (101:101) instead of
-              # root:101 like the files above.
-              cp /tmp/certs-raw/manager-remoted.pem /etc/wazuh-certs-final/remoted.pem
-              cp /tmp/certs-raw/manager-remoted-key.pem /etc/wazuh-certs-final/remoted-key.pem
-              chown 101:101 /etc/wazuh-certs-final/remoted.pem /etc/wazuh-certs-final/remoted-key.pem
-              chmod 0640 /etc/wazuh-certs-final/remoted.pem /etc/wazuh-certs-final/remoted-key.pem
-              # The Server API pair, read by the API after it drops privileges.
-              # Only the master runs the API.
-              cp /tmp/certs-raw/manager-apid.pem /etc/wazuh-certs-final/apid.pem
-              cp /tmp/certs-raw/manager-apid-key.pem /etc/wazuh-certs-final/apid-key.pem
-              chown 101:101 /etc/wazuh-certs-final/apid.pem /etc/wazuh-certs-final/apid-key.pem
-              chmod 0640 /etc/wazuh-certs-final/apid.pem /etc/wazuh-certs-final/apid-key.pem
+              # Trust material as regular files, root:wazuh-manager 0640, as the
+              # manager requires; never the secret's symbolic links. One
+              # deployment CA: the manager CA (ca/root-ca.pem, without its key)
+              # and the CA of the indexer.
+              certs=/etc/wazuh-certs-final
+              install -o 0 -g 101 -m 0640 /tmp/certs-raw/root-ca.pem "${certs}/ca-root-ca.pem"
+              install -o 0 -g 101 -m 0640 /tmp/certs-raw/root-ca.pem "${certs}/root-ca.pem"
+              install -o 0 -g 101 -m 0640 /tmp/certs-raw/root-ca.pem "${certs}/indexer-ca.pem"
+              install -o 0 -g 101 -m 0640 /tmp/certs-raw/manager.pem "${certs}/indexer-connector.pem"
+              install -o 0 -g 101 -m 0640 /tmp/certs-raw/manager-key.pem "${certs}/indexer-connector-key.pem"
+              install -o 0 -g 101 -m 0640 /tmp/certs-raw/manager-remoted.pem "${certs}/remoted.pem"
+              install -o 0 -g 101 -m 0640 /tmp/certs-raw/manager-remoted-key.pem "${certs}/remoted-key.pem"
+              install -o 0 -g 101 -m 0640 /tmp/certs-raw/manager-apid.pem "${certs}/apid.pem"
+              install -o 0 -g 101 -m 0640 /tmp/certs-raw/manager-apid-key.pem "${certs}/apid-key.pem"
           volumeMounts:
             - name: wazuh-manager-master
               mountPath: /pvc-etc
-              subPath: wazuh/var/wazuh-manager/etc
+              subPath: wazuh/etc/wazuh-manager
             - name: wazuh-manager-master
               mountPath: /pvc-data
               subPath: wazuh/var/wazuh-manager/data
@@ -124,9 +120,6 @@ spec:
             limits:
               cpu: 400m
               memory: 1280Mi
-          securityContext:
-            capabilities:
-              add: ["SYS_CHROOT"]
           volumeMounts:
             - name: wazuh-credentials
               mountPath: /run/secrets
@@ -135,28 +128,34 @@ spec:
               mountPath: /var/wazuh-manager/api/configuration
               subPath: wazuh/var/wazuh-manager/api/configuration
             - name: wazuh-manager-master
-              mountPath: /var/wazuh-manager/etc
-              subPath: wazuh/var/wazuh-manager/etc
+              mountPath: /etc/wazuh-manager
+              subPath: wazuh/etc/wazuh-manager
             - name: wazuh-manager-certs
-              mountPath: /var/wazuh-manager/etc/certs/root-ca.pem
+              mountPath: /etc/wazuh-manager/ca/root-ca.pem
+              subPath: ca-root-ca.pem
+            - name: wazuh-manager-certs
+              mountPath: /etc/wazuh-manager/certs/root-ca.pem
               subPath: root-ca.pem
             - name: wazuh-manager-certs
-              mountPath: /var/wazuh-manager/etc/certs/indexer-connector.pem
+              mountPath: /etc/wazuh-manager/certs/indexer-ca.pem
+              subPath: indexer-ca.pem
+            - name: wazuh-manager-certs
+              mountPath: /etc/wazuh-manager/certs/indexer-connector.pem
               subPath: indexer-connector.pem
             - name: wazuh-manager-certs
-              mountPath: /var/wazuh-manager/etc/certs/indexer-connector-key.pem
+              mountPath: /etc/wazuh-manager/certs/indexer-connector-key.pem
               subPath: indexer-connector-key.pem
             - name: wazuh-manager-certs
-              mountPath: /var/wazuh-manager/etc/certs/remoted.pem
+              mountPath: /etc/wazuh-manager/certs/remoted.pem
               subPath: remoted.pem
             - name: wazuh-manager-certs
-              mountPath: /var/wazuh-manager/etc/certs/remoted-key.pem
+              mountPath: /etc/wazuh-manager/certs/remoted-key.pem
               subPath: remoted-key.pem
             - name: wazuh-manager-certs
-              mountPath: /var/wazuh-manager/etc/certs/apid.pem
+              mountPath: /etc/wazuh-manager/certs/apid.pem
               subPath: apid.pem
             - name: wazuh-manager-certs
-              mountPath: /var/wazuh-manager/etc/certs/apid-key.pem
+              mountPath: /etc/wazuh-manager/certs/apid-key.pem
               subPath: apid-key.pem
             - name: wazuh-manager-master
               mountPath: /var/wazuh-manager/logs

@@ -9,7 +9,7 @@ that the image keeps across containers, and that this deployment puts on the man
 
 ```
 PERMANENT_DATA[((i++))]="/var/wazuh-manager/api/configuration"
-PERMANENT_DATA[((i++))]="/var/wazuh-manager/etc"
+PERMANENT_DATA[((i++))]="/etc/wazuh-manager"
 PERMANENT_DATA[((i++))]="/var/wazuh-manager/logs"
 PERMANENT_DATA[((i++))]="/var/wazuh-manager/queue"
 PERMANENT_DATA[((i++))]="/var/wazuh-manager/var/multigroups"
@@ -22,8 +22,8 @@ time the claim is used. The subtrees the image owns (`data/tzdb`, `data/store/sc
 upgrade over an existing claim pick up the new content.
 
 A change made in any of those directories, for example a rule added to
-`/var/wazuh-manager/etc/rules/local_rules.xml` in `wazuh-manager-master-0`, is written to the claim
-(`subPath: wazuh/var/wazuh-manager/etc`). When the pod is recreated with a new image, it finds the
+`/etc/wazuh-manager/rules/local_rules.xml` in `wazuh-manager-master-0`, is written to the claim
+(`subPath: wazuh/etc/wazuh-manager`). When the pod is recreated with a new image, it finds the
 file on the claim again.
 
 The credentials survive the upgrade in the same way, on the persistent volumes:
@@ -39,6 +39,13 @@ so `wazuh/config/credentials/*.env` has to hold the current passwords, including
 
 ## Upgrading a 5.0 deployment
 
+A deployment created with the 5.0.0 RC 1 images cannot be upgraded in place. From RC 2:
+- the manager keeps its configuration in `/etc/wazuh-manager`, on a new subPath of its claim;
+- the components refuse the ownership and modes RC 1 left on the claims.
+
+Start RC 2 on new claims: delete the namespace, or its PersistentVolumeClaims, before applying the
+new overlay.
+
 1. Check out the new release, and carry over from the directory the deployment was created from:
    `wazuh/config/` (certificates, `credentials/*.env` and `credentials/cluster.key`),
    `wazuh/base/ingressRoute-tcp-dashboard.yaml`, `wazuh/base/middleware.yaml`, and any change to `envs/`. Do not run
@@ -47,8 +54,8 @@ so `wazuh/config/credentials/*.env` has to hold the current passwords, including
    `credentials-conf.sh` wrote `cluster.key`: run it once to add that file only, as described in
    [The cluster key](credentials.md#the-cluster-key).
 2. If you pin the images yourself, change every `wazuh/wazuh-*` image, the init containers
-   included: `install-credentials` (every workload), `init-wazuh-etc` (managers) and
-   `init-dashboard-config` (dashboard). All the nodes of the Wazuh cluster have to run the same
+   included: `install-credentials` (every workload), `install-certs` (indexer and dashboard),
+   `init-wazuh-etc` (managers) and `init-dashboard-config` (dashboard). All the nodes of the Wazuh cluster have to run the same
    version.
 3. Apply the Traefik runtime. From 5.0.0, also delete the `traefik` ClusterRoleBinding, which
    `kubectl apply` does not remove and which gives Traefik read access to the Secrets of every

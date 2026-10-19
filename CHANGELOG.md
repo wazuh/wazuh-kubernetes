@@ -25,6 +25,7 @@
 
 | Issue | Comment |
 | - | - |
+| [#1725](https://github.com/wazuh/wazuh-kubernetes/issues/1725) | Adapt the manifests to the RC 2 per-package credentials: manager configuration in `/etc/wazuh-manager`, per-connection CA files, trust material copied as root-owned regular files, no `fsGroup` or `SYS_CHROOT`, and passwords generated without `wazuh-credentials.sh` |
 | [#1703](https://github.com/wazuh/wazuh-kubernetes/issues/1703) | Rename the `wazuh-wui` Server API user to `wazuh-internal-client` in the credentials check and the documentation. The `WAZUH_MANAGER_WUI_PASSWORD` key keeps its name. |
 | [#1714](https://github.com/wazuh/wazuh-kubernetes/issues/1714) | Add the Server API certificate (`apid`) issued by `wazuh-certs-tool.sh` to the `manager-certs` secret and the master statefulset, and add `--api-san` to `certificates-conf.sh`. |
 | [#1710](https://github.com/wazuh/wazuh-kubernetes/issues/1710) | Hardening traefik deployment |
