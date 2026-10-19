@@ -31,7 +31,7 @@ Back up the following files, from which kustomize generates the Secrets:
 - `wazuh/config/credentials/cluster.key` - Cluster communication key
 - `wazuh/config/{indexer,manager,dashboard,root-ca}/certs/` - What the `*-certs` Secrets are generated from
 - `wazuh/wazuh-certificates/` - Output of `wazuh-certs-tool.sh`
-- The root CA of `wazuh-certs-tool.sh`, with `root-ca.key`, needed to issue new certificates: `/etc/wazuh/ca` on the host that issued them, or the directory set in `WAZUH_CA_DIR`. The CA key never goes into the cluster
+- The root CA of `wazuh-certs-tool.sh`, with `root-ca.key`, needed to issue new certificates: `wazuh-ca/` next to `wazuh-certs-tool.sh` on the host that issued them, or the directory set in `WAZUH_CA_DIR`. The CA key never goes into the cluster
 
 Also back up any custom ConfigMaps you have created for configuration file persistence.
 

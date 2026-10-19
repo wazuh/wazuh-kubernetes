@@ -30,8 +30,8 @@ spec:
       # No workload talks to the Kubernetes API.
       automountServiceAccountToken: false
       volumes:
-        # The Secret gets the pod's fsGroup and group read, so the service user
-        # could read it: an init container copies it to a root-only file.
+        # A Secret volume holds symbolic links: an init container copies the
+        # credentials to a regular file that only root can read.
         - name: wazuh-credentials
           emptyDir:
             medium: Memory
