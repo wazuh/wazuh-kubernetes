@@ -30,7 +30,8 @@ Back up the following files, from which kustomize generates the Secrets:
 - `wazuh/config/credentials/*.env` - The deployment's passwords, including any rotated with `password-tool.sh`. Without them `kubectl apply -k` fails, and generating them again produces passwords that do not match the ones stored on the volumes
 - `wazuh/config/credentials/cluster.key` - Cluster communication key
 - `wazuh/config/{indexer,manager,dashboard,root-ca}/certs/` - What the `*-certs` Secrets are generated from
-- `wazuh/wazuh-certificates/` - Output of `wazuh-certs-tool.sh`, including `root-ca.key`, needed to issue new certificates
+- `wazuh/wazuh-certificates/` - Output of `wazuh-certs-tool.sh`
+- The root CA of `wazuh-certs-tool.sh`, with `root-ca.key`, needed to issue new certificates: `/etc/wazuh/ca` on the host that issued them, or the directory set in `WAZUH_CA_DIR`. The CA key never goes into the cluster
 
 Also back up any custom ConfigMaps you have created for configuration file persistence.
 

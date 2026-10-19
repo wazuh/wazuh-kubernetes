@@ -217,17 +217,13 @@ Wazuh uses certificates to establish confidentiality and encrypt communications 
 
 Download the `wazuh-certs-tool.sh` script. This creates the certificates that encrypt communications between the Wazuh central components.
 
-**3.2.1 Download the Wazuh certificates tool script, the credentials library and the config.yml file**:
+**3.2.1 Download the Wazuh certificates tool script and the config.yml file**:
 
 ```bash
 cd wazuh
 curl -so wazuh-certs-tool.sh https://packages.wazuh.com/5.0/wazuh-certs-tool-5.0.0-1.sh
-curl -so wazuh-credentials.sh https://raw.githubusercontent.com/wazuh/wazuh-installation-assistant/5.0.0/credentials_lib/wazuh-credentials.sh
 curl -so config.yml https://packages.wazuh.com/5.0/config-5.0.0-1.yml
 ```
-
-`wazuh-credentials.sh` is the library `credentials-conf.sh` generates and validates the passwords
-with (step 3.2.4). Use the same version as the images.
 
 **3.2.2 Edit the config.yml file with the configuration of the Wazuh components to be deployed**:
 
@@ -326,8 +322,7 @@ secretGenerator:
 
 Every Wazuh component now generates or validates its own credentials at install time and refuses to
 start without them. Generate the five passwords and the manager cluster key before the first
-`kubectl apply -k`, the same way as the certificates above. The script sources `wazuh-credentials.sh`, downloaded in step 3.2.1
-(`WAZUH_CREDENTIALS_LIB` overrides the path):
+`kubectl apply -k`, the same way as the certificates above:
 
 ```bash
 sudo bash ../tools/utils/deployment/credentials-conf.sh
@@ -525,12 +520,8 @@ Download the `wazuh-certs-tool.sh` script. This creates the certificates that en
 ```bash
 cd wazuh/
 curl -so wazuh-certs-tool.sh https://packages.wazuh.com/5.0/wazuh-certs-tool-5.0.0-1.sh
-curl -so wazuh-credentials.sh https://raw.githubusercontent.com/wazuh/wazuh-installation-assistant/5.0.0/credentials_lib/wazuh-credentials.sh
 curl -so config.yml https://packages.wazuh.com/5.0/config-5.0.0-1.yml
 ```
-
-`wazuh-credentials.sh` is the library `credentials-conf.sh` uses in the next steps. Use the same
-version as the images.
 
 Edit the `config.yml` file to set corresponding name and IP address for each Wazuh component.
 For a local environment, you can use:
@@ -599,7 +590,7 @@ sudo bash ../tools/utils/deployment/certificates-conf.sh --cert --copy --priv --
 
 Every Wazuh component now generates or validates its own credentials at install time and refuses to
 start without them. Generate the five passwords and the manager cluster key before the first
-`kubectl apply -k`. The script sources `wazuh-credentials.sh`, downloaded with the certificates tool:
+`kubectl apply -k`:
 
 ```bash
 sudo bash ../tools/utils/deployment/credentials-conf.sh
