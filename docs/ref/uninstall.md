@@ -77,8 +77,8 @@ ubuntu@k8s-control-server:~$ kubectl delete persistentvolume pvc-b3226ad3-f7c4-1
 
 ## Delete the local files
 
-`wazuh/config/credentials/*.env` and `wazuh/wazuh-certificates/` stay on disk, with the passwords
-and the private keys in clear text. Delete them, or keep them if you are going to restore the
+`wazuh/config/credentials/*.env`, `wazuh/wazuh-certificates/` and `wazuh/wazuh-ca/` (the root CA
+and its key) stay on disk, with the passwords and the private keys in clear text. Delete them, or keep them if you are going to restore the
 volumes. `credentials-conf.sh` refuses to run while the credentials files exist (`--force` replaces
 them, for a deployment that has never been started).
 

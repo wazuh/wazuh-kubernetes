@@ -126,10 +126,10 @@ one: new values would not match the ones the components stored.
 
 The first three live in the indexer's security index and are cluster-wide. The last two live in the
 Wazuh API user database, `rbac.db`, which only the manager master has: the Wazuh API runs on the
-master, and a worker does not create one. A worker still receives the whole `manager.env`, and needs
-it: the manager image requires `WAZUH_MANAGER_API_PASSWORD` and `WAZUH_MANAGER_WUI_PASSWORD` on
-every start while there is no `rbac.db`, which on a worker is always. If the worker is promoted to
-master, it creates its database from them.
+master, and a worker does not create one. The manager image only requires
+`WAZUH_MANAGER_API_PASSWORD` and `WAZUH_MANAGER_WUI_PASSWORD` on a master that has no `rbac.db` yet;
+a worker starts without them. A worker still receives the whole `manager.env`, so that if it is
+promoted to master it creates its database from them.
 
 > **Note**: Up to 5.0.0 `rc1`, the dashboard's Wazuh API account was called `wazuh-wui`. The key,
 > `WAZUH_MANAGER_WUI_PASSWORD`, keeps its name. The new name only applies when `rbac.db` is created,
