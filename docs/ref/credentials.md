@@ -191,14 +191,32 @@ NEW='<the password the tool printed>'
     env OSD_PATH_CONF=/usr/share/wazuh-dashboard/config /usr/share/wazuh-dashboard/bin/opensearch-dashboards-keystore add --allow-root -f --stdin wazuh_core.hosts.default.password
   ```
 
-- **`wazuh-manager`**: the keystore of every manager pod, master and workers.
+- **`wazuh-manager`**: the keystore of every manager, master and workers. A running manager keeps
+  its keystore database open, and a write into it can fail with `While lock file:
+  queue/keystore/LOCK: Resource temporarily unavailable`. The manager then keeps the old password,
+  which the indexer accepts only until it drops it from its authentication cache. So the managers
+  are scaled to zero, and the keystore on each manager volume is written from a one-off pod:
 
   ```bash
-  for pod in $(kubectl -n wazuh get pods -l app=wazuh-manager -o name); do
-    printf '%s' "$NEW" | kubectl -n wazuh exec -i "$pod" -c wazuh-manager -- \
-      /var/wazuh-manager/bin/wazuh-manager-keystore -f indexer -k password
+  MASTERS=$(kubectl -n wazuh get sts wazuh-manager-master -o jsonpath='{.spec.replicas}')
+  WORKERS=$(kubectl -n wazuh get sts wazuh-manager-worker -o jsonpath='{.spec.replicas}')
+  IMAGE=$(kubectl -n wazuh get sts wazuh-manager-master -o jsonpath='{.spec.template.spec.containers[?(@.name=="wazuh-manager")].image}')
+  kubectl -n wazuh scale sts wazuh-manager-master wazuh-manager-worker --replicas=0
+  kubectl -n wazuh wait --for=delete pod -l app=wazuh-manager --timeout=300s
+  for pvc in $(kubectl -n wazuh get pvc -o name | grep -E '/wazuh-manager-(master|worker)-wazuh-manager-'); do
+    printf '%s' "$NEW" | kubectl -n wazuh run keystore-write --rm -i --quiet --restart=Never --image="$IMAGE" \
+      --overrides='{"spec":{"containers":[{"name":"keystore-write","image":"'"$IMAGE"'","stdin":true,"stdinOnce":true,
+        "command":["/var/wazuh-manager/bin/wazuh-manager-keystore","-f","indexer","-k","password"],
+        "volumeMounts":[{"name":"data","mountPath":"/var/wazuh-manager/queue","subPath":"wazuh/var/wazuh-manager/queue"}]}],
+        "volumes":[{"name":"data","persistentVolumeClaim":{"claimName":"'"${pvc#persistentvolumeclaim/}"'"}}]}}' \
+      && echo "${pvc}: written" || echo "${pvc}: FAILED"
   done
+  kubectl -n wazuh scale sts wazuh-manager-master --replicas="$MASTERS"
+  kubectl -n wazuh scale sts wazuh-manager-worker --replicas="$WORKERS"
   ```
+
+  Every volume has to print `written` before the managers are scaled back. Agents stay
+  disconnected while the managers are at zero.
 
 - **`admin`, `wazuh`**: no component consumes them.
 
