@@ -201,22 +201,40 @@ NEW='<the password the tool printed>'
   MASTERS=$(kubectl -n wazuh get sts wazuh-manager-master -o jsonpath='{.spec.replicas}')
   WORKERS=$(kubectl -n wazuh get sts wazuh-manager-worker -o jsonpath='{.spec.replicas}')
   IMAGE=$(kubectl -n wazuh get sts wazuh-manager-master -o jsonpath='{.spec.template.spec.containers[?(@.name=="wazuh-manager")].image}')
-  kubectl -n wazuh scale sts wazuh-manager-master wazuh-manager-worker --replicas=0
-  kubectl -n wazuh wait --for=delete pod -l app=wazuh-manager --timeout=300s
-  for pvc in $(kubectl -n wazuh get pvc -o name | grep -E '/wazuh-manager-(master|worker)-wazuh-manager-'); do
+  write_keystore() {
     printf '%s' "$NEW" | kubectl -n wazuh run keystore-write --rm -i --quiet --restart=Never --image="$IMAGE" \
       --overrides='{"spec":{"containers":[{"name":"keystore-write","image":"'"$IMAGE"'","stdin":true,"stdinOnce":true,
         "command":["/var/wazuh-manager/bin/wazuh-manager-keystore","-f","indexer","-k","password"],
         "volumeMounts":[{"name":"data","mountPath":"/var/wazuh-manager/queue","subPath":"wazuh/var/wazuh-manager/queue"}]}],
-        "volumes":[{"name":"data","persistentVolumeClaim":{"claimName":"'"${pvc#persistentvolumeclaim/}"'"}}]}}' \
-      && echo "${pvc}: written" || echo "${pvc}: FAILED"
+        "volumes":[{"name":"data","persistentVolumeClaim":{"claimName":"'"$1"'"}}]}}'
+  }
+  kubectl -n wazuh scale sts wazuh-manager-master wazuh-manager-worker --replicas=0
+  kubectl -n wazuh wait --for=delete pod -l app=wazuh-manager --timeout=300s
+  FAILED=""
+  for pvc in $(kubectl -n wazuh get pvc -o name | grep -E '/wazuh-manager-(master|worker)-wazuh-manager-'); do
+    pvc=${pvc#persistentvolumeclaim/}
+    write_keystore "$pvc" && echo "${pvc}: written" || { echo "${pvc}: FAILED"; FAILED="$FAILED $pvc"; }
   done
+  if [ -z "$FAILED" ]; then
+    kubectl -n wazuh scale sts wazuh-manager-master --replicas="$MASTERS"
+    kubectl -n wazuh scale sts wazuh-manager-worker --replicas="$WORKERS"
+  else
+    echo "Not scaled back. Write again:$FAILED"
+  fi
+  ```
+
+  The managers are scaled back only when every volume prints `written`. Otherwise the block stops
+  with the managers at zero and lists the volumes that failed. Write each one again, in the same
+  shell, and then scale the managers back:
+
+  ```bash
+  write_keystore <pvc> && echo written
   kubectl -n wazuh scale sts wazuh-manager-master --replicas="$MASTERS"
   kubectl -n wazuh scale sts wazuh-manager-worker --replicas="$WORKERS"
   ```
 
-  Every volume has to print `written` before the managers are scaled back. Agents stay
-  disconnected while the managers are at zero.
+  Agents stay disconnected while the managers are at zero. The managers load the new value when
+  they start again, after the scale back.
 
 - **`admin`, `wazuh`**: no component consumes them.
 
@@ -231,7 +249,8 @@ kubectl apply -k envs/eks/   # or envs/local-env/
 The files are the deployment's record of its passwords: a pod whose volume is lost, a new replica,
 and every recreated indexer pod take their credentials from them. Applying the overlay regenerates
 the Secrets whose file changed, and the workloads that mount them are recreated, which is also what
-makes the dashboard and the managers load the new keystore value.
+makes the dashboard load the new keystore value. The managers have already loaded theirs, when they
+were scaled back.
 
 Skipping the keystore step leaves the consumer on the old value. The dashboard, for example, answers
 `503` while its pod stays `Ready`.
