@@ -1,5 +1,5 @@
 #!/bin/bash
-# Wazuh Kubernetes Copyright (C) 2019, Wazuh Inc. (License GPLv2)
+# Wazuh Kubernetes Copyright (C) Wazuh Inc. (License GPLv2)
 #
 # Asserts that every account of a deployment authenticates with its generated
 # password, that none of them authenticates with its own username as its

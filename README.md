@@ -22,7 +22,7 @@ Based on the previous work from JPLachance [coveo/wazuh-kubernetes](https://gith
 ## License and copyright
 
 WAZUH
-Copyright (C) 2016, Wazuh Inc.  (License GPLv2)
+Copyright (C) Wazuh Inc.  (License GPLv2)
 
 ## References
 

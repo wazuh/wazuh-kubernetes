@@ -121,6 +121,35 @@ class TestWazuhKubernetes:
 
         assert running_services >= 7, f"Expected at least 7 running services, found {running_services}"
 
+    def test_trust_files(self, namespace, dashboard_pod):
+        """Check the certificates the components verify peers with.
+
+        The package resolvers refuse a symbolic link or a writable file, so each
+        one has to be a regular file with a single link: root:<service group>
+        0640, or root:root 0600 for the indexer admin pair.
+        """
+        manager_files = "/etc/wazuh-manager/ca/root-ca.pem /etc/wazuh-manager/certs/*.pem"
+        expected = {
+            "wazuh-manager-master-0": (manager_files, {}),
+            "wazuh-manager-worker-0": (manager_files, {}),
+            "wazuh-indexer-0": ("/usr/share/wazuh-indexer/config/certs/*.pem",
+                                {"admin.pem": "0:0 600", "admin-key.pem": "0:0 600"}),
+            dashboard_pod: ("/usr/share/wazuh-dashboard/config/certs/*.pem", {}),
+        }
+        wrong = []
+        for pod, (paths, exceptions) in expected.items():
+            cmd = f"kubectl -n {namespace} exec {pod} -- sh -c 'stat -c \"%F|%u:%g %a|%h|%n\" {paths}'"
+            result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
+            print(f"{pod}:\n{result.stdout}")
+            assert result.returncode == 0, f"{pod}: {result.stderr}"
+            for line in result.stdout.splitlines():
+                kind, owner_mode, links, path = line.split("|")
+                want = exceptions.get(Path(path).name, "0:101 640")
+                if kind != "regular file" or owner_mode != want or links != "1":
+                    wrong.append(f"{pod}:{path} is '{kind} {owner_mode}, {links} links', expected 'regular file {want}, 1 link'")
+
+        assert not wrong, "\n".join(wrong)
+
     def test_dashboard_service_url(self, namespace, dashboard_pod, indexer_cred, request):
         """Check if Wazuh dashboard service returns HTTP 200"""
         user, password = indexer_cred
