@@ -434,9 +434,13 @@ jobs:
             wazuh/indexer_stack/wazuh-dashboard/dashboard-deploy.yaml
           yq e -i ".spec.template.spec.initContainers[] |= select(.name == \"init-dashboard-config\").image = \"${REG}/wazuh/wazuh-dashboard:${TAG}\"" \
             wazuh/indexer_stack/wazuh-dashboard/dashboard-deploy.yaml
+          yq e -i ".spec.template.spec.initContainers[] |= select(.name == \"install-certs\").image = \"${REG}/wazuh/wazuh-dashboard:${TAG}\"" \
+            wazuh/indexer_stack/wazuh-dashboard/dashboard-deploy.yaml
           yq e -i ".spec.template.spec.containers[] |= select(.name == \"wazuh-dashboard\").image = \"${REG}/wazuh/wazuh-dashboard:${TAG}\"" \
             wazuh/indexer_stack/wazuh-dashboard/dashboard-deploy.yaml
           yq e -i ".spec.template.spec.initContainers[] |= select(.name == \"install-credentials\").image = \"${REG}/wazuh/wazuh-indexer:${TAG}\"" \
+            wazuh/indexer_stack/wazuh-indexer/cluster/indexer-sts.yaml
+          yq e -i ".spec.template.spec.initContainers[] |= select(.name == \"install-certs\").image = \"${REG}/wazuh/wazuh-indexer:${TAG}\"" \
             wazuh/indexer_stack/wazuh-indexer/cluster/indexer-sts.yaml
           yq e -i ".spec.template.spec.containers[] |= select(.name == \"wazuh-indexer\").image = \"${REG}/wazuh/wazuh-indexer:${TAG}\"" \
             wazuh/indexer_stack/wazuh-indexer/cluster/indexer-sts.yaml
@@ -497,15 +501,10 @@ jobs:
       - name: Load artifact URL environment variables
         run: cat ${{ env.ARTIFACT_URLS_ENV_FILE }} >> $GITHUB_ENV
 
-      - name: Download Wazuh certificates tool, credentials library and config
+      - name: Download Wazuh certificates tool and config
         working-directory: wazuh-kubernetes/wazuh
         run: |
-          if [ -z "${{ env.wazuh_credentials }}" ]; then
-            echo "ERROR: artifact_urls.yaml has no wazuh_credentials entry"
-            exit 1
-          fi
           aws s3 cp ${{ env.wazuh_certs_tool }} "wazuh-certs-tool.sh"
-          aws s3 cp ${{ env.wazuh_credentials }} "wazuh-credentials.sh"
           aws s3 cp ${{ env.wazuh_config_yml }} "config.yml"
 
       - name: Update config.yml for Kubernetes
@@ -718,7 +717,7 @@ jobs:
                         -o jsonpath='{.items[*].metadata.name}'); do
             echo "=== $pod ==="
             kubectl exec -n wazuh "$pod" -- sh -c '
-              CA=/var/wazuh-manager/etc/certs/root-ca.pem
+              CA=/etc/wazuh-manager/certs/root-ca.pem
               if command -v openssl >/dev/null 2>&1; then
                 echo | openssl s_client -connect 127.0.0.1:1517 \
                   -servername wazuh-agents -verify_hostname wazuh-agents \
@@ -737,7 +736,7 @@ jobs:
           # The dashboard reaches the API as https://wazuh-api, so the handshake
           # uses that name and the deployment CA, never -k.
           kubectl exec -n wazuh wazuh-manager-master-0 -c wazuh-manager -- sh -c '
-            CA=/var/wazuh-manager/etc/certs/root-ca.pem
+            CA=/etc/wazuh-manager/certs/root-ca.pem
             if command -v openssl >/dev/null 2>&1; then
               echo | openssl s_client -connect 127.0.0.1:55000 \
                 -servername wazuh-api -verify_hostname wazuh-api \
