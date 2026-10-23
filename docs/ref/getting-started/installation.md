@@ -225,7 +225,7 @@ curl -so wazuh-certs-tool.sh https://packages.wazuh.com/production/5.x/installat
 curl -so config.yml https://packages.wazuh.com/production/5.x/installation-assistant/config-5.0.0.yml
 ```
 
-> **Note**: Before the 5.0.0 release these files are published as pre-release builds, with the stage in the name, under `https://packages-staging.xdrsiem.wazuh.info/pre-release/5.x/installation-assistant/` (for example `wazuh-certs-tool-5.0.0-rc2.sh` and `config-5.0.0-rc2.yml`). The tool must issue the Server API certificate (`apid`), which needs RC 2 or later.
+> **Note**: Before the 5.0.0 release these files are published as pre-release builds, with the stage in the name, under `https://packages-staging.xdrsiem.wazuh.info/pre-release/5.x/installation-assistant/` as `wazuh-certs-tool-5.0.0-<STAGE>.sh` and `config-5.0.0-<STAGE>.yml`. The tool must issue the Server API certificate (`apid`), which needs RC 2 or later.
 
 **3.2.2 Edit the config.yml file with the configuration of the Wazuh components to be deployed**:
 
@@ -467,7 +467,7 @@ Right after it enrolls the agent can be listed as `pending` for a minute or two;
 
 ##### Agents running in the cluster
 
-The `wazuh` namespace denies all ingress traffic by default (`default-deny-all`). Agents that run in other namespaces of the cluster, for example as a DaemonSet, need a NetworkPolicy that lets them reach the Wazuh manager on port `1517`. Agents outside the cluster are not affected: on EKS they arrive through Traefik, which the overlay already allows.
+The `wazuh` namespace denies all ingress traffic by default (`default-deny-all`). Agents that run in other namespaces of the cluster, for example as a DaemonSet, need a NetworkPolicy that lets them reach the Wazuh manager. Agents outside the cluster are not affected: on EKS they arrive through Traefik, which the overlay already allows.
 
 ```yaml
 apiVersion: networking.k8s.io/v1
@@ -487,13 +487,17 @@ spec:
       ports:
         - port: 1517
           protocol: TCP
+        - port: 1515
+          protocol: TCP
+        - port: 1514
+          protocol: TCP
 ```
 
 ```bash
 kubectl apply -f allow-agents-to-manager-np.yaml
 ```
 
-Restrict `namespaceSelector` to the namespaces that run agents.
+Port `1517` is the one 5.x agents use. `1515` (enrollment, master) and `1514` (legacy channel, workers) are only needed by 4.x agents; remove them when every agent in the cluster runs 5.x. Restrict `namespaceSelector` to the namespaces that run agents.
 
 #### Conclusion
 
@@ -559,7 +563,7 @@ curl -so wazuh-certs-tool.sh https://packages.wazuh.com/production/5.x/installat
 curl -so config.yml https://packages.wazuh.com/production/5.x/installation-assistant/config-5.0.0.yml
 ```
 
-> **Note**: Before the 5.0.0 release these files are published as pre-release builds, with the stage in the name, under `https://packages-staging.xdrsiem.wazuh.info/pre-release/5.x/installation-assistant/` (for example `wazuh-certs-tool-5.0.0-rc2.sh` and `config-5.0.0-rc2.yml`). The tool must issue the Server API certificate (`apid`), which needs RC 2 or later.
+> **Note**: Before the 5.0.0 release these files are published as pre-release builds, with the stage in the name, under `https://packages-staging.xdrsiem.wazuh.info/pre-release/5.x/installation-assistant/` as `wazuh-certs-tool-5.0.0-<STAGE>.sh` and `config-5.0.0-<STAGE>.yml`. The tool must issue the Server API certificate (`apid`), which needs RC 2 or later.
 
 Edit the `config.yml` file to set corresponding name and IP address for each Wazuh component.
 For a local environment, you can use:
@@ -623,6 +627,10 @@ Run `wazuh-certs-tool.sh` to create the certificates.
 ```bash
 sudo bash ../tools/utils/deployment/certificates-conf.sh --cert --copy --priv --agent-san localhost
 ```
+
+The certificates tool creates the root CA in `wazuh/wazuh-ca/` (`root-ca.pem` and its key `root-ca.key`, owned by `root`, mode `0700`), next to `wazuh-certs-tool.sh`, and reuses it on later runs. The key never reaches the cluster: only `root-ca.pem` is copied into the Secrets. Keep `wazuh/wazuh-ca/` to issue certificates for the same deployment later, and protect it like any other private key.
+
+> **Note**: The Wazuh manager master logs `WARNING: dashboard client pair not generated: /etc/wazuh-manager/ca has no key; provision it externally in /etc/wazuh-manager/export` on every start. This is expected: the deployment stages the manager's CA certificate without its key, and nothing uses that pair.
 
 #### Run the credentials generator
 
@@ -895,6 +903,11 @@ Right after it enrolls the agent can be listed as `pending` for a minute or two;
 > **Note**: A port-forward to a Service attaches to a single manager pod, so every agent enrolled this way reports to that pod.
 
 > **Note**: For up to a minute the agent may log `Enrollment rejected by the manager: token_unknown`, `credential rejected (401); re-enrolling` and `Manager unreachable`. The token and the agent key are created on the master and take a few seconds to reach the other manager nodes, and the port-forward may have attached to a worker. The agent retries on its own until `re-enrollment succeeded` and `Manager reachable again`.
+
+
+##### Agents running in the local cluster
+
+The local deployment uses the same `default-deny-all` policy as EKS. Agents that run in other namespaces of the cluster need the NetworkPolicy described in [Agents running in the cluster](#agents-running-in-the-cluster) for the EKS deployment. Agents that connect through the port-forward are not affected.
 
 ### Conclusion
 

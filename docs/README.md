@@ -40,10 +40,13 @@ To deploy a cluster on your local environment (like Minikube, Kind or Microk8s) 
 │   │   ├── security.md
 │   │   ├── uninstall.md
 │   │   └── upgrade.md
+│   ├── INSTALLATION.md
 │   ├── README.md
 │   ├── SUMMARY.md
 │   ├── book.toml
 │   ├── build.sh
+│   ├── mermaid-init.js
+│   ├── mermaid.min.js
 │   ├── server.sh
 │   └── wazuh-namespace.png
 ├── envs
