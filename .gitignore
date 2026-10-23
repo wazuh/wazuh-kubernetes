@@ -11,6 +11,8 @@ wazuh/wazuh-credentials*.sh
 wazuh/wazuh-certificates
 wazuh/wazuh-certificates/*
 wazuh/wazuh-certificates-tool.log
+wazuh/wazuh-ca
+wazuh/wazuh-ca/*
 wazuh/config
 wazuh/config/*
 tests/__pycache__/

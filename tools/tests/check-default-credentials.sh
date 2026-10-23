@@ -1,5 +1,5 @@
 #!/bin/bash
-# Wazuh Kubernetes Copyright (C) 2019, Wazuh Inc. (License GPLv2)
+# Wazuh Kubernetes Copyright (C) Wazuh Inc. (License GPLv2)
 #
 # Asserts that every account of a deployment authenticates with its generated
 # password, that none of them authenticates with its own username as its
@@ -24,7 +24,7 @@ CREDENTIALS_DIR="./config/credentials"
 DEMO_USERS="anomalyadmin kibanaro logstash readall snapshotrestore"
  
 # Accounts the Wazuh indexer image keeps. wazuh-admin, wazuh-readonly and
-# wazuh-demo do not ship in 5.0.0.
+# wazuh-demo do not ship in 5.0.0 or later.
 INDEXER_USERS="admin kibanaserver wazuh-manager"
  
 # Accounts the Wazuh API seeds its user database with.

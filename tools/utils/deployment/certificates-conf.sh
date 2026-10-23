@@ -189,9 +189,11 @@ if $DO_COPY; then
     mkdir -p "./config/$dir_name/certs"
     cp "$OUTPUT_DIR/${node}"* "./config/$dir_name/certs/"
   done
-  echo "Copying root-ca certificates -> config/root-ca/certs/"
+  # The CA certificate only: its key never leaves the host that issues the
+  # certificates.
+  echo "Copying the root CA certificate -> config/root-ca/certs/"
   mkdir -p "./config/root-ca/certs"
-  cp "$OUTPUT_DIR"/root-ca* "./config/root-ca/certs/"
+  cp "$OUTPUT_DIR/root-ca.pem" "./config/root-ca/certs/"
 fi
 
 # 3. Set ownership and permissions

@@ -46,7 +46,7 @@ runs:
         sed -i 's/\r//g' "${{ inputs.artifact-urls-file-temp }}"
 
         # Remove unwanted entries
-        sed -i -e '/wazuh_certs_tool/b' -e '/wazuh_credentials/b' -e '/wazuh_config_yml/b' -e 'd' "${{ inputs.artifact-urls-file-temp }}"
+        sed -i -e '/wazuh_certs_tool/b' -e '/wazuh_config_yml/b' -e 'd' "${{ inputs.artifact-urls-file-temp }}"
 
     - name: Generate the variables file
       shell: bash
@@ -90,10 +90,6 @@ runs:
           # Append the processed line to the output file
           echo "$line" >> "$OUTPUT_FILE"
         done < "$ARTIFACT_URLS_FILE_TEMP"
-
-        if ! grep -q '^wazuh_credentials:' "$OUTPUT_FILE"; then
-          echo "wazuh_credentials: s3://${DEV_S3_BUCKET}/development/wazuh/${WAZUH_MAJOR}.x/secondary/installation-assistant/${WAZUH_VERSION}/wazuh-credentials-${WAZUH_VERSION}-${ASSISTANT_REVISION}.sh" >> "$OUTPUT_FILE"
-        fi
 
         # Verify the output file
         if [ -f "$OUTPUT_FILE" ]; then

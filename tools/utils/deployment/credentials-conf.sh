@@ -1,5 +1,5 @@
 #!/bin/bash
-# Wazuh Kubernetes Copyright (C) 2019, Wazuh Inc. (License GPLv2)
+# Wazuh Kubernetes Copyright (C) Wazuh Inc. (License GPLv2)
 #
 # Creates the passwords and the manager cluster key of one Wazuh deployment
 # before its first start and writes them, one file per component plus
@@ -10,7 +10,8 @@
 
 set -o pipefail
 
-CREDENTIALS_LIB="${WAZUH_CREDENTIALS_LIB:-./wazuh-credentials.sh}"
+# The password rule of the Wazuh packages, shared with the installation assistant.
+PASSWORD_POLICY="$(cd "$(dirname "$0")" && pwd)/password-policy.sh"
 OUTPUT_DIR="./config/credentials"
 FORCE=false
 CLUSTER_KEY_FILE="cluster.key"
@@ -59,11 +60,6 @@ A-Z a-z 0-9. When only ${CLUSTER_KEY_FILE} is missing, as on a deployment
 created before this script wrote it, only that file is written; pass the
 running key in WAZUH_CLUSTER_KEY to keep it.
 
-Needs the Wazuh credentials library as ${CREDENTIALS_LIB}
-(WAZUH_CREDENTIALS_LIB overrides the path). Download it next to
-wazuh-certs-tool.sh, in the same version as the images (see
-tools/utils/deployment/certificates-conf.sh).
-
 The files this writes are read by kustomize's secretGenerator (files:), so
 kustomize must be able to read them: run this script as the same user who
 runs kubectl/kustomize, or with sudo if certificates-conf.sh's output
@@ -92,39 +88,18 @@ while [ $# -gt 0 ]; do
   esac
 done
 
-if [ ! -r "${CREDENTIALS_LIB}" ]; then
-  error "cannot read the Wazuh credentials library at ${CREDENTIALS_LIB}"
-  error "download it next to wazuh-certs-tool.sh, or set WAZUH_CREDENTIALS_LIB to its path"
+# shellcheck source=password-policy.sh
+if ! . "${PASSWORD_POLICY}" 2>/dev/null; then
+  error "cannot read ${PASSWORD_POLICY}; run this script from a wazuh-kubernetes checkout"
   exit 1
 fi
-# shellcheck source=/dev/null
-. "${CREDENTIALS_LIB}"
-for function in wazuh_password_generate wazuh_password_validate; do
-  if ! declare -F "${function}" >/dev/null; then
-    error "${CREDENTIALS_LIB} does not define ${function}; is it the Wazuh credentials library?"
-    exit 1
-  fi
-done
 
 # Every component validates what it receives; a value one of them would
 # reject is refused here, so the deployment does not find out at pod start.
 check_password() {
-  local key=$1 value=$2 rest reason
-  rest=$(printf '%s' "${value}" | LC_ALL=C tr -d 'A-Za-z0-9.,_+:@%^=~-')
-  if [ -n "${rest}" ]; then
-    error "${key} was rejected: only A-Z a-z 0-9 . , _ + : @ % ^ = ~ - are allowed"
-    return 1
-  fi
-  if ! reason=$(wazuh_password_validate "${value}" 2>&1); then
-    error "${key} was rejected: ${reason#wazuh-credentials: }"
-    return 1
-  fi
-  case ${value} in *[abcdefghijklmnopqrstuvwxyz]*) ;; *) error "${key} was rejected: password must contain at least one lowercase letter"; return 1 ;; esac
-  case ${value} in *[ABCDEFGHIJKLMNOPQRSTUVWXYZ]*) ;; *) error "${key} was rejected: password must contain at least one uppercase letter"; return 1 ;; esac
-  case ${value} in *[0123456789]*) ;; *) error "${key} was rejected: password must contain at least one digit"; return 1 ;; esac
-  case ${value} in *[.,_+:@%^=~-]*) ;; *) error "${key} was rejected: password must contain at least one symbol from . , _ + : @ % ^ = ~ -"; return 1 ;; esac
-  if printf '%s' "${value}" | grep -Eq '^-?(0|[1-9][0-9]*)(\.[0-9]+)?([eE][+-]?[0-9]+)?$'; then
-    error "${key} was rejected: the dashboard keystore would store it as a number"
+  local key=$1 value=$2 reason
+  if ! reason=$(common_passwordValidate "${value}" 2>&1); then
+    error "${key} was rejected: ${reason}"
     return 1
   fi
 }
@@ -177,20 +152,7 @@ ${CLUSTER_KEY_ONLY} || for key in "${ALL_KEYS[@]}"; do
     VALUES[${key}]="${!key}"
     SOURCES[${key}]="supplied"
   else
-    generated=""
-    for attempt in 1 2 3 4 5 6 7 8 9 10; do
-      candidate=$(wazuh_password_generate) || break
-      if check_password "${key}" "${candidate}" 2>/dev/null; then
-        generated=${candidate}
-        break
-      fi
-    done
-    if [ -z "${generated}" ]; then
-      error "could not generate ${key}"
-      failed=true
-      continue
-    fi
-    VALUES[${key}]=${generated}
+    VALUES[${key}]=$(common_passwordGenerate)
     SOURCES[${key}]="generated"
   fi
 done

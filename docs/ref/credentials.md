@@ -22,12 +22,11 @@ keystore, the dashboard in its keystore. From then on, the stored values are the
 ## Creating the credentials
 
 Run it from the `wazuh/` directory, after the certificates and before the first deployment. It
-sources the Wazuh credentials library, `wazuh-credentials.sh`, from the same directory
-(`WAZUH_CREDENTIALS_LIB` overrides the path). Download it in the same version as the images:
+generates and validates the passwords with `tools/utils/deployment/password-policy.sh`, the same
+rule as the Wazuh packages and the installation assistant, so nothing else has to be downloaded:
 
 ```bash
 cd wazuh
-curl -so wazuh-credentials.sh https://raw.githubusercontent.com/wazuh/wazuh-installation-assistant/5.0.0/credentials_lib/wazuh-credentials.sh
 sudo bash ../tools/utils/deployment/certificates-conf.sh --cert --copy --priv
 sudo bash ../tools/utils/deployment/credentials-conf.sh
 cd ..
@@ -85,12 +84,12 @@ produces a new Secret and rolls the workloads that mount it. The three carry the
 kubectl -n wazuh get secrets -l app.kubernetes.io/component=credentials
 ```
 
-A volume of a Secret takes the pod's `fsGroup`, which is the service user's group, and group read. So
-the Secret is mounted only in an init container, `install-credentials`, which copies it to
-`/run/secrets/wazuh-credentials` in a memory `emptyDir`, as a root-only file. The container mounts that
-directory read-only, installs the file as `/etc/wazuh/credentials.env`, which is what the Wazuh
-packages resolve their credentials from, and deletes that copy once the component has stored the
-values. Then the service starts under its own user.
+The Secret is mounted only in an init container, `install-credentials`, which copies it to
+`/run/secrets/wazuh-credentials` in a memory `emptyDir`, as a root-only regular file. The container
+mounts that directory read-only. At every start it reads the file as root and exports its `WAZUH_*`
+keys to the component's credential resolver, which takes the environment first. Once the component
+has stored the values, they are removed from the environment, and the service starts under its own
+user. Nothing is written to disk for them.
 
 - The passwords are not in the pod spec or in the container environment: `kubectl describe` and
   `kubectl exec … env` do not show them, and the service users cannot read the file.
@@ -99,13 +98,8 @@ values. Then the service starts under its own user.
   another user (`runAsUser`), the indexer and dashboard containers stop with
   `credentials: this container has to start as root`.
 
-If a key is missing or does not meet the rules, the container stops before its service starts, and
-names the key. It never prints the value:
-
-```text
-credentials: MISSING WAZUH_INDEXER_ADMIN_PASSWORD
-credentials: create the deployment credentials with tools/utils/deployment/credentials-conf.sh
-```
+If a value does not meet the rules, the component's credential resolver stops the container before
+its service starts. Its log names the key, never the value.
 
 Fix `wazuh/config/credentials/<file>.env` and apply the overlay again: the Secret gets a new name, so
 the workloads that read it are recreated with the fixed file.
@@ -132,10 +126,10 @@ one: new values would not match the ones the components stored.
 
 The first three live in the indexer's security index and are cluster-wide. The last two live in the
 Wazuh API user database, `rbac.db`, which only the manager master has: the Wazuh API runs on the
-master, and a worker does not create one. A worker still receives the whole `manager.env`, and needs
-it: the manager image requires `WAZUH_MANAGER_API_PASSWORD` and `WAZUH_MANAGER_WUI_PASSWORD` on
-every start while there is no `rbac.db`, which on a worker is always. If the worker is promoted to
-master, it creates its database from them.
+master, and a worker does not create one. The manager image only requires
+`WAZUH_MANAGER_API_PASSWORD` and `WAZUH_MANAGER_WUI_PASSWORD` on a master that has no `rbac.db` yet;
+a worker starts without them. A worker still receives the whole `manager.env`, so that if it is
+promoted to master it creates its database from them.
 
 > **Note**: Up to 5.0.0 `rc1`, the dashboard's Wazuh API account was called `wazuh-wui`. The key,
 > `WAZUH_MANAGER_WUI_PASSWORD`, keeps its name. The new name only applies when `rbac.db` is created,
@@ -187,24 +181,60 @@ NEW='<the password the tool printed>'
 
   ```bash
   printf '%s' "$NEW" | kubectl -n wazuh exec -i deploy/wazuh-dashboard -c wazuh-dashboard -- \
-    runuser -u wazuh-dashboard -- /usr/share/wazuh-dashboard/bin/opensearch-dashboards-keystore add -f --stdin opensearch.password
+    env OSD_PATH_CONF=/usr/share/wazuh-dashboard/config /usr/share/wazuh-dashboard/bin/opensearch-dashboards-keystore add --allow-root -f --stdin opensearch.password
   ```
 
 - **`wazuh-internal-client`**: the dashboard keystore.
 
   ```bash
   printf '%s' "$NEW" | kubectl -n wazuh exec -i deploy/wazuh-dashboard -c wazuh-dashboard -- \
-    runuser -u wazuh-dashboard -- /usr/share/wazuh-dashboard/bin/opensearch-dashboards-keystore add -f --stdin wazuh_core.hosts.default.password
+    env OSD_PATH_CONF=/usr/share/wazuh-dashboard/config /usr/share/wazuh-dashboard/bin/opensearch-dashboards-keystore add --allow-root -f --stdin wazuh_core.hosts.default.password
   ```
 
-- **`wazuh-manager`**: the keystore of every manager pod, master and workers.
+- **`wazuh-manager`**: the keystore of every manager, master and workers. A running manager keeps
+  its keystore database open, and a write into it can fail with `While lock file:
+  queue/keystore/LOCK: Resource temporarily unavailable`. The manager then keeps the old password,
+  which the indexer accepts only until it drops it from its authentication cache. So the managers
+  are scaled to zero, and the keystore on each manager volume is written from a one-off pod:
 
   ```bash
-  for pod in $(kubectl -n wazuh get pods -l app=wazuh-manager -o name); do
-    printf '%s' "$NEW" | kubectl -n wazuh exec -i "$pod" -c wazuh-manager -- \
-      /var/wazuh-manager/bin/wazuh-manager-keystore -f indexer -k password
+  MASTERS=$(kubectl -n wazuh get sts wazuh-manager-master -o jsonpath='{.spec.replicas}')
+  WORKERS=$(kubectl -n wazuh get sts wazuh-manager-worker -o jsonpath='{.spec.replicas}')
+  IMAGE=$(kubectl -n wazuh get sts wazuh-manager-master -o jsonpath='{.spec.template.spec.containers[?(@.name=="wazuh-manager")].image}')
+  write_keystore() {
+    printf '%s' "$NEW" | kubectl -n wazuh run keystore-write --rm -i --quiet --restart=Never --image="$IMAGE" \
+      --overrides='{"spec":{"containers":[{"name":"keystore-write","image":"'"$IMAGE"'","stdin":true,"stdinOnce":true,
+        "command":["/var/wazuh-manager/bin/wazuh-manager-keystore","-f","indexer","-k","password"],
+        "volumeMounts":[{"name":"data","mountPath":"/var/wazuh-manager/queue","subPath":"wazuh/var/wazuh-manager/queue"}]}],
+        "volumes":[{"name":"data","persistentVolumeClaim":{"claimName":"'"$1"'"}}]}}'
+  }
+  kubectl -n wazuh scale sts wazuh-manager-master wazuh-manager-worker --replicas=0
+  kubectl -n wazuh wait --for=delete pod -l app=wazuh-manager --timeout=300s
+  FAILED=""
+  for pvc in $(kubectl -n wazuh get pvc -o name | grep -E '/wazuh-manager-(master|worker)-wazuh-manager-'); do
+    pvc=${pvc#persistentvolumeclaim/}
+    write_keystore "$pvc" && echo "${pvc}: written" || { echo "${pvc}: FAILED"; FAILED="$FAILED $pvc"; }
   done
+  if [ -z "$FAILED" ]; then
+    kubectl -n wazuh scale sts wazuh-manager-master --replicas="$MASTERS"
+    kubectl -n wazuh scale sts wazuh-manager-worker --replicas="$WORKERS"
+  else
+    echo "Not scaled back. Write again:$FAILED"
+  fi
   ```
+
+  The managers are scaled back only when every volume prints `written`. Otherwise the block stops
+  with the managers at zero and lists the volumes that failed. Write each one again, in the same
+  shell, and then scale the managers back:
+
+  ```bash
+  write_keystore <pvc> && echo written
+  kubectl -n wazuh scale sts wazuh-manager-master --replicas="$MASTERS"
+  kubectl -n wazuh scale sts wazuh-manager-worker --replicas="$WORKERS"
+  ```
+
+  Agents stay disconnected while the managers are at zero. The managers load the new value when
+  they start again, after the scale back.
 
 - **`admin`, `wazuh`**: no component consumes them.
 
@@ -219,7 +249,8 @@ kubectl apply -k envs/eks/   # or envs/local-env/
 The files are the deployment's record of its passwords: a pod whose volume is lost, a new replica,
 and every recreated indexer pod take their credentials from them. Applying the overlay regenerates
 the Secrets whose file changed, and the workloads that mount them are recreated, which is also what
-makes the dashboard and the managers load the new keystore value.
+makes the dashboard load the new keystore value. The managers have already loaded theirs, when they
+were scaled back.
 
 Skipping the keystore step leaves the consumer on the old value. The dashboard, for example, answers
 `503` while its pod stays `Ready`.
@@ -251,15 +282,15 @@ manifests.
 - **The cluster key** is generated by `credentials-conf.sh` into `wazuh/config/credentials/cluster.key`,
   with the passwords. `wazuh/kustomization.yml` turns it into the `wazuh-cluster-key-<hash>` Secret,
   and the managers take it on **every container start** as `WAZUH_CLUSTER_KEY`, into `<cluster><key>`
-  of `/var/wazuh-manager/etc/wazuh-manager.conf`.
+  of `/etc/wazuh-manager/wazuh-manager.conf`.
 - **The agent enrollment password** is generated by the master on its first start, as 64
-  hexadecimal characters in `/var/wazuh-manager/etc/authd.pass`, on its persistent volume. The
+  hexadecimal characters in `/etc/wazuh-manager/authd.pass`, on its persistent volume. The
   manager cluster distributes it to the workers.
 
 | Value | Where it lives | Read by | What it protects |
 | --- | --- | --- | --- |
 | Cluster key | `wazuh/config/credentials/cluster.key`, Secret `wazuh-cluster-key-<hash>` (`key`) | `wazuh-manager-master`, `wazuh-manager-worker` | Membership of the Wazuh manager cluster on port `1516`. A node whose key does not match the master's cannot join it. |
-| Agent enrollment password | `/var/wazuh-manager/etc/authd.pass` on the master, synchronized to the workers | `wazuh-manager-master`, `wazuh-manager-worker` | Agent enrollment with a password: Password-mode enrollment of Wazuh 5.x agents on port `1517`, and the legacy `authd` enrollment of 4.x agents on port `1515`. Token-mode enrollment on `1517` uses tokens minted through the Wazuh API instead. |
+| Agent enrollment password | `/etc/wazuh-manager/authd.pass` on the master, synchronized to the workers | `wazuh-manager-master`, `wazuh-manager-worker` | Agent enrollment with a password: Password-mode enrollment of Wazuh 5.x agents on port `1517`, and the legacy `authd` enrollment of 4.x agents on port `1515`. Token-mode enrollment on `1517` uses tokens minted through the Wazuh API instead. |
 
 Keep `cluster.key` with the other files in `config/credentials/`: every `kubectl apply -k` reads it.
 The key does not survive on its own in a persistent volume: it is rewritten from the Secret at every
@@ -271,7 +302,7 @@ The guides enroll agents with tokens, which need no password. To enroll with the
 instead, read it from the master:
 
 ```bash
-kubectl -n wazuh exec wazuh-manager-master-0 -c wazuh-manager -- cat /var/wazuh-manager/etc/authd.pass
+kubectl -n wazuh exec wazuh-manager-master-0 -c wazuh-manager -- cat /etc/wazuh-manager/authd.pass
 ```
 
 ### Changing them on a deployment that is already running
@@ -282,7 +313,7 @@ Delete the file on the master and restart it. The master generates a new passwor
 distributes it to the workers:
 
 ```bash
-kubectl -n wazuh exec wazuh-manager-master-0 -c wazuh-manager -- rm /var/wazuh-manager/etc/authd.pass
+kubectl -n wazuh exec wazuh-manager-master-0 -c wazuh-manager -- rm /etc/wazuh-manager/authd.pass
 kubectl -n wazuh rollout restart statefulset/wazuh-manager-master
 kubectl -n wazuh rollout status statefulset/wazuh-manager-master
 ```
@@ -335,7 +366,7 @@ Confirm the new key is in place on each node and that the workers rejoined:
 
 ```bash
 kubectl -n wazuh exec wazuh-manager-master-0 -c wazuh-manager -- \
-  grep '<key>' /var/wazuh-manager/etc/wazuh-manager.conf
+  grep '<key>' /etc/wazuh-manager/wazuh-manager.conf
 kubectl -n wazuh logs statefulset/wazuh-manager-worker --tail=50 | grep -i cluster
 ```
 
