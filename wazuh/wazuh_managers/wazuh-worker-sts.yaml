@@ -60,7 +60,7 @@ spec:
       # manager refuses a configuration directory that is.
       initContainers:
         - name: install-credentials
-          image: 'wazuh/wazuh-manager:5.0.0'
+          image: 'wazuh/wazuh-manager:5.0.1'
           command:
             - /bin/sh
             - -c

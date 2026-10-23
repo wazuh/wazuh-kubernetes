@@ -56,7 +56,7 @@ spec:
             value: "443"
       initContainers:
         - name: install-credentials
-          image: 'wazuh/wazuh-dashboard:5.0.0'
+          image: 'wazuh/wazuh-dashboard:5.0.1'
           command:
             - /bin/sh
             - -c
@@ -93,7 +93,7 @@ spec:
               mountPath: /pvc-config
               subPath: config
         - name: install-certs
-          image: 'wazuh/wazuh-dashboard:5.0.0'
+          image: 'wazuh/wazuh-dashboard:5.0.1'
           command:
             - /bin/sh
             - -c
