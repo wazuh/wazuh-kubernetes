@@ -15,6 +15,7 @@ This section summarizes security recommendations for Wazuh Kubernetes deployment
 ## Certificates and TLS
 
 - Protect the generated certificates created by the `wazuh-certs-tool.sh` script. Limit filesystem permissions and do not commit them to version control.
+- The root CA key stays in `wazuh/wazuh-ca/root-ca.key`, on the machine where the certificates were issued, and never reaches the cluster: only `root-ca.pem` is in the Secrets. Keep it there, or move it offline, to issue certificates for the same deployment later.
 - The deployment uses TLS for:
   - Indexer cluster communication (node-to-node)
   - Indexer API access (dashboard and manager connections)

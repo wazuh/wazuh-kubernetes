@@ -40,10 +40,13 @@ To deploy a cluster on your local environment (like Minikube, Kind or Microk8s) 
 │   │   ├── security.md
 │   │   ├── uninstall.md
 │   │   └── upgrade.md
+│   ├── INSTALLATION.md
 │   ├── README.md
 │   ├── SUMMARY.md
 │   ├── book.toml
 │   ├── build.sh
+│   ├── mermaid-init.js
+│   ├── mermaid.min.js
 │   ├── server.sh
 │   └── wazuh-namespace.png
 ├── envs
@@ -70,16 +73,17 @@ To deploy a cluster on your local environment (like Minikube, Kind or Microk8s) 
 │   ├── utils
 │   │   └── deployment
 │   │       ├── certificates-conf.sh
-│   │       └── credentials-conf.sh
+│   │       ├── credentials-conf.sh
+│   │       └── password-policy.sh
 │   └── repository_bumper.sh
 ├── traefik
 │   ├── crd
 │   │   └── kubernetes-crd-definition-v1.yml
 │   └── runtime
 │       ├── kustomization.yml
-│       ├── traefik-cluster-role-binding.yaml
 │       ├── traefik-cluster-role.yaml
 │       ├── traefik-deployment.yaml
+│       ├── traefik-network-policy.yaml
 │       ├── traefik-ns.yaml
 │       ├── traefik-sa.yaml
 │       └── traefik-service.yaml
@@ -93,6 +97,7 @@ To deploy a cluster on your local environment (like Minikube, Kind or Microk8s) 
 │   │   ├── ingressRoute-tcp-registration.yaml
 │   │   ├── middleware.yaml
 │   │   ├── storage-class.yaml
+│   │   ├── traefik-role-binding.yaml
 │   │   └── wazuh-ns.yaml
 │   ├── indexer_stack
 │   │   ├── wazuh-dashboard
