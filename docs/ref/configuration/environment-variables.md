@@ -29,12 +29,12 @@ Defined in:
 ### Manager customization notes
 
 - Keep `WAZUH_NODE_TYPE` and `WAZUH_NODE_NAME` aligned with each StatefulSet role.
-- Leave `WAZUH_REMOTE_BIND_ADDR` at `0.0.0.0`. The packaged configuration binds `remoted` to `127.0.0.1`, which inside a pod leaves ports `1517` and `1514` reachable only from the pod itself, so no agent could connect. Binding on all interfaces is scoped to the pod network namespace: what is actually reachable stays governed by the Services and the NetworkPolicies.
+- Leave `WAZUH_REMOTE_BIND_ADDR` at `0.0.0.0`, the same address the packaged configuration uses for the agent listeners (`1517` and the legacy `1514`). Setting another address restricts them to it; an address other than the pod's makes them unreachable. Binding on all interfaces is scoped to the pod network namespace: what is actually reachable stays governed by the Services and the NetworkPolicies.
 - Update `WAZUH_INDEXER_HOSTS` only if your Indexer service name/port differs from the default, or if you change the number of indexer replicas: it lists one `host:port` per indexer pod, and the `local-env` overlay narrows it to the single node that environment runs.
 - `WAZUH_CLUSTER_NODES` has to name the master pod, not the `wazuh-cluster` Service. That Service is headless and selects every manager pod, so a worker resolving it would try to join the cluster through another worker.
-- The manager reads the certificate paths it presents to the Wazuh indexer from `<indexer><ssl>` in `/var/wazuh-manager/etc/wazuh-manager.conf`, not from the environment. The files are mounted at the paths that configuration already names: `etc/certs/indexer-connector.pem`, `etc/certs/indexer-connector-key.pem` and `etc/certs/root-ca.pem`. Earlier releases of this repository set `SSL_CERTIFICATE`, `SSL_KEY` and `SSL_CERTIFICATE_AUTHORITIES`; the Wazuh manager image reads none of them.
+- The manager reads the certificate paths it presents to the Wazuh indexer from `<indexer><ssl>` in `/etc/wazuh-manager/wazuh-manager.conf`, not from the environment. The files are mounted at the paths that configuration already names: `certs/indexer-connector.pem`, `certs/indexer-connector-key.pem` and `certs/indexer-ca.pem`. The manager also needs its own CA certificate in `ca/root-ca.pem` (without its key), and the agent listener and Server API pairs in `certs/remoted*.pem` and `certs/apid*.pem`, on the master and on every worker. Earlier releases of this repository set `SSL_CERTIFICATE`, `SSL_KEY` and `SSL_CERTIFICATE_AUTHORITIES`; the Wazuh manager image reads none of them.
 - The manager's passwords (the indexer account `wazuh-manager` and the Wazuh API accounts `wazuh` and `wazuh-internal-client`) come from the `manager-credentials` Secret, as a file, not from the environment. Do not add them as variables: the environment takes precedence over the file, and puts the values within reach of anyone who can run `kubectl exec`. See [Credentials](../credentials.md).
-- `WAZUH_CLUSTER_KEY` is rewritten into `<cluster><key>` of `/var/wazuh-manager/etc/wazuh-manager.conf` on every container start, so the value in the Secret always wins over what is on the persistent volume. It has to be exactly 32 alphanumeric characters and identical on every manager node. `credentials-conf.sh` generates it before the first deployment; changing it later restarts the master and the workers, and the nodes still on the old key cannot sync in the meantime. See [The cluster key and the agent enrollment password](../credentials.md#the-cluster-key-and-the-agent-enrollment-password).
+- `WAZUH_CLUSTER_KEY` is rewritten into `<cluster><key>` of `/etc/wazuh-manager/wazuh-manager.conf` on every container start, so the value in the Secret always wins over what is on the persistent volume. It has to be exactly 32 alphanumeric characters and identical on every manager node. `credentials-conf.sh` generates it before the first deployment; changing it later restarts the master and the workers, and the nodes still on the old key cannot sync in the meantime. See [The cluster key and the agent enrollment password](../credentials.md#the-cluster-key-and-the-agent-enrollment-password).
 
 ## Wazuh indexer variables
 
@@ -80,8 +80,9 @@ Defined in:
 | `SERVER_SSL_ENABLED` | Enables HTTPS on dashboard server. | Literal | Yes | `"true"` |
 | `SERVER_SSL_CERTIFICATE` | Dashboard TLS certificate path. | Literal | Yes | `/usr/share/wazuh-dashboard/config/certs/dashboard.pem` |
 | `SERVER_SSL_KEY` | Dashboard TLS key path. | Literal | Yes | `/usr/share/wazuh-dashboard/config/certs/dashboard-key.pem` |
-| `OPENSEARCH_SSL_CERTIFICATE_AUTHORITIES` | CA path used for indexer TLS verification. | Literal | Yes | `/usr/share/wazuh-dashboard/config/certs/root-ca.pem` |
+| `OPENSEARCH_SSL_CERTIFICATE_AUTHORITIES` | CA path used for indexer TLS verification. | Literal | Yes | `/usr/share/wazuh-dashboard/config/certs/indexer-ca.pem` |
 | `WAZUH_API_URL` | Wazuh manager API endpoint used by dashboard. | Literal | Yes | `https://wazuh-api` |
+| `WAZUH_API_CA` | CA path used for Server API TLS verification. | Literal | Yes | `/usr/share/wazuh-dashboard/config/certs/manager-ca.pem` |
 
 ### Dashboard customization notes
 
@@ -96,4 +97,4 @@ Defined in:
 
 A Secret consumed with `valueFrom.secretKeyRef` is read into the environment when the container starts. A new key gives the generated Secret a new name, so re-applying the overlay rolls both manager StatefulSets on its own.
 
-The agent enrollment password is not set through the manifests: the master generates it in `/var/wazuh-manager/etc/authd.pass` on its first start. See [The cluster key and the agent enrollment password](../credentials.md#the-cluster-key-and-the-agent-enrollment-password).
+The agent enrollment password is not set through the manifests: the master generates it in `/etc/wazuh-manager/authd.pass` on its first start. See [The cluster key and the agent enrollment password](../credentials.md#the-cluster-key-and-the-agent-enrollment-password).
