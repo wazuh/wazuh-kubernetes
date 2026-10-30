@@ -8,7 +8,7 @@
 | [#1647](https://github.com/wazuh/wazuh-kubernetes/issues/1647) | Add the agent listener (`remoted`) certificate to the `manager-certs` secret and to both manager statefulsets. |
 | [#1638](https://github.com/wazuh/wazuh-kubernetes/issues/1638) | Document how to change the default Wazuh indexer and Wazuh API passwords, the manager cluster key and the agent enrollment password, and add a check for default credentials. |
 | [#1578](https://github.com/wazuh/wazuh-kubernetes/issues/1578) | Readiness and liveness probes on Wazuh deployment. |
-| [#1539](https://github.com/wazuh/wazuh-kubernetes/pull/1539) | Added bump-issue-link support for Revert Stage Bump. |
+| [#1506](https://github.com/wazuh/wazuh-kubernetes/issues/1506) | Added bump-issue-link support for Revert Stage Bump. |
 | [#1534](https://github.com/wazuh/wazuh-kubernetes/pull/1534) | Add integration test module docs |
 | [#1310](https://github.com/wazuh/wazuh-kubernetes/issues/1310) | Implement the wazuh-kubernetes integration testing module |
 | [#1460](https://github.com/wazuh/wazuh-kubernetes/pull/1460) | Review and Implement AWS Tagging Policy in wazuh-kubernetes |
@@ -35,7 +35,7 @@
 | [#1660](https://github.com/wazuh/wazuh-kubernetes/issues/1660) | Adapt Kubernetes manifests to install-time credential generation |
 | [#1673](https://github.com/wazuh/wazuh-kubernetes/issues/1673) | Adapt the deployment to the HTTPS communication changes |
 | [#1636](https://github.com/wazuh/wazuh-kubernetes/issues/1636) | Agent enrollment fails on EKS because Traefik never expose port 1517 |
-| [#1612](https://github.com/wazuh/wazuh-kubernetes/pull/1612) | Adapt certificate deployment to unified manager certificate layout |
+| [#1610](https://github.com/wazuh/wazuh-kubernetes/issues/1610) | Adapt certificate deployment to unified manager certificate layout |
 | [#1608](https://github.com/wazuh/wazuh-kubernetes/pull/1608) | Change Codebuild runners to Github runners. |
 | [#1567](https://github.com/wazuh/wazuh-kubernetes/issues/1567) | Update deployment for Wazuh Indexer 5.0.0 RBAC. |
 | [#1569](https://github.com/wazuh/wazuh-kubernetes/pull/1569) | Add new WF for changelog check |
@@ -69,9 +69,9 @@
 | [#1707](https://github.com/wazuh/wazuh-kubernetes/issues/1707) | Stop certificates-conf.sh when wazuh-certs-tool.sh fails and give config.yml back to the invoking user |
 | [#1687](https://github.com/wazuh/wazuh-kubernetes/issues/1687) | Make the Wazuh dashboard readiness probe fail on a non-2xx response, and point the three dashboard probes to `/app/login`, so the pod is not reported Ready while the dashboard answers `503`. |
 | [#1685](https://github.com/wazuh/wazuh-kubernetes/issues/1685) | Add `localhost` (local) and the load balancer FQDN (EKS) to the dashboard certificate SAN in the sample `config.yml`, document how to verify it, and that a domain of your own also goes in the dashboard `HostSNI` rule. |
-| [#1613](https://github.com/wazuh/wazuh-kubernetes/pull/1613) | Report skipped bumps in the repository bumper workflow |
+| [#1606](https://github.com/wazuh/wazuh-kubernetes/issues/1606) | Report skipped bumps in the repository bumper workflow |
 | [#1595](https://github.com/wazuh/wazuh-kubernetes/pull/1595) | Fix changelog check to accept Prior versions entries |
-| [#1563](https://github.com/wazuh/wazuh-kubernetes/pull/1563) | Fix bumper workflow failure when bump produces no changes |
+| [#1559](https://github.com/wazuh/wazuh-kubernetes/issues/1559) | Fix bumper workflow failure when bump produces no changes |
 | [#1526](https://github.com/wazuh/wazuh-kubernetes/issues/1526) | Bumper script issue when the tag is set to false |
 | [#1467](https://github.com/wazuh/wazuh-kubernetes/issues/1467) | Errors on bumper execution |
 | [#1449](https://github.com/wazuh/wazuh-kubernetes/pull/1449) | Change API password to default |
