@@ -9,6 +9,7 @@
 
 | Issue | Comment |
 | - | - |
+| [#1611](https://github.com/wazuh/wazuh-kubernetes/pull/1611) | Remove unused deployability/deps install in k8s integration tests |
 
 ### Removed
 
