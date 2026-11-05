@@ -143,7 +143,6 @@ Runs once per entry in `deployment_matrix`. Each instance provisions its own clu
 3. Set up Python 3.12
 4. Install `test_runner`:
    ```bash
-   pip install -r wazuh-automation/deployability/deps/requirements.txt
    pip install -r wazuh-automation/integration-test-module/requirements.txt
    pip install -e wazuh-automation/integration-test-module/
    ```
