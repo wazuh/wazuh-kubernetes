@@ -20,7 +20,7 @@ This section provides information about the compatibility of the Wazuh Kubernete
 A compatible StorageClass must be available in your cluster:
 
 - **Local environments**: Local storage provisioners such as `microk8s.io/hostpath`, `k8s.io/minikube-hostpath`, or `standard`.
-- **Amazon EKS**: Requires the Amazon EBS CSI driver with appropriate IAM role configuration for Kubernetes 1.23+.
+- **Amazon EKS**: Requires the Amazon EBS CSI driver with appropriate IAM role configuration for Kubernetes 1.23+. The `wazuh-storage` StorageClass in `envs/eks` names the in-tree provisioner, `kubernetes.io/aws-ebs`, which EKS serves through the EBS CSI driver (CSI migration). Without the driver, the PersistentVolumeClaims stay `Pending`.
 - **Other cloud providers**: Use the respective CSI drivers (e.g., GCE Persistent Disk for GKE, Azure Disk for AKS).
 
 The storage class must support dynamic volume provisioning and should provide low-latency storage, especially for the Wazuh Indexer component.

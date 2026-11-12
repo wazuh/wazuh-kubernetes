@@ -19,6 +19,8 @@ A StorageClass must be configured in your cluster to provision persistent volume
 
 For EKS deployments using Kubernetes 1.23 or higher, you must configure an IAM role for the Amazon EBS CSI driver. Refer to the [AWS documentation](https://docs.aws.amazon.com/eks/latest/userguide/ebs-csi.html) for detailed instructions.
 
+The `wazuh-storage` StorageClass in `envs/eks` names the in-tree provisioner, `kubernetes.io/aws-ebs`. EKS serves it through the Amazon EBS CSI driver (CSI migration), so the driver is still required: without it, the PersistentVolumeClaims stay `Pending`.
+
 ## Network ports
 
 The Wazuh manager pods listen on the following ports:
