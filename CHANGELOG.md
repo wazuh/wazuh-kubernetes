@@ -65,6 +65,7 @@
 
 | Issue | Comment |
 | - | - |
+| [#1763](https://github.com/wazuh/wazuh-kubernetes/issues/1763) | Fix docs drift: explain that the EKS `wazuh-storage` StorageClass uses the in-tree `kubernetes.io/aws-ebs` name served by the EBS CSI driver, mark `DISCOVERY_SERVICE` and `KUBERNETES_NAMESPACE` as not required, and stop listing the Wazuh API under the `wazuh-master` domain |
 | [#1734](https://github.com/wazuh/wazuh-kubernetes/issues/1734) | Write the rotated `wazuh-manager` password into the manager keystores from a one-off pod with the managers scaled to zero, instead of into the running managers |
 | [#1707](https://github.com/wazuh/wazuh-kubernetes/issues/1707) | Stop certificates-conf.sh when wazuh-certs-tool.sh fails and give config.yml back to the invoking user |
 | [#1687](https://github.com/wazuh/wazuh-kubernetes/issues/1687) | Make the Wazuh dashboard readiness probe fail on a non-2xx response, and point the three dashboard probes to `/app/login`, so the pod is not reported Ready while the dashboard answers `503`. |
