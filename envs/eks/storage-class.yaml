@@ -11,6 +11,8 @@ apiVersion: storage.k8s.io/v1
 kind: StorageClass
 metadata:
   name: wazuh-storage
+# In-tree provisioner name. EKS serves it through the Amazon EBS CSI driver
+# (CSI migration), so the driver must be installed or the PVCs stay Pending.
 provisioner: kubernetes.io/aws-ebs
 parameters:
   encrypted: 'true'
