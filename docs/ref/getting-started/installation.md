@@ -136,7 +136,7 @@ This repository focuses on [AWS](https://aws.amazon.com/) but it should be easy 
 
 We recommend creating domains and certificates to access the services. Examples:
 
-- wazuh-master.your-domain.com: Wazuh API and legacy authd registration service.
+- wazuh-master.your-domain.com: Legacy authd registration service (port 1515). The Wazuh API is not published through Traefik: reach it with `kubectl port-forward`, as described in [Services](#services).
 - wazuh-manager.your-domain.com: Reporting service.
 - wazuh.your-domain.com: Wazuh dashboard app.
 
