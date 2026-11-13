@@ -55,8 +55,8 @@ Defined in:
 | `plugins.security.allow_default_init_securityindex` | Enables initial security index bootstrap behavior. | Literal | Optional | `true` |
 | `NODES_DN` | Distinguished names allowed for indexer nodes. | Literal | Yes | Certificate DNs for indexer nodes |
 | `OPENSEARCH_JAVA_OPTS` | Java heap and JVM options for indexer process. | Literal | Yes | `-Xms1g -Xmx1g -Dlog4j2.formatMsgNoLookups=true` |
-| `DISCOVERY_SERVICE` | Headless service used for peer discovery. | Literal | Yes | `wazuh-indexer` |
-| `KUBERNETES_NAMESPACE` | Runtime namespace from pod metadata. | Downward API | Yes | Pod metadata namespace |
+| `DISCOVERY_SERVICE` | Headless service used for peer discovery. | Literal | No (not read by the image) | `wazuh-indexer` |
+| `KUBERNETES_NAMESPACE` | Runtime namespace from pod metadata. | Downward API | No (not read by the image) | Pod metadata namespace |
 
 ### Indexer customization notes
 
