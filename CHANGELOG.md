@@ -25,6 +25,7 @@
 
 | Issue | Comment |
 | - | - |
+| [#1762](https://github.com/wazuh/wazuh-kubernetes/issues/1762) | Add runnable steps for the migration from 4.x in `upgrade.md`: deploy 5.0 in another namespace or in `wazuh` once 4.x is removed, export the agent identity from the 4.x master claim, copy it into the 5.0 manager without `tar`, keep the agents out until the import, copy the 4.x alerts with reindex from remote, and map the 4.x settings to 5.0 |
 | [#1736](https://github.com/wazuh/wazuh-kubernetes/issues/1736) | Align the docs with the 5.0.0 code and packages: certificates tool URLs, Traefik output, root CA location, worker credentials, `remoted` bind address, agents from other namespaces, master warning, 4.x migration path; ignore `wazuh/wazuh-ca` |
 | [#1725](https://github.com/wazuh/wazuh-kubernetes/issues/1725) | Adapt the manifests to the RC 2 per-package credentials: manager configuration in `/etc/wazuh-manager`, per-connection CA files, trust material copied as root-owned regular files, no `fsGroup` or `SYS_CHROOT`, and passwords generated without `wazuh-credentials.sh` |
 | [#1703](https://github.com/wazuh/wazuh-kubernetes/issues/1703) | Rename the `wazuh-wui` Server API user to `wazuh-internal-client` in the credentials check and the documentation. The `WAZUH_MANAGER_WUI_PASSWORD` key keeps its name. |
