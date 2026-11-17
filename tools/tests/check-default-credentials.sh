@@ -9,7 +9,7 @@
 # The packages refuse to start without a resolved credential, so a deployment
 # that answers at all has already been through credentials-conf.sh and its
 # first start. This check is about confirming resolution stayed consistent
-# end to end, not about catching a shipped default: there no longer is one.
+# end to end, not about catching a shipped default: there is none.
 # See docs/ref/credentials.md.
  
 set -o pipefail
@@ -23,18 +23,13 @@ CREDENTIALS_DIR="./config/credentials"
 # in a Wazuh deployment and the image must not contain them at all.
 DEMO_USERS="anomalyadmin kibanaro logstash readall snapshotrestore"
  
-# Accounts the Wazuh indexer image keeps. wazuh-admin, wazuh-readonly and
-# wazuh-demo do not ship in 5.0.0.
+# Accounts the Wazuh indexer image keeps.
 INDEXER_USERS="admin kibanaserver wazuh-manager"
  
 # Accounts the Wazuh API seeds its user database with.
 API_USERS="wazuh wazuh-internal-client"
  
 INTERNAL_USERS_FILE="/usr/share/wazuh-indexer/config/opensearch-security/internal_users.yml"
-
-# Value the cluster key Secret shipped with before credentials-conf.sh
-# generated it.
-CLUSTER_KEY_PLACEHOLDER="REPLACETHISCLUSTERKEYBEFOREDEPLO"
  
 failures=0
 checks=0
@@ -367,8 +362,6 @@ for pod in ${MANAGER_PODS}; do
   running_key=$(cluster_key_of "${pod}")
   if [ -z "${running_key}" ]; then
     fail "${pod}: could not read its cluster key"
-  elif [ "${running_key}" = "${CLUSTER_KEY_PLACEHOLDER}" ]; then
-    fail "${pod}: runs on the public placeholder cluster key"
   elif [ "${running_key}" != "${CLUSTER_KEY}" ]; then
     fail "${pod}: its cluster key is not the one in ${CREDENTIALS_DIR}/cluster.key"
   else
