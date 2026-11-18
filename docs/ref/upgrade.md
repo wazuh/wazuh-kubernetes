@@ -39,31 +39,18 @@ so `wazuh/config/credentials/*.env` has to hold the current passwords, including
 
 ## Upgrading a 5.0 deployment
 
-A deployment created with the 5.0.0 RC 1 images cannot be upgraded in place. From RC 2:
-- the manager keeps its configuration in `/etc/wazuh-manager`, on a new subPath of its claim;
-- the components refuse the ownership and modes RC 1 left on the claims.
-
-Start RC 2 on new claims: delete the namespace, or its PersistentVolumeClaims, before applying the
-new overlay.
-
 1. Check out the new release, and carry over from the directory the deployment was created from:
    `wazuh/config/` (certificates, `credentials/*.env` and `credentials/cluster.key`),
    `wazuh/base/ingressRoute-tcp-dashboard.yaml`, `wazuh/base/middleware.yaml`, and any change to `envs/`. Do not run
    `credentials-conf.sh` again: the deployment keeps the passwords it was first started with, and
-   new values would not match them. The exception is a deployment created before
-   `credentials-conf.sh` wrote `cluster.key`: run it once to add that file only, as described in
-   [The cluster key](credentials.md#the-cluster-key).
+   new values would not match them.
 2. If you pin the images yourself, change every `wazuh/wazuh-*` image, the init containers
    included: `install-credentials` (every workload), `install-certs` (indexer and dashboard),
    `init-wazuh-etc` (managers) and `init-dashboard-config` (dashboard). All the nodes of the Wazuh cluster have to run the same
    version.
-3. Apply the Traefik runtime. From 5.0.0, also delete the `traefik` ClusterRoleBinding, which
-   `kubectl apply` does not remove and which gives Traefik read access to the Secrets of every
-   namespace. Traefik stops routing until the overlay of the next step creates its RoleBinding in the
-   `wazuh` namespace.
+3. Apply the Traefik runtime:
 
    ```bash
-   kubectl delete clusterrolebinding traefik --ignore-not-found
    kubectl apply -k traefik/runtime/
    ```
 
@@ -95,7 +82,7 @@ A 4.x deployment cannot be upgraded in place. The 5.0 manager uses other paths (
 
 Do not apply the 5.0 overlay in the namespace of the 4.x deployment: both use `wazuh` and the same workload names. `kubectl apply -k` replaces the managers and the dashboard with 5.0, which do not start on the 4.x claims and cannot reach the 4.x indexer, fails on the indexer StatefulSet, and turns the `dashboard` Service into a `ClusterIP` one. The 4.x deployment stops working. Deploy 5.0 in another namespace, `wazuh-5` in the steps below, or in another cluster. To keep `wazuh`, remove 4.x first, as [Reusing the `wazuh` namespace](#reusing-the-wazuh-namespace) describes.
 
-Carry the agents' identity across with the manager's migration tool, `wazuh-migrate-identity.py`. It keeps the agent ids, names and keys, the group membership and the group folders and, optionally, the API users and the enrollment password, so the 4.x agents reconnect without enrolling again. The Wazuh manager guide [Migrating a Wazuh manager from 4.x to 5.0](https://github.com/wazuh/wazuh/blob/5.0.0/docs/guide/migration/manager-4x-to-5x.md) covers everything else: the configuration, the rules and decoders, upgrading the agents, retiring the legacy channel, and the historical data. [Configuration and content](#configuration-and-content) says where its input is in a 4.x Kubernetes deployment and where 5.0 takes it.
+Carry the agents' identity across with the manager's migration tool, `wazuh-migrate-identity.py`. It keeps the agent ids, names and keys, the group membership and the group folders and, optionally, the API users and the enrollment password, so the 4.x agents reconnect without enrolling again. The Wazuh manager guide [Migrating a Wazuh manager from 4.x to 5.0](https://github.com/wazuh/wazuh/blob/v5.0.0/docs/guide/migration/manager-4x-to-5x.md) covers everything else: the configuration, the rules and decoders, upgrading the agents, retiring the legacy channel, and the historical data. [Configuration and content](#configuration-and-content) says where its input is in a 4.x Kubernetes deployment and where 5.0 takes it.
 
 The 5.0 manager image has no `python3` on its `PATH` and no `tar`: the steps run the tool with the Python the manager bundles, and copy files with `kubectl exec -i`, because `kubectl cp` needs `tar` in the container.
 
@@ -108,7 +95,7 @@ The 5.0 manager image has no `python3` on its `PATH` and no `tar`: the steps run
 
 2. **Export the identity** from the master claim, with a one-off pod of your 4.x manager image. Use the tag of your 4.x deployment:
    ```bash
-   curl -fsSLo wazuh-migrate-identity.py https://raw.githubusercontent.com/wazuh/wazuh/5.0.0/tools/migration/wazuh-migrate-identity.py
+   curl -fsSLo wazuh-migrate-identity.py https://raw.githubusercontent.com/wazuh/wazuh/v5.0.0/tools/migration/wazuh-migrate-identity.py
    kubectl -n wazuh create configmap wazuh-migrate-identity --from-file=wazuh-migrate-identity.py
    cat > wazuh-4x-export.yaml <<'EOF'
    apiVersion: v1
@@ -377,8 +364,8 @@ The 4.x volumes are the only copy of the 4.x deployment. With `Retain`, deleting
 
 | 4.x source | 4.x path in the pod | 5.0 destination |
 |---|---|---|
-| ConfigMap `wazuh-conf` (`wazuh/wazuh_managers/wazuh_conf/master.conf`, `worker.conf`), copied to the claim on every start | `/var/ossec/etc/ossec.conf` | `/etc/wazuh-manager/wazuh-manager.conf` on the claim of each manager (subPath `wazuh/etc/wazuh-manager`), rewritten as the [Manager configuration migration](https://github.com/wazuh/wazuh/blob/5.0.0/docs/guide/migration/manager-configuration-migration.md) guide says |
-| Master claim | `/var/ossec/etc/rules`, `decoders`, `lists` | Rewritten as detection rules, engine decoders and KVDBs: [rules](https://github.com/wazuh/wazuh/blob/5.0.0/docs/guide/migration/rules-4x-to-5x.md), [decoders](https://github.com/wazuh/wazuh/blob/5.0.0/docs/guide/migration/xml-decoders-migration.md), [CDB lists](https://github.com/wazuh/wazuh/blob/5.0.0/docs/guide/migration/cdb-to-kvdb-migration.md) |
+| ConfigMap `wazuh-conf` (`wazuh/wazuh_managers/wazuh_conf/master.conf`, `worker.conf`), copied to the claim on every start | `/var/ossec/etc/ossec.conf` | `/etc/wazuh-manager/wazuh-manager.conf` on the claim of each manager (subPath `wazuh/etc/wazuh-manager`), rewritten as the [Manager configuration migration](https://github.com/wazuh/wazuh/blob/v5.0.0/docs/guide/migration/manager-configuration-migration.md) guide says |
+| Master claim | `/var/ossec/etc/rules`, `decoders`, `lists` | Rewritten as detection rules, engine decoders and KVDBs: [rules](https://github.com/wazuh/wazuh/blob/v5.0.0/docs/guide/migration/rules-4x-to-5x.md), [decoders](https://github.com/wazuh/wazuh/blob/v5.0.0/docs/guide/migration/xml-decoders-migration.md), [CDB lists](https://github.com/wazuh/wazuh/blob/v5.0.0/docs/guide/migration/cdb-to-kvdb-migration.md) |
 | Master claim | `/var/ossec/etc/shared/<group>/` | Carried by `wazuh-migrate-identity.py`. The export lists the files it leaves out, such as the 4.x rootcheck files of the `default` group |
 | Master claim | `/var/ossec/api/configuration/api.yaml` | `/var/wazuh-manager/api/configuration/api.yaml` on the claim of the master |
 | ConfigMap `indexer-conf` | `opensearch.yml`, `opensearch-security/internal_users.yml` | Environment variables in `indexer-sts.yaml`. The shipped accounts take their passwords from `wazuh/config/credentials/indexer.env` (see [Credentials](credentials.md)) |

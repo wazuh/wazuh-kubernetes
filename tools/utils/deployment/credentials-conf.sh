@@ -6,7 +6,7 @@
 # cluster.key, into the directory kustomize's secretGenerator reads them from
 # (see wazuh/kustomization.yml). Mirrors
 # tools/utils/deployment/certificates-conf.sh for the credentials half of
-# install-time credential generation (wazuh/wazuh-indexer#1928).
+# install-time credential generation.
 
 set -o pipefail
 
@@ -15,8 +15,6 @@ PASSWORD_POLICY="$(cd "$(dirname "$0")" && pwd)/password-policy.sh"
 OUTPUT_DIR="./config/credentials"
 FORCE=false
 CLUSTER_KEY_FILE="cluster.key"
-# Value the cluster key Secret shipped with before it was generated here.
-CLUSTER_KEY_PLACEHOLDER="REPLACETHISCLUSTERKEYBEFOREDEPLO"
 
 ALL_KEYS=(
   WAZUH_INDEXER_ADMIN_PASSWORD
@@ -56,9 +54,7 @@ generated value, e.g.:
 Keys: ${ALL_KEYS[*]} WAZUH_CLUSTER_KEY
 
 WAZUH_CLUSTER_KEY is the manager cluster key: exactly 32 characters from
-A-Z a-z 0-9. When only ${CLUSTER_KEY_FILE} is missing, as on a deployment
-created before this script wrote it, only that file is written; pass the
-running key in WAZUH_CLUSTER_KEY to keep it.
+A-Z a-z 0-9.
 
 The files this writes are read by kustomize's secretGenerator (files:), so
 kustomize must be able to read them: run this script as the same user who
@@ -105,15 +101,11 @@ check_password() {
 }
 
 # The managers refuse to start with a key that is not 32 alphanumeric
-# characters, and the placeholder is public.
+# characters.
 check_cluster_key() {
   local value=$1
   if ! printf '%s' "${value}" | grep -Eq '^[A-Za-z0-9]{32}$'; then
     error "WAZUH_CLUSTER_KEY was rejected: it must be exactly 32 characters from A-Z a-z 0-9"
-    return 1
-  fi
-  if [ "${value}" = "${CLUSTER_KEY_PLACEHOLDER}" ]; then
-    error "WAZUH_CLUSTER_KEY was rejected: it is the public placeholder the Secret used to ship with"
     return 1
   fi
 }
@@ -124,29 +116,20 @@ for component in "${COMPONENTS[@]}"; do
     existing+=("${OUTPUT_DIR}/${component}.env")
   fi
 done
-cluster_key_exists=false
 if [ -e "${OUTPUT_DIR}/${CLUSTER_KEY_FILE}" ] || [ -L "${OUTPUT_DIR}/${CLUSTER_KEY_FILE}" ]; then
-  cluster_key_exists=true
+  existing+=("${OUTPUT_DIR}/${CLUSTER_KEY_FILE}")
 fi
 
-# A deployment created before this script wrote the cluster key has every
-# password file but no cluster.key: only that file is added.
-CLUSTER_KEY_ONLY=false
-if ! ${FORCE}; then
-  if [ "${#existing[@]}" -eq "${#COMPONENTS[@]}" ] && ! ${cluster_key_exists}; then
-    CLUSTER_KEY_ONLY=true
-  elif [ "${#existing[@]}" -gt 0 ] || ${cluster_key_exists}; then
-    ${cluster_key_exists} && existing+=("${OUTPUT_DIR}/${CLUSTER_KEY_FILE}")
-    error "credentials already exist: ${existing[*]}"
-    error "a deployment keeps the passwords it was first started with, so they are not replaced"
-    error "use --force only if this deployment has never been started"
-    exit 1
-  fi
+if ! ${FORCE} && [ "${#existing[@]}" -gt 0 ]; then
+  error "credentials already exist: ${existing[*]}"
+  error "a deployment keeps the passwords it was first started with, so they are not replaced"
+  error "use --force only if this deployment has never been started"
+  exit 1
 fi
 
 declare -A VALUES SOURCES
 failed=false
-${CLUSTER_KEY_ONLY} || for key in "${ALL_KEYS[@]}"; do
+for key in "${ALL_KEYS[@]}"; do
   if [ -n "${!key}" ]; then
     check_password "${key}" "${!key}" || { failed=true; continue; }
     VALUES[${key}]="${!key}"
@@ -193,7 +176,7 @@ if ! mkdir -p "${OUTPUT_DIR}" 2>/dev/null || ! chmod 700 "${OUTPUT_DIR}" 2>/dev/
   exit 1
 fi
 
-${CLUSTER_KEY_ONLY} || for component in "${COMPONENTS[@]}"; do
+for component in "${COMPONENTS[@]}"; do
   target="${OUTPUT_DIR}/${component}.env"
   tmp=$(mktemp "${OUTPUT_DIR}/.${component}.env.XXXXXX") || {
     error "cannot write into ${OUTPUT_DIR}"
@@ -224,12 +207,6 @@ chmod 600 "${tmp}"
 chown "${CRED_UID}:${CRED_GID}" "${tmp}"
 mv -f "${tmp}" "${OUTPUT_DIR}/${CLUSTER_KEY_FILE}"
 chown "${CRED_UID}:${CRED_GID}" "${OUTPUT_DIR}"
-
-if ${CLUSTER_KEY_ONLY}; then
-  echo "WAZUH_CLUSTER_KEY: ${SOURCES[WAZUH_CLUSTER_KEY]}"
-  echo "Cluster key written to ${OUTPUT_DIR}/${CLUSTER_KEY_FILE}; the existing password files were left as they are"
-  exit 0
-fi
 
 for key in "${ALL_KEYS[@]}" WAZUH_CLUSTER_KEY; do
   echo "${key}: ${SOURCES[${key}]}"

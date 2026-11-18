@@ -25,6 +25,7 @@
 
 | Issue | Comment |
 | - | - |
+| [#1774](https://github.com/wazuh/wazuh-kubernetes/pull/1774) | Describe the 5.0.0 product in the docs without the pre-release chronology, remove the RC 1 cluster key migration from `credentials-conf.sh` and `check-default-credentials.sh`, fix the agent backup link and pin the links to other Wazuh repositories to `v5.0.0` |
 | [#1773](https://github.com/wazuh/wazuh-kubernetes/issues/1773) | Stop deploying the manager's indexer client certificate: remove `manager.pem` and `manager-key.pem` from the `manager-certs` secret and the `indexer-connector` files from both manager StatefulSets, and update the docs |
 | [#1762](https://github.com/wazuh/wazuh-kubernetes/issues/1762) | Add runnable steps for the migration from 4.x in `upgrade.md`: deploy 5.0 in another namespace or in `wazuh` once 4.x is removed, export the agent identity from the 4.x master claim, copy it into the 5.0 manager without `tar`, keep the agents out until the import, copy the 4.x alerts with reindex from remote, and map the 4.x settings to 5.0 |
 | [#1736](https://github.com/wazuh/wazuh-kubernetes/issues/1736) | Align the docs with the 5.0.0 code and packages: certificates tool URLs, Traefik output, root CA location, worker credentials, `remoted` bind address, agents from other namespaces, master warning, 4.x migration path; ignore `wazuh/wazuh-ca` |

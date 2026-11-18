@@ -225,7 +225,7 @@ curl -so wazuh-certs-tool.sh https://packages.wazuh.com/production/5.x/installat
 curl -so config.yml https://packages.wazuh.com/production/5.x/installation-assistant/config-5.0.0.yml
 ```
 
-> **Note**: Before the 5.0.0 release these files are published as pre-release builds, with the stage in the name, under `https://packages-staging.xdrsiem.wazuh.info/pre-release/5.x/installation-assistant/` as `wazuh-certs-tool-5.0.0-<STAGE>.sh` and `config-5.0.0-<STAGE>.yml`. The tool must issue the Server API certificate (`apid`), which needs RC 2 or later.
+> **Note**: For a pre-release, use `wazuh-certs-tool-5.0.0-<STAGE>.sh` and `config-5.0.0-<STAGE>.yml` from `https://packages-staging.xdrsiem.wazuh.info/pre-release/5.x/installation-assistant/`.
 
 **3.2.2 Edit the config.yml file with the configuration of the Wazuh components to be deployed**:
 
@@ -272,7 +272,7 @@ nodes:
 
 > **Note**: The `manager` entry also produces the agent listener certificate (`manager-remoted.pem` and `manager-remoted-key.pem`), which `remoted` serves on port `1517`. Its SAN has to cover every name an agent dials: the `wazuh-agents` Service inside the cluster, which the `dns` list above provides, and the FQDN of the load balancer from step 3.1 for agents enrolling from outside, which `--agent-san` adds in the command below. Agents that verify the manager certificate fail to connect to a name the certificate does not carry.
 
-> **Note**: The `manager` entry also produces the Server API certificate (`manager-apid.pem` and `manager-apid-key.pem`), which the master serves on port `55000`. The Wazuh manager no longer generates it on its first start: without it, the Wazuh manager refuses to start (`ERROR: the manager Server API certificate is missing or unreadable`) and the pod never becomes ready. Its SAN is taken from the `dns` list above, which carries `wazuh-api`, the name the dashboard uses, plus `localhost`, `127.0.0.1` and `::1`. `--api-san` adds any other name or address API clients use, to this certificate only.
+> **Note**: The `manager` entry also produces the Server API certificate (`manager-apid.pem` and `manager-apid-key.pem`), which the master serves on port `55000`. The Wazuh manager does not generate it: without it, the Wazuh manager refuses to start (`ERROR: the manager Server API certificate is missing or unreadable`) and the pod never becomes ready. Its SAN is taken from the `dns` list above, which carries `wazuh-api`, the name the dashboard uses, plus `localhost`, `127.0.0.1` and `::1`. `--api-san` adds any other name or address API clients use, to this certificate only.
 
 > **Note**: The Wazuh manager master logs `WARNING: dashboard client pair not generated: /etc/wazuh-manager/ca has no key; provision it externally in /etc/wazuh-manager/export` on every start. This is expected: the deployment stages the manager's CA certificate without its key, and nothing uses that pair.
 
@@ -324,7 +324,7 @@ secretGenerator:
 
 **3.2.4 Run the credentials generator**:
 
-Every Wazuh component now generates or validates its own credentials at install time and refuses to
+Every Wazuh component generates or validates its own credentials at install time and refuses to
 start without them. Generate the five passwords and the manager cluster key before the first
 `kubectl apply -k`, the same way as the certificates above:
 
@@ -450,7 +450,7 @@ docker run -d --name wazuh-agent \
   wazuh/wazuh-agent:5.0.0
 ```
 
-The agent container variables and the optional fields of `POST /agents/enrollment-tokens` (`ttl`, `max_uses`, `description`) are described in the [wazuh-docker agent guide](https://github.com/wazuh/wazuh-docker/blob/5.0.0/docs/ref/getting-started/deployment/wazuh-agent.md).
+The agent container variables and the optional fields of `POST /agents/enrollment-tokens` (`ttl`, `max_uses`, `description`) are described in the [wazuh-docker agent guide](https://github.com/wazuh/wazuh-docker/blob/v5.0.0/docs/ref/getting-started/deployment/wazuh-agent.md).
 
 Check that it is listed as `active`:
 
@@ -561,7 +561,7 @@ curl -so wazuh-certs-tool.sh https://packages.wazuh.com/production/5.x/installat
 curl -so config.yml https://packages.wazuh.com/production/5.x/installation-assistant/config-5.0.0.yml
 ```
 
-> **Note**: Before the 5.0.0 release these files are published as pre-release builds, with the stage in the name, under `https://packages-staging.xdrsiem.wazuh.info/pre-release/5.x/installation-assistant/` as `wazuh-certs-tool-5.0.0-<STAGE>.sh` and `config-5.0.0-<STAGE>.yml`. The tool must issue the Server API certificate (`apid`), which needs RC 2 or later.
+> **Note**: For a pre-release, use `wazuh-certs-tool-5.0.0-<STAGE>.sh` and `config-5.0.0-<STAGE>.yml` from `https://packages-staging.xdrsiem.wazuh.info/pre-release/5.x/installation-assistant/`.
 
 Edit the `config.yml` file to set corresponding name and IP address for each Wazuh component.
 For a local environment, you can use:
@@ -618,7 +618,7 @@ nodes:
 
 > **Note**: The `manager` entry also produces the agent listener certificate (`manager-remoted.pem` and `manager-remoted-key.pem`), which `remoted` serves on port `1517`. Its SAN is taken from the `dns` list above, plus every `--agent-san` passed to the next command, which adds an address to that certificate only. `--agent-san localhost` is what lets agents enroll through a port-forward, as in [Enrolling an agent](#enrolling-an-agent). Repeat the flag for any other address agents use to reach the manager.
 
-> **Note**: The `manager` entry also produces the Server API certificate (`manager-apid.pem` and `manager-apid-key.pem`), which the master serves on port `55000`. The Wazuh manager no longer generates it on its first start: without it, the Wazuh manager refuses to start (`ERROR: the manager Server API certificate is missing or unreadable`) and the pod never becomes ready. Its SAN is taken from the `dns` list above, which carries `wazuh-api`, the name the dashboard uses, plus `localhost`, `127.0.0.1` and `::1`. `--api-san` adds any other name or address API clients use, to this certificate only.
+> **Note**: The `manager` entry also produces the Server API certificate (`manager-apid.pem` and `manager-apid-key.pem`), which the master serves on port `55000`. The Wazuh manager does not generate it: without it, the Wazuh manager refuses to start (`ERROR: the manager Server API certificate is missing or unreadable`) and the pod never becomes ready. Its SAN is taken from the `dns` list above, which carries `wazuh-api`, the name the dashboard uses, plus `localhost`, `127.0.0.1` and `::1`. `--api-san` adds any other name or address API clients use, to this certificate only.
 
 Run `wazuh-certs-tool.sh` to create the certificates.
 
@@ -632,7 +632,7 @@ The certificates tool creates the root CA in `wazuh/wazuh-ca/` (`root-ca.pem` an
 
 #### Run the credentials generator
 
-Every Wazuh component now generates or validates its own credentials at install time and refuses to
+Every Wazuh component generates or validates its own credentials at install time and refuses to
 start without them. Generate the five passwords and the manager cluster key before the first
 `kubectl apply -k`:
 
@@ -894,7 +894,7 @@ curl -sk -H "Authorization: Bearer ${WAZUH_API_TOKEN}" \
   "https://localhost:55000/agents?select=name,status&pretty=true"
 ```
 
-Right after it enrolls the agent can be listed as `pending` for a minute or two; run the command again. The API token lasts 15 minutes; if the answer is `Invalid token`, run the `WAZUH_API_TOKEN=...` command again. The optional fields of `POST /agents/enrollment-tokens` (`ttl`, `max_uses`, `description`) and the agent container variables are described in the [wazuh-docker agent guide](https://github.com/wazuh/wazuh-docker/blob/5.0.0/docs/ref/getting-started/deployment/wazuh-agent.md).
+Right after it enrolls the agent can be listed as `pending` for a minute or two; run the command again. The API token lasts 15 minutes; if the answer is `Invalid token`, run the `WAZUH_API_TOKEN=...` command again. The optional fields of `POST /agents/enrollment-tokens` (`ttl`, `max_uses`, `description`) and the agent container variables are described in the [wazuh-docker agent guide](https://github.com/wazuh/wazuh-docker/blob/v5.0.0/docs/ref/getting-started/deployment/wazuh-agent.md).
 
 > **Note**: A port-forward to a Service attaches to a single manager pod, so every agent enrolled this way reports to that pod.
 
