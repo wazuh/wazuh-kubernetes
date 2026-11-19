@@ -167,8 +167,7 @@ if $DO_COPY; then
   for node in "${MANAGER_NODES[@]}"; do
     dir_name=$(node_to_dir "$node")
     # The agent listener (remoted) and Server API (apid) pairs are copied by
-    # the glob below along with ${node}.pem and ${node}-key.pem. The manager
-    # does not start without them.
+    # the glob below. The manager does not start without them.
     for cert in "${node}-remoted.pem" "${node}-remoted-key.pem" \
                 "${node}-apid.pem" "${node}-apid-key.pem"; do
       if [[ ! -f "$OUTPUT_DIR/$cert" ]]; then

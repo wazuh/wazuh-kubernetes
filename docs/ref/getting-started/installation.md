@@ -278,7 +278,7 @@ nodes:
 
 **3.2.3 Run the Wazuh certificates tool script**:
 
-Pass the load balancer FQDN from step 3.1 with `--agent-san`. It goes only into the agent listener certificate, leaving `manager.pem`, `indexer.pem` and `dashboard.pem` untouched. Repeat the flag for every extra address, such as a CNAME of your own that agents will use:
+Pass the load balancer FQDN from step 3.1 with `--agent-san`. It goes only into the agent listener certificate, leaving `indexer.pem` and `dashboard.pem` untouched. Repeat the flag for every extra address, such as a CNAME of your own that agents will use:
 
 ```bash
 sudo bash ../tools/utils/deployment/certificates-conf.sh --cert --copy --priv \
@@ -315,8 +315,6 @@ secretGenerator:
       - config/root-ca/certs/root-ca.pem
   - name: manager-certs
     files:
-      - config/manager/certs/manager-key.pem
-      - config/manager/certs/manager.pem
       - config/manager/certs/manager-remoted-key.pem
       - config/manager/certs/manager-remoted.pem
       - config/manager/certs/manager-apid-key.pem
@@ -668,8 +666,6 @@ secretGenerator:
       - config/root-ca/certs/root-ca.pem
   - name: manager-certs
     files:
-      - config/manager/certs/manager-key.pem
-      - config/manager/certs/manager.pem
       - config/manager/certs/manager-remoted-key.pem
       - config/manager/certs/manager-remoted.pem
       - config/manager/certs/manager-apid-key.pem
