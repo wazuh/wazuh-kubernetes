@@ -131,14 +131,6 @@ master, and a worker does not create one. The manager image only requires
 a worker starts without them. A worker still receives the whole `manager.env`, so that if it is
 promoted to master it creates its database from them.
 
-> **Note**: Up to 5.0.0 `rc1`, the dashboard's Wazuh API account was called `wazuh-wui`. The key,
-> `WAZUH_MANAGER_WUI_PASSWORD`, keeps its name. The new name only applies when `rbac.db` is created,
-> and `rbac.db` lives on the `wazuh-manager-master` claim, so a deployment first started with an
-> earlier 5.0.0 pre-release image keeps `wazuh-wui` after the images are updated. On such a
-> deployment, add `API_USERNAME` with the value `wazuh-wui` to the `env` of the `wazuh-dashboard`
-> container in `wazuh/indexer_stack/wazuh-dashboard/dashboard-deploy.yaml`, or the dashboard cannot
-> authenticate to the Wazuh API.
-
 The OpenSearch demo accounts (`anomalyadmin`, `kibanaro`, `logstash`, `readall`,
 `snapshotrestore`) are removed from the indexer image when it is built. They do not exist in the
 deployment.
@@ -322,10 +314,6 @@ Agents that are already enrolled keep working: they authenticate with the key in
 `client.keys`. Only agents that enroll from this point on with a password (5.x on `1517`, 4.x on
 `1515`) have to present the new one.
 
-> **Note**: deployments created from a release that shipped `wazuh/secrets/wazuh-authd-pass-secret.yaml`
-> keep its value, the string `password`, on the persistent volume after upgrading. Rotate it as shown
-> above, and delete the old Secret with `kubectl -n wazuh delete secret wazuh-authd-pass`.
-
 #### The cluster key
 
 Write a new key into `cluster.key`, without a trailing newline, and apply. The key has to be exactly
@@ -345,22 +333,6 @@ StatefulSets on its own.
 > **Warning**: until every manager pod has restarted, the ones still on the old key cannot sync with
 > the master. The cluster is degraded for the length of the restart, so do this in a maintenance
 > window on a production deployment.
-
-> **Note**: deployments created from a release that shipped `wazuh/secrets/wazuh-cluster-key-secret.yaml`
-> have every `*.env` file but no `cluster.key`. Run `credentials-conf.sh` again: it adds only
-> `cluster.key` and leaves the passwords as they are. To keep the key the cluster runs on, pass it in
-> `WAZUH_CLUSTER_KEY`:
->
-> ```bash
-> cd wazuh
-> sudo WAZUH_CLUSTER_KEY="$(kubectl -n wazuh get secret wazuh-cluster-key -o jsonpath='{.data.key}' | base64 -d)" \
->   bash ../tools/utils/deployment/credentials-conf.sh
-> cd ..
-> ```
->
-> The placeholder `REPLACETHISCLUSTERKEYBEFOREDEPLO` is refused; leave `WAZUH_CLUSTER_KEY` unset to
-> generate a new key instead. After `kubectl apply -k`, delete the old Secret with
-> `kubectl -n wazuh delete secret wazuh-cluster-key`.
 
 Confirm the new key is in place on each node and that the workers rejoined:
 

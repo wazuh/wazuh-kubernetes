@@ -26,8 +26,6 @@ secretGenerator:
       - config/root-ca/certs/root-ca.pem
   - name: manager-certs
     files:
-      - config/manager/certs/manager-key.pem
-      - config/manager/certs/manager.pem
       - config/manager/certs/manager-remoted-key.pem
       - config/manager/certs/manager-remoted.pem
       - config/manager/certs/manager-apid-key.pem
