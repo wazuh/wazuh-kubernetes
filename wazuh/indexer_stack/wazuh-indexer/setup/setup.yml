@@ -1,0 +1,6 @@
+# Optional setup configuration of the Wazuh indexer.
+# The keys are defined by the Setup module of the Wazuh indexer (wazuh/wazuh-indexer-plugins#1810).
+# Only uncommented keys are applied, and only to the indices created afterwards.
+
+# Three shards for the events data streams.
+templates.streams.events.settings.index.number_of_shards: 3

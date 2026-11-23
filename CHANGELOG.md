@@ -4,6 +4,7 @@
 
 | Issue | Comment |
 | - | - |
+| [#1780](https://github.com/wazuh/wazuh-kubernetes/issues/1780) | Add an optional kustomize component that provides the Indexer setup configuration file, `setup.yml`, to every Indexer pod through a ConfigMap, with a minimal example and a commented line to enable it in the `envs/eks` and `envs/local-env` overlays |
 | [#1681](https://github.com/wazuh/wazuh-kubernetes/issues/1681) | Add a worked agent enrollment example to the EKS and local deployment guides, and pass `--agent-san localhost` in the certificate command of the local guide. |
 | [#1647](https://github.com/wazuh/wazuh-kubernetes/issues/1647) | Add the agent listener (`remoted`) certificate to the `manager-certs` secret and to both manager statefulsets. |
 | [#1638](https://github.com/wazuh/wazuh-kubernetes/issues/1638) | Document how to change the default Wazuh indexer and Wazuh API passwords, the manager cluster key and the agent enrollment password, and add a check for default credentials. |
