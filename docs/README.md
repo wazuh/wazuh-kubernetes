@@ -36,6 +36,7 @@ To deploy a cluster on your local environment (like Minikube, Kind or Microk8s) 
 │   │   ├── backup-restore.md
 │   │   ├── credentials.md
 │   │   ├── glossary.md
+│   │   ├── migration.md
 │   │   ├── performance.md
 │   │   ├── security.md
 │   │   ├── uninstall.md
