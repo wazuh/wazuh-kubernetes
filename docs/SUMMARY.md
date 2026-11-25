@@ -21,6 +21,7 @@
   - [Configuration files](ref/configuration/configuration-files.md)
 - [Credentials](ref/credentials.md)
 - [Upgrade](ref/upgrade.md)
+- [Migration from 4.x](ref/migration.md)
 - [Uninstall](ref/uninstall.md)
 - [Backup and Restore](ref/backup-restore.md)
 - [Security](ref/security.md)
