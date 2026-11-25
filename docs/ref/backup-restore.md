@@ -3,7 +3,7 @@
 For backup and restore procedures, refer to the documentation for each component:
 
 - [Wazuh manager](https://github.com/wazuh/wazuh/blob/v5.1.0/docs/ref/backup-restore.md)
-- [Wazuh agent](https://github.com/wazuh/wazuh-agent/blob/v5.1.0/docs/ref/backup-restore.md)
+- [Wazuh agent](https://github.com/wazuh/wazuh/blob/v5.1.0/docs/ref/backup-restore.md#agent-backup-and-restore)
 
 ## Kubernetes-specific considerations
 

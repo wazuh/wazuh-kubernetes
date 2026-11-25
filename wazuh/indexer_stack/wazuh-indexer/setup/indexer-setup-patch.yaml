@@ -1,0 +1,32 @@
+# Copyright (C) Wazuh Inc.
+#
+# This program is a free software; you can redistribute it
+# and/or modify it under the terms of the GNU General Public
+# License (version 2) as published by the FSF - Free Software
+# Foundation.
+
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: wazuh-indexer
+spec:
+  template:
+    spec:
+      volumes:
+        - name: indexer-setup
+          configMap:
+            name: indexer-setup
+            # The StatefulSet has no fsGroup: the file must be readable by every user. It holds no secrets.
+            defaultMode: 0444
+      containers:
+        - name: wazuh-indexer
+          volumeMounts:
+            - name: indexer-setup
+              mountPath: /usr/share/wazuh-indexer/config/wazuh-indexer-setup/setup.yml
+              subPath: setup.yml
+              readOnly: true
+            # Custom ISM policy, one entry per file:
+            # - name: indexer-setup
+            #   mountPath: /usr/share/wazuh-indexer/config/wazuh-indexer-setup/stream-events-policy.json
+            #   subPath: stream-events-policy.json
+            #   readOnly: true
