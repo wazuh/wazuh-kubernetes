@@ -1,0 +1,30 @@
+# Copyright (C) Wazuh Inc.
+#
+# This program is a free software; you can redistribute it
+# and/or modify it under the terms of the GNU General Public
+# License (version 2) as published by the FSF - Free Software
+# Foundation.
+
+apiVersion: kustomize.config.k8s.io/v1alpha1
+kind: Component
+
+# Optional: provides the Indexer setup configuration file, setup.yml, to every Indexer pod.
+# An overlay enables it with `components:`. See docs/ref/configuration/configuration-files.md.
+configMapGenerator:
+  - name: indexer-setup
+    # A component does not inherit the namespace of the base.
+    namespace: wazuh
+    files:
+      - setup.yml
+      # Custom ISM policies: add each file here, named <policy-id>.json, and mount it in indexer-setup-patch.yaml.
+      # - stream-events-policy.json
+    options:
+      # Kustomize does not rename the ConfigMap reference that the patch adds to the StatefulSet,
+      # so the name must stay without the hash suffix.
+      disableNameSuffixHash: true
+
+patches:
+  - path: indexer-setup-patch.yaml
+    target:
+      kind: StatefulSet
+      name: wazuh-indexer

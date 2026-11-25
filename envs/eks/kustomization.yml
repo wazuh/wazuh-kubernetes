@@ -19,3 +19,9 @@ patches:
 - path: dashboard-resources.yaml
 - path: wazuh-master-resources.yaml
 - path: wazuh-worker-resources.yaml
+
+# Indexer setup configuration (index templates and ISM policies), optional.
+# Edit ../../wazuh/indexer_stack/wazuh-indexer/setup/setup.yml and uncomment the next two lines to provide it
+# to every Indexer pod. See docs/ref/configuration/configuration-files.md.
+# components:
+# - ../../wazuh/indexer_stack/wazuh-indexer/setup

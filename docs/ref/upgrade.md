@@ -2,6 +2,8 @@
 
 When upgrading our version of Wazuh installed in Kubernetes we must follow the following steps.
 
+These steps apply between 5.x releases. A 4.x deployment cannot be upgraded to 5.x: see [Migrating from Wazuh 4.x](migration.md).
+
 ## What survives an upgrade
 
 Our Kubernetes deployment uses the Wazuh images from Docker. These are the directories of the manager
@@ -48,10 +50,7 @@ so `wazuh/config/credentials/*.env` has to hold the current passwords, including
    included: `install-credentials` (every workload), `install-certs` (indexer and dashboard),
    `init-wazuh-etc` (managers) and `init-dashboard-config` (dashboard). All the nodes of the Wazuh cluster have to run the same
    version.
-3. Apply the Traefik runtime. From 5.0.1, also delete the `traefik` ClusterRoleBinding, which
-   `kubectl apply` does not remove and which gives Traefik read access to the Secrets of every
-   namespace. Traefik stops routing until the overlay of the next step creates its RoleBinding in the
-   `wazuh` namespace.
+3. Apply the Traefik runtime:
 
    ```bash
    kubectl apply -k traefik/runtime/
@@ -74,15 +73,3 @@ so `wazuh/config/credentials/*.env` has to hold the current passwords, including
    ```bash
    cd wazuh && ../tools/tests/check-default-credentials.sh && cd ..
    ```
-
-## From 4.x
-
-A 4.x deployment cannot be upgraded in place. The 5.0 manager uses other paths (`/var/wazuh-manager` and `/etc/wazuh-manager` instead of `/var/ossec`), a new configuration format and a new agent protocol, and the 4.x manifests differ in ways `kubectl apply` cannot reconcile:
-
-- The credentials came from the `indexer-cred`, `dashboard-cred` and `wazuh-api-cred` Secrets and from environment variables. The 5.0 workloads read none of them.
-- The manager claims use the `wazuh/var/ossec/*` subPaths, where 5.0 uses `wazuh/var/wazuh-manager/*`. A 5.0 manager on a 4.x claim does not see the 4.x state.
-- The 4.x indexer StatefulSet has no `podManagementPolicy: Parallel`, and the field cannot be changed on an existing StatefulSet.
-
-Do not apply the 5.0 overlay in the namespace of the 4.x deployment: both use `wazuh` and the same workload names. `kubectl apply -k` replaces the managers and the dashboard with 5.0, which do not start on the 4.x claims and cannot reach the 4.x indexer, fails on the indexer StatefulSet, and turns the `dashboard` Service into a `ClusterIP` one. The 4.x deployment stops working. Deploy 5.0 in another namespace, `wazuh-5` in the steps below, or in another cluster. To keep `wazuh`, remove 4.x first, as [Reusing the `wazuh` namespace](#reusing-the-wazuh-namespace) describes.
-
-To keep the agents (their ids, names and keys), their groups, the enrollment password and the API users, follow the Wazuh manager migration procedure: [Migrating a Wazuh manager from 4.x to 5.0](https://github.com/wazuh/wazuh/blob/5.0.1/docs/guide/migration/manager-4x-to-5x.md), which uses [`wazuh-migrate-identity.py`](https://github.com/wazuh/wazuh/blob/5.0.1/tools/migration/wazuh-migrate-identity.py). The tool exports that data from the stopped 4.x manager files, which on Kubernetes are on the 4.x manager claims under the `wazuh/var/ossec/*` subPaths, and imports it through the API of the running 5.0 master, before agents can reach it. The guide also covers the configuration, the ruleset, the agents and the historical data.

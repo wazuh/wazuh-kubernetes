@@ -225,7 +225,7 @@ curl -so wazuh-certs-tool.sh https://packages.wazuh.com/production/5.x/installat
 curl -so config.yml https://packages.wazuh.com/production/5.x/installation-assistant/config-5.0.1.yml
 ```
 
-> **Note**: Before the 5.0.0 release these files are published as pre-release builds, with the stage in the name, under `https://packages-staging.xdrsiem.wazuh.info/pre-release/5.x/installation-assistant/` as `wazuh-certs-tool-5.0.1-<STAGE>.sh` and `config-5.0.1-<STAGE>.yml`. The tool must issue the Server API certificate (`apid`), which needs RC 2 or later.
+> **Note**: For a pre-release, use `wazuh-certs-tool-5.0.1-<STAGE>.sh` and `config-5.0.1-<STAGE>.yml` from `https://packages-staging.xdrsiem.wazuh.info/pre-release/5.x/installation-assistant/`.
 
 **3.2.2 Edit the config.yml file with the configuration of the Wazuh components to be deployed**:
 
@@ -450,7 +450,7 @@ docker run -d --name wazuh-agent \
   wazuh/wazuh-agent:5.0.1
 ```
 
-The agent container variables and the optional fields of `POST /agents/enrollment-tokens` (`ttl`, `max_uses`, `description`) are described in the [wazuh-docker agent guide](https://github.com/wazuh/wazuh-docker/blob/5.0.1/docs/ref/getting-started/deployment/wazuh-agent.md).
+The agent container variables and the optional fields of `POST /agents/enrollment-tokens` (`ttl`, `max_uses`, `description`) are described in the [wazuh-docker agent guide](https://github.com/wazuh/wazuh-docker/blob/v5.0.1/docs/ref/getting-started/deployment/wazuh-agent.md).
 
 Check that it is listed as `active`:
 
@@ -561,7 +561,7 @@ curl -so wazuh-certs-tool.sh https://packages.wazuh.com/production/5.x/installat
 curl -so config.yml https://packages.wazuh.com/production/5.x/installation-assistant/config-5.0.1.yml
 ```
 
-> **Note**: Before the 5.0.0 release these files are published as pre-release builds, with the stage in the name, under `https://packages-staging.xdrsiem.wazuh.info/pre-release/5.x/installation-assistant/` as `wazuh-certs-tool-5.0.1-<STAGE>.sh` and `config-5.0.1-<STAGE>.yml`. The tool must issue the Server API certificate (`apid`), which needs RC 2 or later.
+> **Note**: For a pre-release, use `wazuh-certs-tool-5.0.1-<STAGE>.sh` and `config-5.0.1-<STAGE>.yml` from `https://packages-staging.xdrsiem.wazuh.info/pre-release/5.x/installation-assistant/`.
 
 Edit the `config.yml` file to set corresponding name and IP address for each Wazuh component.
 For a local environment, you can use:
@@ -894,7 +894,7 @@ curl -sk -H "Authorization: Bearer ${WAZUH_API_TOKEN}" \
   "https://localhost:55000/agents?select=name,status&pretty=true"
 ```
 
-Right after it enrolls the agent can be listed as `pending` for a minute or two; run the command again. The API token lasts 15 minutes; if the answer is `Invalid token`, run the `WAZUH_API_TOKEN=...` command again. The optional fields of `POST /agents/enrollment-tokens` (`ttl`, `max_uses`, `description`) and the agent container variables are described in the [wazuh-docker agent guide](https://github.com/wazuh/wazuh-docker/blob/5.0.1/docs/ref/getting-started/deployment/wazuh-agent.md).
+Right after it enrolls the agent can be listed as `pending` for a minute or two; run the command again. The API token lasts 15 minutes; if the answer is `Invalid token`, run the `WAZUH_API_TOKEN=...` command again. The optional fields of `POST /agents/enrollment-tokens` (`ttl`, `max_uses`, `description`) and the agent container variables are described in the [wazuh-docker agent guide](https://github.com/wazuh/wazuh-docker/blob/v5.0.1/docs/ref/getting-started/deployment/wazuh-agent.md).
 
 > **Note**: A port-forward to a Service attaches to a single manager pod, so every agent enrolled this way reports to that pod.
 
