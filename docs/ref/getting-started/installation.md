@@ -225,7 +225,7 @@ curl -so wazuh-certs-tool.sh https://packages.wazuh.com/production/5.x/installat
 curl -so config.yml https://packages.wazuh.com/production/5.x/installation-assistant/config-5.1.0.yml
 ```
 
-> **Note**: Before the 5.0.0 release these files are published as pre-release builds, with the stage in the name, under `https://packages-staging.xdrsiem.wazuh.info/pre-release/5.x/installation-assistant/` as `wazuh-certs-tool-5.1.0-<STAGE>.sh` and `config-5.1.0-<STAGE>.yml`. The tool must issue the Server API certificate (`apid`), which needs RC 2 or later.
+> **Note**: For a pre-release, use `wazuh-certs-tool-5.1.0-<STAGE>.sh` and `config-5.1.0-<STAGE>.yml` from `https://packages-staging.xdrsiem.wazuh.info/pre-release/5.x/installation-assistant/`.
 
 **3.2.2 Edit the config.yml file with the configuration of the Wazuh components to be deployed**:
 
@@ -561,7 +561,7 @@ curl -so wazuh-certs-tool.sh https://packages.wazuh.com/production/5.x/installat
 curl -so config.yml https://packages.wazuh.com/production/5.x/installation-assistant/config-5.1.0.yml
 ```
 
-> **Note**: Before the 5.0.0 release these files are published as pre-release builds, with the stage in the name, under `https://packages-staging.xdrsiem.wazuh.info/pre-release/5.x/installation-assistant/` as `wazuh-certs-tool-5.1.0-<STAGE>.sh` and `config-5.1.0-<STAGE>.yml`. The tool must issue the Server API certificate (`apid`), which needs RC 2 or later.
+> **Note**: For a pre-release, use `wazuh-certs-tool-5.1.0-<STAGE>.sh` and `config-5.1.0-<STAGE>.yml` from `https://packages-staging.xdrsiem.wazuh.info/pre-release/5.x/installation-assistant/`.
 
 Edit the `config.yml` file to set corresponding name and IP address for each Wazuh component.
 For a local environment, you can use:
