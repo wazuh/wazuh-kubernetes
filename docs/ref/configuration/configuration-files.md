@@ -24,6 +24,29 @@ CPU, memory, and storage settings are controlled via Kustomize patches under `en
   - EKS: `envs/eks/wazuh-master-resources.yaml` and `envs/eks/wazuh-worker-resources.yaml` configure CPU, memory, and persistent volume size for the Wazuh manager master and worker StatefulSets
   - Local: `envs/local-env/wazuh-resources.yaml` reduces the Wazuh manager workers to one replica. It and `envs/local-env/wazuh-master-resources.yaml` also narrow `WAZUH_INDEXER_HOSTS` of the worker and master StatefulSets to the single indexer, `wazuh-indexer-0.wazuh-indexer:9200`
 
+## Indexer setup configuration
+
+The Wazuh indexer reads an optional file, `setup.yml`, to change the default settings of its index templates and to switch to custom ISM retention policies. The keys are defined by the Setup module of the Wazuh indexer, not by this repository: see [Setup plugin customization](https://github.com/wazuh/wazuh-indexer-plugins/blob/5.0.0/docs/ref/modules/setup/customization.md).
+
+Nothing changes unless you enable it: without the file, the indexer applies its packaged defaults.
+
+- **Where it lives**: `/usr/share/wazuh-indexer/config/wazuh-indexer-setup/setup.yml` in the indexer container. The image ships a copy with every key commented out, plus an editable copy of each default ISM policy and a README. The file you provide replaces `setup.yml` as a whole, and the other files stay as the image ships them. Images that predate the feature do not have this directory, so the file has no effect on them.
+- **How to provide it**: edit `wazuh/indexer_stack/wazuh-indexer/setup/setup.yml`, which holds a minimal example (three shards for the events data streams). Then uncomment the `components:` lines at the end of `envs/eks/kustomization.yml` or `envs/local-env/kustomization.yml` and run `kubectl apply -k` as usual. A ConfigMap generated from that file, `indexer-setup`, is mounted on every indexer pod, so all of them get the same file.
+- **File mode**: the ConfigMap is mounted with `defaultMode: 0444`. The indexer StatefulSet has no `fsGroup`, so a file readable only by its owner or its group would not be readable by the indexer. The file holds no secrets.
+- **When it applies**: the indexer reads the file when it initializes the cluster, and a ConfigMap mounted with `subPath` is not updated in a running pod. After changing the file, run `kubectl apply -k` and restart the indexer pods with `kubectl -n wazuh rollout restart statefulset/wazuh-indexer`. The settings apply only to the indices created afterwards: the existing indices keep theirs. Every pod that can be elected cluster manager needs the same file; the ConfigMap is mounted on all of them, so restart them all with the command above.
+- **Custom ISM policies**: set `policies.<policy-id>.custom: true` in `setup.yml` and provide a file named `<policy-id>.json`, with that same policy id, in the same directory. Add the file to the ConfigMap generator in `wazuh/indexer_stack/wazuh-indexer/setup/kustomization.yml` and mount it as the commented example in `indexer-setup-patch.yaml` shows. The image already carries an editable copy of each default policy in that directory (for example `stream-events-policy.json`); to start from it, copy it from a running pod with `kubectl -n wazuh exec wazuh-indexer-0 -c wazuh-indexer -- cat /usr/share/wazuh-indexer/config/wazuh-indexer-setup/stream-events-policy.json`. The rules that the policy file must follow are in the plugin documentation linked above.
+- **Invalid files**: an unknown key or a wrong value does not stop the indexer and the pods stay `Ready`, but the setup stops before it creates the index templates: its status becomes `failed`, the events template does not exist, and the indexer log names the key and the file. Check the result as described below.
+
+To check the result, the setup status must be `ready` and the events template must show the configured value (replace `<password>` with the Indexer admin password):
+
+```bash
+kubectl -n wazuh exec wazuh-indexer-0 -c wazuh-indexer -- curl -sk -u admin:<password> 'https://127.0.0.1:9200/.wazuh-setup-status/_doc/setup-status?filter_path=_source'
+kubectl -n wazuh exec wazuh-indexer-0 -c wazuh-indexer -- curl -sk -u admin:<password> 'https://127.0.0.1:9200/_index_template/wazuh-events-v5-security-template?filter_path=**.number_of_shards'
+kubectl -n wazuh logs wazuh-indexer-0 -c wazuh-indexer | grep -E 'Setup configuration file|Index template setting override|Setup initialization failed'
+```
+
+The log lines `Setup configuration file` and `Index template setting override` confirm that the file was read, and `Setup initialization failed` names the key that was rejected.
+
 ## Ingress and external access
 
 External access to the Wazuh dashboard is provided through a Traefik `IngressRouteTCP` with TLS passthrough
