@@ -23,8 +23,7 @@ CREDENTIALS_DIR="./config/credentials"
 # in a Wazuh deployment and the image must not contain them at all.
 DEMO_USERS="anomalyadmin kibanaro logstash readall snapshotrestore"
  
-# Accounts the Wazuh indexer image keeps. wazuh-admin, wazuh-readonly and
-# wazuh-demo do not ship in 5.0.0 or later.
+# Accounts the Wazuh indexer image keeps.
 INDEXER_USERS="admin kibanaserver wazuh-manager"
  
 # Accounts the Wazuh API seeds its user database with.
